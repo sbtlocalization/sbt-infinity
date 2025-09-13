@@ -21,6 +21,16 @@ doc-ref: |
 seq:
   - id: header
     type: header
+instances:
+  frame_entries:
+    pos: _root.header.frame_entries_offset
+    type: frame_entries
+  cycle_entries:
+    pos: _root.header.cycle_entries_offset
+    type: cycle_entries
+  data_blocks:
+    pos: _root.header.data_blocks_offset
+    type: data_blocks
 types:
   header:
     seq:
@@ -94,13 +104,3 @@ types:
         type: data_block
         repeat: expr
         repeat-expr: _root.header.data_blocks_count
-instances:
-  frame_entries:
-    pos: _root.header.frame_entries_offset
-    type: frame_entries
-  cycle_entries:
-    pos: _root.header.cycle_entries_offset
-    type: cycle_entries
-  data_blocks:
-    pos: _root.header.data_blocks_offset
-    type: data_blocks
