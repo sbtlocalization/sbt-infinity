@@ -10,16 +10,20 @@ import (
 
 
 /**
- * Most strings shown in Infinity Engine games are stored in a TLK file, usually dialog.tlk (for 
- * male/default text) and/or dialogf.tlk (for female text). Strings are stored with associated 
- * information (e.g. a reference to sound file), and are indexed by a (0-indexed) 32 bit identigier 
- * called a "Strref" (String Reference). Storing text in this way allows for a game to be easily 
+ * Most strings shown in Infinity Engine games are stored in a TLK file, usually dialog.tlk (for
+ * male/default text) and/or dialogf.tlk (for female text). Strings are stored with associated
+ * information (e.g. a reference to sound file), and are indexed by a (0-indexed) 32 bit identigier
+ * called a "Strref" (String Reference). Storing text in this way allows for a game to be easily
  * swapped between languages.
  * @see <a href="https://gibberlings3.github.io/iesdp/file_formats/ie_formats/tlk_v1.htm
  * ">Source</a>
  */
 type Tlk struct {
-	Header *Tlk_Header
+	Magic []byte
+	Version []byte
+	Lang uint16
+	NumEntries uint32
+	OfsData uint32
 	Entries []*Tlk_StringEntry
 	_io *kaitai.Stream
 	_root *Tlk
@@ -35,76 +39,48 @@ func (this *Tlk) Read(io *kaitai.Stream, parent interface{}, root *Tlk) (err err
 	this._parent = parent
 	this._root = root
 
-	tmp1 := NewTlk_Header()
-	err = tmp1.Read(this._io, this, this._root)
+	tmp1, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	this.Header = tmp1
-	for i := 0; i < int(this.Header.StringCount); i++ {
+	tmp1 = tmp1
+	this.Magic = tmp1
+	if !(bytes.Equal(this.Magic, []uint8{84, 76, 75, 32})) {
+		return kaitai.NewValidationNotEqualError([]uint8{84, 76, 75, 32}, this.Magic, this._io, "/seq/0")
+	}
+	tmp2, err := this._io.ReadBytes(int(4))
+	if err != nil {
+		return err
+	}
+	tmp2 = tmp2
+	this.Version = tmp2
+	if !(bytes.Equal(this.Version, []uint8{86, 49, 32, 32})) {
+		return kaitai.NewValidationNotEqualError([]uint8{86, 49, 32, 32}, this.Version, this._io, "/seq/1")
+	}
+	tmp3, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.Lang = uint16(tmp3)
+	tmp4, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.NumEntries = uint32(tmp4)
+	tmp5, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.OfsData = uint32(tmp5)
+	for i := 0; i < int(this.NumEntries); i++ {
 		_ = i
-		tmp2 := NewTlk_StringEntry()
-		err = tmp2.Read(this._io, this, this._root)
+		tmp6 := NewTlk_StringEntry()
+		err = tmp6.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
-		this.Entries = append(this.Entries, tmp2)
+		this.Entries = append(this.Entries, tmp6)
 	}
-	return err
-}
-type Tlk_Header struct {
-	Magic []byte
-	Version []byte
-	Lang uint16
-	StringCount uint32
-	DataOffset uint32
-	_io *kaitai.Stream
-	_root *Tlk
-	_parent *Tlk
-}
-func NewTlk_Header() *Tlk_Header {
-	return &Tlk_Header{
-	}
-}
-
-func (this *Tlk_Header) Read(io *kaitai.Stream, parent *Tlk, root *Tlk) (err error) {
-	this._io = io
-	this._parent = parent
-	this._root = root
-
-	tmp3, err := this._io.ReadBytes(int(4))
-	if err != nil {
-		return err
-	}
-	tmp3 = tmp3
-	this.Magic = tmp3
-	if !(bytes.Equal(this.Magic, []uint8{84, 76, 75, 32})) {
-		return kaitai.NewValidationNotEqualError([]uint8{84, 76, 75, 32}, this.Magic, this._io, "/types/header/seq/0")
-	}
-	tmp4, err := this._io.ReadBytes(int(4))
-	if err != nil {
-		return err
-	}
-	tmp4 = tmp4
-	this.Version = tmp4
-	if !(bytes.Equal(this.Version, []uint8{86, 49, 32, 32})) {
-		return kaitai.NewValidationNotEqualError([]uint8{86, 49, 32, 32}, this.Version, this._io, "/types/header/seq/1")
-	}
-	tmp5, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.Lang = uint16(tmp5)
-	tmp6, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.StringCount = uint32(tmp6)
-	tmp7, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.DataOffset = uint32(tmp7)
 	return err
 }
 type Tlk_StringEntry struct {
@@ -112,8 +88,8 @@ type Tlk_StringEntry struct {
 	AudioName string
 	VolumeVariance uint32
 	PitchVariance uint32
-	StringOffset uint32
-	StringLength uint32
+	OfsString uint32
+	LenString uint32
 	_io *kaitai.Stream
 	_root *Tlk
 	_parent *Tlk
@@ -131,45 +107,45 @@ func (this *Tlk_StringEntry) Read(io *kaitai.Stream, parent *Tlk, root *Tlk) (er
 	this._parent = parent
 	this._root = root
 
-	tmp8, err := this._io.ReadBytes(int(2))
+	tmp7, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	tmp8 = tmp8
-	this._raw_Flags = tmp8
+	tmp7 = tmp7
+	this._raw_Flags = tmp7
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp9 := NewTlk_StringEntry_Flags()
-	err = tmp9.Read(_io__raw_Flags, this, this._root)
+	tmp8 := NewTlk_StringEntry_Flags()
+	err = tmp8.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp9
-	tmp10, err := this._io.ReadBytes(int(8))
+	this.Flags = tmp8
+	tmp9, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp10 = tmp10
-	this.AudioName = string(tmp10)
+	tmp9 = tmp9
+	this.AudioName = string(tmp9)
+	tmp10, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.VolumeVariance = uint32(tmp10)
 	tmp11, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.VolumeVariance = uint32(tmp11)
+	this.PitchVariance = uint32(tmp11)
 	tmp12, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.PitchVariance = uint32(tmp12)
+	this.OfsString = uint32(tmp12)
 	tmp13, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.StringOffset = uint32(tmp13)
-	tmp14, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.StringLength = uint32(tmp14)
+	this.LenString = uint32(tmp13)
 	return err
 }
 func (this *Tlk_StringEntry) Text() (v string, err error) {
@@ -180,16 +156,16 @@ func (this *Tlk_StringEntry) Text() (v string, err error) {
 	if err != nil {
 		return "", err
 	}
-	_, err = this._io.Seek(int64((this._root.Header.DataOffset + this.StringOffset)), io.SeekStart)
+	_, err = this._io.Seek(int64((this._root.OfsData + this.OfsString)), io.SeekStart)
 	if err != nil {
 		return "", err
 	}
-	tmp15, err := this._io.ReadBytes(int(this.StringLength))
+	tmp14, err := this._io.ReadBytes(int(this.LenString))
 	if err != nil {
 		return "", err
 	}
-	tmp15 = tmp15
-	this.text = string(tmp15)
+	tmp14 = kaitai.BytesTerminate(tmp14, 0, false)
+	this.text = string(tmp14)
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return "", err
@@ -218,30 +194,30 @@ func (this *Tlk_StringEntry_Flags) Read(io *kaitai.Stream, parent *Tlk_StringEnt
 	this._parent = parent
 	this._root = root
 
+	tmp15, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.NoMessage = tmp15 != 0
 	tmp16, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.NoMessage = tmp16 != 0
+	this.TextExists = tmp16 != 0
 	tmp17, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.TextExists = tmp17 != 0
+	this.SoundExists = tmp17 != 0
 	tmp18, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.SoundExists = tmp18 != 0
+	this.StandardMessage = tmp18 != 0
 	tmp19, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.StandardMessage = tmp19 != 0
-	tmp20, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.TokenExists = tmp20 != 0
+	this.TokenExists = tmp19 != 0
 	return err
 }

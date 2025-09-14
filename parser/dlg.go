@@ -4,8 +4,8 @@ package parser
 
 import (
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
-	"io"
 	"bytes"
+	"io"
 )
 
 
@@ -43,10 +43,23 @@ import (
  * ">Source</a>
  */
 type Dlg struct {
-	Header *Dlg_Header
+	Magic []byte
+	Version []byte
+	NumStates uint32
+	OfsStates uint32
+	NumTransitions uint32
+	OfsTransitions uint32
+	OfsStateTriggers uint32
+	NumStateTriggers uint32
+	OfsTransitionTriggers uint32
+	NumTransitionTriggers uint32
+	OfsActions uint32
+	NumActions uint32
+	ThreatFlags *Dlg_HeaderFlags
 	_io *kaitai.Stream
 	_root *Dlg
 	_parent interface{}
+	_raw_ThreatFlags []byte
 	_f_stateTriggerTable bool
 	stateTriggerTable *Dlg_StateTriggerTable
 	_f_transitionTable bool
@@ -68,12 +81,87 @@ func (this *Dlg) Read(io *kaitai.Stream, parent interface{}, root *Dlg) (err err
 	this._parent = parent
 	this._root = root
 
-	tmp1 := NewDlg_Header()
-	err = tmp1.Read(this._io, this, this._root)
+	tmp1, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	this.Header = tmp1
+	tmp1 = tmp1
+	this.Magic = tmp1
+	if !(bytes.Equal(this.Magic, []uint8{68, 76, 71, 32})) {
+		return kaitai.NewValidationNotEqualError([]uint8{68, 76, 71, 32}, this.Magic, this._io, "/seq/0")
+	}
+	tmp2, err := this._io.ReadBytes(int(4))
+	if err != nil {
+		return err
+	}
+	tmp2 = tmp2
+	this.Version = tmp2
+	if !(bytes.Equal(this.Version, []uint8{86, 49, 46, 48})) {
+		return kaitai.NewValidationNotEqualError([]uint8{86, 49, 46, 48}, this.Version, this._io, "/seq/1")
+	}
+	tmp3, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.NumStates = uint32(tmp3)
+	tmp4, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.OfsStates = uint32(tmp4)
+	tmp5, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.NumTransitions = uint32(tmp5)
+	tmp6, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.OfsTransitions = uint32(tmp6)
+	tmp7, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.OfsStateTriggers = uint32(tmp7)
+	tmp8, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.NumStateTriggers = uint32(tmp8)
+	tmp9, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.OfsTransitionTriggers = uint32(tmp9)
+	tmp10, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.NumTransitionTriggers = uint32(tmp10)
+	tmp11, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.OfsActions = uint32(tmp11)
+	tmp12, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.NumActions = uint32(tmp12)
+	tmp13, err := this._io.ReadBytes(int(4))
+	if err != nil {
+		return err
+	}
+	tmp13 = tmp13
+	this._raw_ThreatFlags = tmp13
+	_io__raw_ThreatFlags := kaitai.NewStream(bytes.NewReader(this._raw_ThreatFlags))
+	tmp14 := NewDlg_HeaderFlags()
+	err = tmp14.Read(_io__raw_ThreatFlags, this, this._root)
+	if err != nil {
+		return err
+	}
+	this.ThreatFlags = tmp14
 	return err
 }
 func (this *Dlg) StateTriggerTable() (v *Dlg_StateTriggerTable, err error) {
@@ -84,16 +172,16 @@ func (this *Dlg) StateTriggerTable() (v *Dlg_StateTriggerTable, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this._root.Header.StateTriggerTableOffset), io.SeekStart)
+	_, err = this._io.Seek(int64(this._root.OfsStateTriggers), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	tmp2 := NewDlg_StateTriggerTable()
-	err = tmp2.Read(this._io, this, this._root)
+	tmp15 := NewDlg_StateTriggerTable()
+	err = tmp15.Read(this._io, this, this._root)
 	if err != nil {
 		return nil, err
 	}
-	this.stateTriggerTable = tmp2
+	this.stateTriggerTable = tmp15
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
@@ -110,16 +198,16 @@ func (this *Dlg) TransitionTable() (v *Dlg_TransitionTable, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this._root.Header.TransitionTableOffset), io.SeekStart)
+	_, err = this._io.Seek(int64(this._root.OfsTransitions), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	tmp3 := NewDlg_TransitionTable()
-	err = tmp3.Read(this._io, this, this._root)
+	tmp16 := NewDlg_TransitionTable()
+	err = tmp16.Read(this._io, this, this._root)
 	if err != nil {
 		return nil, err
 	}
-	this.transitionTable = tmp3
+	this.transitionTable = tmp16
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
@@ -136,16 +224,16 @@ func (this *Dlg) TransitionTriggerTable() (v *Dlg_TransitionTriggerTable, err er
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this._root.Header.TransitionTriggerTableOffset), io.SeekStart)
+	_, err = this._io.Seek(int64(this._root.OfsTransitionTriggers), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	tmp4 := NewDlg_TransitionTriggerTable()
-	err = tmp4.Read(this._io, this, this._root)
+	tmp17 := NewDlg_TransitionTriggerTable()
+	err = tmp17.Read(this._io, this, this._root)
 	if err != nil {
 		return nil, err
 	}
-	this.transitionTriggerTable = tmp4
+	this.transitionTriggerTable = tmp17
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
@@ -162,16 +250,16 @@ func (this *Dlg) StateTable() (v *Dlg_StateTable, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this._root.Header.StateTableOffset), io.SeekStart)
+	_, err = this._io.Seek(int64(this._root.OfsStates), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	tmp5 := NewDlg_StateTable()
-	err = tmp5.Read(this._io, this, this._root)
+	tmp18 := NewDlg_StateTable()
+	err = tmp18.Read(this._io, this, this._root)
 	if err != nil {
 		return nil, err
 	}
-	this.stateTable = tmp5
+	this.stateTable = tmp18
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
@@ -188,16 +276,16 @@ func (this *Dlg) ActionTable() (v *Dlg_ActionTable, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this._root.Header.ActionTableOffset), io.SeekStart)
+	_, err = this._io.Seek(int64(this._root.OfsActions), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	tmp6 := NewDlg_ActionTable()
-	err = tmp6.Read(this._io, this, this._root)
+	tmp19 := NewDlg_ActionTable()
+	err = tmp19.Read(this._io, this, this._root)
 	if err != nil {
 		return nil, err
 	}
-	this.actionTable = tmp6
+	this.actionTable = tmp19
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
@@ -222,14 +310,14 @@ func (this *Dlg_TransitionTriggerTable) Read(io *kaitai.Stream, parent *Dlg, roo
 	this._parent = parent
 	this._root = root
 
-	for i := 0; i < int(this._root.Header.TransitionTriggerCount); i++ {
+	for i := 0; i < int(this._root.NumTransitionTriggers); i++ {
 		_ = i
-		tmp7 := NewDlg_TextEntry()
-		err = tmp7.Read(this._io, this, this._root)
+		tmp20 := NewDlg_TextEntry()
+		err = tmp20.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
-		this.Entries = append(this.Entries, tmp7)
+		this.Entries = append(this.Entries, tmp20)
 	}
 	return err
 }
@@ -249,14 +337,14 @@ func (this *Dlg_ActionTable) Read(io *kaitai.Stream, parent *Dlg, root *Dlg) (er
 	this._parent = parent
 	this._root = root
 
-	for i := 0; i < int(this._root.Header.ActionCount); i++ {
+	for i := 0; i < int(this._root.NumActions); i++ {
 		_ = i
-		tmp8 := NewDlg_TextEntry()
-		err = tmp8.Read(this._io, this, this._root)
+		tmp21 := NewDlg_TextEntry()
+		err = tmp21.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
-		this.Entries = append(this.Entries, tmp8)
+		this.Entries = append(this.Entries, tmp21)
 	}
 	return err
 }
@@ -276,14 +364,14 @@ func (this *Dlg_StateTriggerTable) Read(io *kaitai.Stream, parent *Dlg, root *Dl
 	this._parent = parent
 	this._root = root
 
-	for i := 0; i < int(this._root.Header.StateTriggerCount); i++ {
+	for i := 0; i < int(this._root.NumStateTriggers); i++ {
 		_ = i
-		tmp9 := NewDlg_TextEntry()
-		err = tmp9.Read(this._io, this, this._root)
+		tmp22 := NewDlg_TextEntry()
+		err = tmp22.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
-		this.Entries = append(this.Entries, tmp9)
+		this.Entries = append(this.Entries, tmp22)
 	}
 	return err
 }
@@ -310,26 +398,26 @@ func (this *Dlg_StateEntry) Read(io *kaitai.Stream, parent *Dlg_StateTable, root
 	this._parent = parent
 	this._root = root
 
-	tmp10, err := this._io.ReadU4le()
+	tmp23, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.TextRef = uint32(tmp10)
-	tmp11, err := this._io.ReadU4le()
+	this.TextRef = uint32(tmp23)
+	tmp24, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.FirstTransitionIndex = uint32(tmp11)
-	tmp12, err := this._io.ReadU4le()
+	this.FirstTransitionIndex = uint32(tmp24)
+	tmp25, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumTransitions = uint32(tmp12)
-	tmp13, err := this._io.ReadU4le()
+	this.NumTransitions = uint32(tmp25)
+	tmp26, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.StateTriggerIndex = uint32(tmp13)
+	this.StateTriggerIndex = uint32(tmp26)
 	return err
 }
 func (this *Dlg_StateEntry) Transitions() (v []*Dlg_TransitionEntry, err error) {
@@ -340,18 +428,18 @@ func (this *Dlg_StateEntry) Transitions() (v []*Dlg_TransitionEntry, err error) 
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64((this._root.Header.TransitionTableOffset + (this.FirstTransitionIndex * 32))), io.SeekStart)
+	_, err = this._io.Seek(int64((this._root.OfsTransitions + (this.FirstTransitionIndex * 32))), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
 	for i := 0; i < int(this.NumTransitions); i++ {
 		_ = i
-		tmp14 := NewDlg_TransitionEntry()
-		err = tmp14.Read(this._io, this, this._root)
+		tmp27 := NewDlg_TransitionEntry()
+		err = tmp27.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.transitions = append(this.transitions, tmp14)
+		this.transitions = append(this.transitions, tmp27)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -370,16 +458,16 @@ func (this *Dlg_StateEntry) Trigger() (v *Dlg_TextEntry, err error) {
 		if err != nil {
 			return nil, err
 		}
-		_, err = this._io.Seek(int64((this._root.Header.StateTriggerTableOffset + (this.StateTriggerIndex * 8))), io.SeekStart)
+		_, err = this._io.Seek(int64((this._root.OfsStateTriggers + (this.StateTriggerIndex * 8))), io.SeekStart)
 		if err != nil {
 			return nil, err
 		}
-		tmp15 := NewDlg_TextEntry()
-		err = tmp15.Read(this._io, this, this._root)
+		tmp28 := NewDlg_TextEntry()
+		err = tmp28.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.trigger = tmp15
+		this.trigger = tmp28
 		_, err = this._io.Seek(_pos, io.SeekStart)
 		if err != nil {
 			return nil, err
@@ -388,6 +476,41 @@ func (this *Dlg_StateEntry) Trigger() (v *Dlg_TextEntry, err error) {
 	}
 	this._f_trigger = true
 	return this.trigger, nil
+}
+type Dlg_HeaderFlags struct {
+	TurnHostile bool
+	EscapeArea bool
+	DoNothing bool
+	_io *kaitai.Stream
+	_root *Dlg
+	_parent *Dlg
+}
+func NewDlg_HeaderFlags() *Dlg_HeaderFlags {
+	return &Dlg_HeaderFlags{
+	}
+}
+
+func (this *Dlg_HeaderFlags) Read(io *kaitai.Stream, parent *Dlg, root *Dlg) (err error) {
+	this._io = io
+	this._parent = parent
+	this._root = root
+
+	tmp29, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.TurnHostile = tmp29 != 0
+	tmp30, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.EscapeArea = tmp30 != 0
+	tmp31, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.DoNothing = tmp31 != 0
+	return err
 }
 type Dlg_TransitionTable struct {
 	Entries []*Dlg_TransitionEntry
@@ -405,162 +528,15 @@ func (this *Dlg_TransitionTable) Read(io *kaitai.Stream, parent *Dlg, root *Dlg)
 	this._parent = parent
 	this._root = root
 
-	for i := 0; i < int(this._root.Header.TransitionCount); i++ {
+	for i := 0; i < int(this._root.NumTransitions); i++ {
 		_ = i
-		tmp16 := NewDlg_TransitionEntry()
-		err = tmp16.Read(this._io, this, this._root)
+		tmp32 := NewDlg_TransitionEntry()
+		err = tmp32.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
-		this.Entries = append(this.Entries, tmp16)
+		this.Entries = append(this.Entries, tmp32)
 	}
-	return err
-}
-type Dlg_Header struct {
-	Magic []byte
-	Version []byte
-	StateCount uint32
-	StateTableOffset uint32
-	TransitionCount uint32
-	TransitionTableOffset uint32
-	StateTriggerTableOffset uint32
-	StateTriggerCount uint32
-	TransitionTriggerTableOffset uint32
-	TransitionTriggerCount uint32
-	ActionTableOffset uint32
-	ActionCount uint32
-	ThreatFlags *Dlg_Header_Flags
-	_io *kaitai.Stream
-	_root *Dlg
-	_parent *Dlg
-	_raw_ThreatFlags []byte
-}
-func NewDlg_Header() *Dlg_Header {
-	return &Dlg_Header{
-	}
-}
-
-func (this *Dlg_Header) Read(io *kaitai.Stream, parent *Dlg, root *Dlg) (err error) {
-	this._io = io
-	this._parent = parent
-	this._root = root
-
-	tmp17, err := this._io.ReadBytes(int(4))
-	if err != nil {
-		return err
-	}
-	tmp17 = tmp17
-	this.Magic = tmp17
-	if !(bytes.Equal(this.Magic, []uint8{68, 76, 71, 32})) {
-		return kaitai.NewValidationNotEqualError([]uint8{68, 76, 71, 32}, this.Magic, this._io, "/types/header/seq/0")
-	}
-	tmp18, err := this._io.ReadBytes(int(4))
-	if err != nil {
-		return err
-	}
-	tmp18 = tmp18
-	this.Version = tmp18
-	if !(bytes.Equal(this.Version, []uint8{86, 49, 46, 48})) {
-		return kaitai.NewValidationNotEqualError([]uint8{86, 49, 46, 48}, this.Version, this._io, "/types/header/seq/1")
-	}
-	tmp19, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.StateCount = uint32(tmp19)
-	tmp20, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.StateTableOffset = uint32(tmp20)
-	tmp21, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.TransitionCount = uint32(tmp21)
-	tmp22, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.TransitionTableOffset = uint32(tmp22)
-	tmp23, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.StateTriggerTableOffset = uint32(tmp23)
-	tmp24, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.StateTriggerCount = uint32(tmp24)
-	tmp25, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.TransitionTriggerTableOffset = uint32(tmp25)
-	tmp26, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.TransitionTriggerCount = uint32(tmp26)
-	tmp27, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.ActionTableOffset = uint32(tmp27)
-	tmp28, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.ActionCount = uint32(tmp28)
-	tmp29, err := this._io.ReadBytes(int(4))
-	if err != nil {
-		return err
-	}
-	tmp29 = tmp29
-	this._raw_ThreatFlags = tmp29
-	_io__raw_ThreatFlags := kaitai.NewStream(bytes.NewReader(this._raw_ThreatFlags))
-	tmp30 := NewDlg_Header_Flags()
-	err = tmp30.Read(_io__raw_ThreatFlags, this, this._root)
-	if err != nil {
-		return err
-	}
-	this.ThreatFlags = tmp30
-	return err
-}
-type Dlg_Header_Flags struct {
-	TurnHostile bool
-	EscapeArea bool
-	DoNothing bool
-	_io *kaitai.Stream
-	_root *Dlg
-	_parent *Dlg_Header
-}
-func NewDlg_Header_Flags() *Dlg_Header_Flags {
-	return &Dlg_Header_Flags{
-	}
-}
-
-func (this *Dlg_Header_Flags) Read(io *kaitai.Stream, parent *Dlg_Header, root *Dlg) (err error) {
-	this._io = io
-	this._parent = parent
-	this._root = root
-
-	tmp31, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.TurnHostile = tmp31 != 0
-	tmp32, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.EscapeArea = tmp32 != 0
-	tmp33, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.DoNothing = tmp33 != 0
 	return err
 }
 type Dlg_StateTable struct {
@@ -579,14 +555,14 @@ func (this *Dlg_StateTable) Read(io *kaitai.Stream, parent *Dlg, root *Dlg) (err
 	this._parent = parent
 	this._root = root
 
-	for i := 0; i < int(this._root.Header.StateCount); i++ {
+	for i := 0; i < int(this._root.NumStates); i++ {
 		_ = i
-		tmp34 := NewDlg_StateEntry()
-		err = tmp34.Read(this._io, this, this._root)
+		tmp33 := NewDlg_StateEntry()
+		err = tmp33.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
-		this.Entries = append(this.Entries, tmp34)
+		this.Entries = append(this.Entries, tmp33)
 	}
 	return err
 }
@@ -617,50 +593,50 @@ func (this *Dlg_TransitionEntry) Read(io *kaitai.Stream, parent interface{}, roo
 	this._parent = parent
 	this._root = root
 
-	tmp35, err := this._io.ReadBytes(int(4))
+	tmp34, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	tmp35 = tmp35
-	this._raw_Flags = tmp35
+	tmp34 = tmp34
+	this._raw_Flags = tmp34
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp36 := NewDlg_TransitionEntry_Flags()
-	err = tmp36.Read(_io__raw_Flags, this, this._root)
+	tmp35 := NewDlg_TransitionEntry_Flags()
+	err = tmp35.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp36
+	this.Flags = tmp35
+	tmp36, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.TextRef = uint32(tmp36)
 	tmp37, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.TextRef = uint32(tmp37)
+	this.JournalTextRef = uint32(tmp37)
 	tmp38, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.JournalTextRef = uint32(tmp38)
+	this.TransitionTriggerIndex = uint32(tmp38)
 	tmp39, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.TransitionTriggerIndex = uint32(tmp39)
-	tmp40, err := this._io.ReadU4le()
+	this.TransitionActionIndex = uint32(tmp39)
+	tmp40, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.TransitionActionIndex = uint32(tmp40)
-	tmp41, err := this._io.ReadBytes(int(8))
+	tmp40 = tmp40
+	this.NextStateResource = string(tmp40)
+	tmp41, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp41 = tmp41
-	this.NextStateResource = string(tmp41)
-	tmp42, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NextStateIndex = uint32(tmp42)
+	this.NextStateIndex = uint32(tmp41)
 	return err
 }
 func (this *Dlg_TransitionEntry) Trigger() (v *Dlg_TextEntry, err error) {
@@ -672,16 +648,16 @@ func (this *Dlg_TransitionEntry) Trigger() (v *Dlg_TextEntry, err error) {
 		if err != nil {
 			return nil, err
 		}
-		_, err = this._io.Seek(int64((this._root.Header.TransitionTriggerTableOffset + (this.TransitionTriggerIndex * 8))), io.SeekStart)
+		_, err = this._io.Seek(int64((this._root.OfsTransitionTriggers + (this.TransitionTriggerIndex * 8))), io.SeekStart)
 		if err != nil {
 			return nil, err
 		}
-		tmp43 := NewDlg_TextEntry()
-		err = tmp43.Read(this._io, this, this._root)
+		tmp42 := NewDlg_TextEntry()
+		err = tmp42.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.trigger = tmp43
+		this.trigger = tmp42
 		_, err = this._io.Seek(_pos, io.SeekStart)
 		if err != nil {
 			return nil, err
@@ -700,16 +676,16 @@ func (this *Dlg_TransitionEntry) Action() (v *Dlg_TextEntry, err error) {
 		if err != nil {
 			return nil, err
 		}
-		_, err = this._io.Seek(int64((this._root.Header.ActionTableOffset + (this.TransitionActionIndex * 8))), io.SeekStart)
+		_, err = this._io.Seek(int64((this._root.OfsActions + (this.TransitionActionIndex * 8))), io.SeekStart)
 		if err != nil {
 			return nil, err
 		}
-		tmp44 := NewDlg_TextEntry()
-		err = tmp44.Read(this._io, this, this._root)
+		tmp43 := NewDlg_TextEntry()
+		err = tmp43.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.action = tmp44
+		this.action = tmp43
 		_, err = this._io.Seek(_pos, io.SeekStart)
 		if err != nil {
 			return nil, err
@@ -745,66 +721,66 @@ func (this *Dlg_TransitionEntry_Flags) Read(io *kaitai.Stream, parent *Dlg_Trans
 	this._parent = parent
 	this._root = root
 
+	tmp44, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.WithText = tmp44 != 0
 	tmp45, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.WithText = tmp45 != 0
+	this.WithTrigger = tmp45 != 0
 	tmp46, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.WithTrigger = tmp46 != 0
+	this.WithAction = tmp46 != 0
 	tmp47, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.WithAction = tmp47 != 0
+	this.DialogEnd = tmp47 != 0
 	tmp48, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DialogEnd = tmp48 != 0
+	this.HasJournalEntry = tmp48 != 0
 	tmp49, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.HasJournalEntry = tmp49 != 0
+	this.Interrupt = tmp49 != 0
 	tmp50, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Interrupt = tmp50 != 0
+	this.AddUnsolvedQuest = tmp50 != 0
 	tmp51, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AddUnsolvedQuest = tmp51 != 0
+	this.AddJournalNote = tmp51 != 0
 	tmp52, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AddJournalNote = tmp52 != 0
+	this.AddSolvedQuest = tmp52 != 0
 	tmp53, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AddSolvedQuest = tmp53 != 0
+	this.ImmediateAction = tmp53 != 0
 	tmp54, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ImmediateAction = tmp54 != 0
-	tmp55, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.ClearActions = tmp55 != 0
+	this.ClearActions = tmp54 != 0
 	return err
 }
 type Dlg_TextEntry struct {
-	StringOffset uint32
-	StringLength uint32
+	OfsText uint32
+	LenText uint32
 	_io *kaitai.Stream
 	_root *Dlg
 	_parent interface{}
@@ -821,16 +797,16 @@ func (this *Dlg_TextEntry) Read(io *kaitai.Stream, parent interface{}, root *Dlg
 	this._parent = parent
 	this._root = root
 
+	tmp55, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.OfsText = uint32(tmp55)
 	tmp56, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.StringOffset = uint32(tmp56)
-	tmp57, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.StringLength = uint32(tmp57)
+	this.LenText = uint32(tmp56)
 	return err
 }
 func (this *Dlg_TextEntry) Text() (v string, err error) {
@@ -842,16 +818,16 @@ func (this *Dlg_TextEntry) Text() (v string, err error) {
 	if err != nil {
 		return "", err
 	}
-	_, err = thisIo.Seek(int64(this.StringOffset), io.SeekStart)
+	_, err = thisIo.Seek(int64(this.OfsText), io.SeekStart)
 	if err != nil {
 		return "", err
 	}
-	tmp58, err := thisIo.ReadBytes(int(this.StringLength))
+	tmp57, err := thisIo.ReadBytes(int(this.LenText))
 	if err != nil {
 		return "", err
 	}
-	tmp58 = tmp58
-	this.text = string(tmp58)
+	tmp57 = tmp57
+	this.text = string(tmp57)
 	_, err = thisIo.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return "", err

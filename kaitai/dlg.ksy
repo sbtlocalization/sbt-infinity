@@ -44,63 +44,58 @@ doc-ref: |
   https://gibberlings3.github.io/iesdp/file_formats/ie_formats/dlg_v1.htm
 
 seq:
-  - id: header
-    type: header
+  - id: magic
+    contents: "DLG "
+  - id: version
+    contents: "V1.0"
+  - id: num_states
+    type: u4
+  - id: ofs_states
+    type: u4
+  - id: num_transitions
+    type: u4
+  - id: ofs_transitions
+    type: u4
+  - id: ofs_state_triggers
+    type: u4
+  - id: num_state_triggers
+    type: u4
+  - id: ofs_transition_triggers
+    type: u4
+  - id: num_transition_triggers
+    type: u4
+  - id: ofs_actions
+    type: u4
+  - id: num_actions
+    type: u4
+  - id: threat_flags
+    size: 4
+    type: header_flags
 instances:
   state_table:
-    pos: _root.header.state_table_offset
+    pos: _root.ofs_states
     type: state_table
   transition_table:
-    pos: _root.header.transition_table_offset
+    pos: _root.ofs_transitions
     type: transition_table
   state_trigger_table:
-    pos: _root.header.state_trigger_table_offset
+    pos: _root.ofs_state_triggers
     type: state_trigger_table
   transition_trigger_table:
-    pos: _root.header.transition_trigger_table_offset
+    pos: _root.ofs_transition_triggers
     type: transition_trigger_table
   action_table:
-    pos: _root.header.action_table_offset
+    pos: _root.ofs_actions
     type: action_table
 types:
-  header:
+  header_flags:
     seq:
-      - id: magic
-        contents: "DLG "
-      - id: version
-        contents: "V1.0"
-      - id: state_count
-        type: u4
-      - id: state_table_offset
-        type: u4
-      - id: transition_count
-        type: u4
-      - id: transition_table_offset
-        type: u4
-      - id: state_trigger_table_offset
-        type: u4
-      - id: state_trigger_count
-        type: u4
-      - id: transition_trigger_table_offset
-        type: u4
-      - id: transition_trigger_count
-        type: u4
-      - id: action_table_offset
-        type: u4
-      - id: action_count
-        type: u4
-      - id: threat_flags
-        size: 4
-        type: flags
-    types:
-      flags:
-        seq:
-          - id: turn_hostile
-            type: b1
-          - id: escape_area
-            type: b1
-          - id: do_nothing
-            type: b1
+      - id: turn_hostile
+        type: b1
+      - id: escape_area
+        type: b1
+      - id: do_nothing
+        type: b1
   state_entry:
     seq:
       - id: text_ref
@@ -113,12 +108,12 @@ types:
         type: u4
     instances:
       transitions:
-        pos: _root.header.transition_table_offset + first_transition_index * 32
+        pos: _root.ofs_transitions + first_transition_index * 32  # sizeof(transition_entry)
         type: transition_entry
         repeat: expr
         repeat-expr: num_transitions
       trigger:
-        pos: _root.header.state_trigger_table_offset + state_trigger_index * 8
+        pos: _root.ofs_state_triggers + state_trigger_index * 8  # sizeof(text_entry)
         type: text_entry
         if: state_trigger_index != 0xFFFFFFFF
   state_table:
@@ -126,7 +121,7 @@ types:
       - id: entries
         type: state_entry
         repeat: expr
-        repeat-expr: _root.header.state_count
+        repeat-expr: _root.num_states
   transition_entry:
     seq:
       - id: flags
@@ -148,11 +143,11 @@ types:
         type: u4
     instances:
       trigger:
-        pos: _root.header.transition_trigger_table_offset + transition_trigger_index * 8
+        pos: _root.ofs_transition_triggers + transition_trigger_index * 8  # sizeof(text_entry)
         type: text_entry
         if: flags.with_trigger
       action:
-        pos: _root.header.action_table_offset + transition_action_index * 8
+        pos: _root.ofs_actions + transition_action_index * 8  # sizeof(text_entry)
         type: text_entry
         if: flags.with_action
     types:
@@ -185,17 +180,17 @@ types:
       - id: entries
         type: transition_entry
         repeat: expr
-        repeat-expr: _root.header.transition_count
+        repeat-expr: _root.num_transitions
   text_entry:
     seq:
-      - id: string_offset
+      - id: ofs_text
         type: u4
-      - id: string_length
+      - id: len_text
         type: u4
     instances:
       text:
-        pos: string_offset
-        size: string_length
+        pos: ofs_text
+        size: len_text
         type: str
         encoding: ASCII
         io: _root._io
@@ -204,16 +199,16 @@ types:
       - id: entries
         type: text_entry
         repeat: expr
-        repeat-expr: _root.header.state_trigger_count
+        repeat-expr: _root.num_state_triggers
   transition_trigger_table:
     seq:
       - id: entries
         type: text_entry
         repeat: expr
-        repeat-expr: _root.header.transition_trigger_count
+        repeat-expr: _root.num_transition_triggers
   action_table:
     seq:
       - id: entries
         type: text_entry
         repeat: expr
-        repeat-expr: _root.header.action_count
+        repeat-expr: _root.num_actions
