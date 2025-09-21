@@ -72,21 +72,31 @@ seq:
     size: 4
     type: header_flags
 instances:
-  state_table:
-    pos: _root.ofs_states
-    type: state_table
-  transition_table:
-    pos: _root.ofs_transitions
-    type: transition_table
-  state_trigger_table:
-    pos: _root.ofs_state_triggers
-    type: state_trigger_table
-  transition_trigger_table:
-    pos: _root.ofs_transition_triggers
-    type: transition_trigger_table
-  action_table:
-    pos: _root.ofs_actions
-    type: action_table
+  states:
+    pos: ofs_states
+    type: state_entry
+    repeat: expr
+    repeat-expr: num_states
+  transitions:
+    pos: ofs_transitions
+    type: transition_entry
+    repeat: expr
+    repeat-expr: num_transitions
+  state_triggers:
+    pos: ofs_state_triggers
+    type: text_entry
+    repeat: expr
+    repeat-expr: num_state_triggers
+  transition_triggers:
+    pos: ofs_transition_triggers
+    type: text_entry
+    repeat: expr
+    repeat-expr: num_transition_triggers
+  actions:
+    pos: ofs_actions
+    type: text_entry
+    repeat: expr
+    repeat-expr: num_actions
 types:
   header_flags:
     seq:
@@ -116,12 +126,6 @@ types:
         pos: _root.ofs_state_triggers + state_trigger_index * 8  # sizeof(text_entry)
         type: text_entry
         if: state_trigger_index != 0xFFFFFFFF
-  state_table:
-    seq:
-      - id: entries
-        type: state_entry
-        repeat: expr
-        repeat-expr: _root.num_states
   transition_entry:
     seq:
       - id: flags
@@ -136,7 +140,7 @@ types:
       - id: transition_action_index
         type: u4
       - id: next_state_resource
-        type: str
+        type: strz
         size: 8
         encoding: ASCII
       - id: next_state_index
@@ -161,7 +165,7 @@ types:
             type: b1
           - id: dialog_end
             type: b1
-          - id: has_journal_entry
+          - id: with_journal_entry
             type: b1
           - id: interrupt
             type: b1
@@ -175,12 +179,6 @@ types:
             type: b1
           - id: clear_actions
             type: b1
-  transition_table:
-    seq:
-      - id: entries
-        type: transition_entry
-        repeat: expr
-        repeat-expr: _root.num_transitions
   text_entry:
     seq:
       - id: ofs_text
@@ -194,21 +192,3 @@ types:
         type: str
         encoding: ASCII
         io: _root._io
-  state_trigger_table:
-    seq:
-      - id: entries
-        type: text_entry
-        repeat: expr
-        repeat-expr: _root.num_state_triggers
-  transition_trigger_table:
-    seq:
-      - id: entries
-        type: text_entry
-        repeat: expr
-        repeat-expr: _root.num_transition_triggers
-  action_table:
-    seq:
-      - id: entries
-        type: text_entry
-        repeat: expr
-        repeat-expr: _root.num_actions
