@@ -7,7 +7,7 @@ meta:
   id: eff
   title: EFF v2.0
   file-extension: eff
-  ks-version: "0.10"
+  ks-version: "0.11"
   endian: le
   bit-endian: le
 doc-ref: |
@@ -18,9 +18,9 @@ seq:
   - id: version
     contents: "V2.0"
   - id: body
-    type: body(false)
+    type: body_v2(false)
 types:
-  body:
+  body_v2:
     params:
       - id: embedded
         type: bool

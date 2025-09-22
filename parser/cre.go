@@ -92,7 +92,7 @@ type Cre_BodyV1 struct {
 	_root *Cre
 	_parent *Cre
 	_f_effects bool
-	effects []*Eff_Body
+	effects []*Eff_BodyV2
 	_f_itemSlots bool
 	itemSlots *Cre_BodyV1_ItemSlot
 	_f_items bool
@@ -126,7 +126,7 @@ func (this *Cre_BodyV1) Read(io *kaitai.Stream, parent *Cre, root *Cre) (err err
 	this.Header = tmp6
 	return err
 }
-func (this *Cre_BodyV1) Effects() (v []*Eff_Body, err error) {
+func (this *Cre_BodyV1) Effects() (v []*Eff_BodyV2, err error) {
 	if (this._f_effects) {
 		return this.effects, nil
 	}
@@ -141,12 +141,15 @@ func (this *Cre_BodyV1) Effects() (v []*Eff_Body, err error) {
 	}
 	for i := 0; i < int(this.Header.NumEffects); i++ {
 		_ = i
-		tmp7 := NewEff_Body(true)
-		err = tmp7.Read(this._io, nil, nil)
-		if err != nil {
-			return nil, err
+		switch (this.Header.EffVersion) {
+		case Cre_BodyV1_Header_EffVersion__Version2:
+			tmp7 := NewEff_BodyV2(true)
+			err = tmp7.Read(this._io, nil, nil)
+			if err != nil {
+				return nil, err
+			}
+			this.effects = append(this.effects, tmp7)
 		}
-		this.effects = append(this.effects, tmp7)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {

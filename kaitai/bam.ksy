@@ -7,12 +7,12 @@ meta:
   id: bam
   title: BAM v2
   file-extension: bam
-  ks-version: "0.10"
+  ks-version: "0.11"
   endian: le
 doc: |
   The BAM v2 file format is used to store animation data for the Infinity Engine games.
-  Such files are used for animations (both creature animations, item and spell animations) 
-  and interactive GUI elements (e.g. buttons) and for logical collections of images (e.g. fonts). 
+  Such files are used for animations (both creature animations, item and spell animations)
+  and interactive GUI elements (e.g. buttons) and for logical collections of images (e.g. fonts).
   BAM files can contain multiple sequences of animations, up to a limit of 255.
 
   The BAM v2 format is used in games like Baldur's Gate, Icewind Dale, and Planescape: Torment.

@@ -7,7 +7,7 @@ meta:
   id: cre
   title: CRE
   file-extension: cre
-  ks-version: "0.10"
+  ks-version: "0.11"
   endian: le
   bit-endian: le
   imports:
@@ -63,7 +63,10 @@ types:
           This section details which spells the character has memorized. It consists of an array of entries formatted as follows.
       effects:
         pos: header.ofs_effects
-        type: eff::body(true)
+        type:
+          switch-on: header.eff_version
+          cases:
+            header::eff_version::version2: eff::body_v2(true)
         repeat: expr
         repeat-expr: header.num_effects
       items:
