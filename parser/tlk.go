@@ -27,14 +27,18 @@ type Tlk struct {
 	Entries []*Tlk_StringEntry
 	_io *kaitai.Stream
 	_root *Tlk
-	_parent interface{}
+	_parent kaitai.Struct
 }
 func NewTlk() *Tlk {
 	return &Tlk{
 	}
 }
 
-func (this *Tlk) Read(io *kaitai.Stream, parent interface{}, root *Tlk) (err error) {
+func (this Tlk) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Tlk) Read(io *kaitai.Stream, parent kaitai.Struct, root *Tlk) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
@@ -102,6 +106,10 @@ func NewTlk_StringEntry() *Tlk_StringEntry {
 	}
 }
 
+func (this Tlk_StringEntry) IO_() *kaitai.Stream {
+	return this._io
+}
+
 func (this *Tlk_StringEntry) Read(io *kaitai.Stream, parent *Tlk, root *Tlk) (err error) {
 	this._io = io
 	this._parent = parent
@@ -152,11 +160,12 @@ func (this *Tlk_StringEntry) Text() (v string, err error) {
 	if (this._f_text) {
 		return this.text, nil
 	}
+	this._f_text = true
 	_pos, err := this._io.Pos()
 	if err != nil {
 		return "", err
 	}
-	_, err = this._io.Seek(int64((this._root.OfsData + this.OfsString)), io.SeekStart)
+	_, err = this._io.Seek(int64(this._root.OfsData + this.OfsString), io.SeekStart)
 	if err != nil {
 		return "", err
 	}
@@ -170,8 +179,6 @@ func (this *Tlk_StringEntry) Text() (v string, err error) {
 	if err != nil {
 		return "", err
 	}
-	this._f_text = true
-	this._f_text = true
 	return this.text, nil
 }
 type Tlk_StringEntry_Flags struct {
@@ -187,6 +194,10 @@ type Tlk_StringEntry_Flags struct {
 func NewTlk_StringEntry_Flags() *Tlk_StringEntry_Flags {
 	return &Tlk_StringEntry_Flags{
 	}
+}
+
+func (this Tlk_StringEntry_Flags) IO_() *kaitai.Stream {
+	return this._io
 }
 
 func (this *Tlk_StringEntry_Flags) Read(io *kaitai.Stream, parent *Tlk_StringEntry, root *Tlk) (err error) {

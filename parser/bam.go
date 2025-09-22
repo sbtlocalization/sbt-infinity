@@ -23,20 +23,24 @@ type Bam struct {
 	Header *Bam_Header
 	_io *kaitai.Stream
 	_root *Bam
-	_parent interface{}
-	_f_frameEntries bool
-	frameEntries *Bam_FrameEntries
+	_parent kaitai.Struct
 	_f_cycleEntries bool
 	cycleEntries *Bam_CycleEntries
 	_f_dataBlocks bool
 	dataBlocks *Bam_DataBlocks
+	_f_frameEntries bool
+	frameEntries *Bam_FrameEntries
 }
 func NewBam() *Bam {
 	return &Bam{
 	}
 }
 
-func (this *Bam) Read(io *kaitai.Stream, parent interface{}, root *Bam) (err error) {
+func (this Bam) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Bam) Read(io *kaitai.Stream, parent kaitai.Struct, root *Bam) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
@@ -49,36 +53,11 @@ func (this *Bam) Read(io *kaitai.Stream, parent interface{}, root *Bam) (err err
 	this.Header = tmp1
 	return err
 }
-func (this *Bam) FrameEntries() (v *Bam_FrameEntries, err error) {
-	if (this._f_frameEntries) {
-		return this.frameEntries, nil
-	}
-	_pos, err := this._io.Pos()
-	if err != nil {
-		return nil, err
-	}
-	_, err = this._io.Seek(int64(this._root.Header.FrameEntriesOffset), io.SeekStart)
-	if err != nil {
-		return nil, err
-	}
-	tmp2 := NewBam_FrameEntries()
-	err = tmp2.Read(this._io, this, this._root)
-	if err != nil {
-		return nil, err
-	}
-	this.frameEntries = tmp2
-	_, err = this._io.Seek(_pos, io.SeekStart)
-	if err != nil {
-		return nil, err
-	}
-	this._f_frameEntries = true
-	this._f_frameEntries = true
-	return this.frameEntries, nil
-}
 func (this *Bam) CycleEntries() (v *Bam_CycleEntries, err error) {
 	if (this._f_cycleEntries) {
 		return this.cycleEntries, nil
 	}
+	this._f_cycleEntries = true
 	_pos, err := this._io.Pos()
 	if err != nil {
 		return nil, err
@@ -87,24 +66,23 @@ func (this *Bam) CycleEntries() (v *Bam_CycleEntries, err error) {
 	if err != nil {
 		return nil, err
 	}
-	tmp3 := NewBam_CycleEntries()
-	err = tmp3.Read(this._io, this, this._root)
+	tmp2 := NewBam_CycleEntries()
+	err = tmp2.Read(this._io, this, this._root)
 	if err != nil {
 		return nil, err
 	}
-	this.cycleEntries = tmp3
+	this.cycleEntries = tmp2
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	this._f_cycleEntries = true
-	this._f_cycleEntries = true
 	return this.cycleEntries, nil
 }
 func (this *Bam) DataBlocks() (v *Bam_DataBlocks, err error) {
 	if (this._f_dataBlocks) {
 		return this.dataBlocks, nil
 	}
+	this._f_dataBlocks = true
 	_pos, err := this._io.Pos()
 	if err != nil {
 		return nil, err
@@ -113,64 +91,91 @@ func (this *Bam) DataBlocks() (v *Bam_DataBlocks, err error) {
 	if err != nil {
 		return nil, err
 	}
-	tmp4 := NewBam_DataBlocks()
-	err = tmp4.Read(this._io, this, this._root)
+	tmp3 := NewBam_DataBlocks()
+	err = tmp3.Read(this._io, this, this._root)
 	if err != nil {
 		return nil, err
 	}
-	this.dataBlocks = tmp4
+	this.dataBlocks = tmp3
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	this._f_dataBlocks = true
-	this._f_dataBlocks = true
 	return this.dataBlocks, nil
 }
-type Bam_DataBlocks struct {
-	Block []*Bam_DataBlock
+func (this *Bam) FrameEntries() (v *Bam_FrameEntries, err error) {
+	if (this._f_frameEntries) {
+		return this.frameEntries, nil
+	}
+	this._f_frameEntries = true
+	_pos, err := this._io.Pos()
+	if err != nil {
+		return nil, err
+	}
+	_, err = this._io.Seek(int64(this._root.Header.FrameEntriesOffset), io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	tmp4 := NewBam_FrameEntries()
+	err = tmp4.Read(this._io, this, this._root)
+	if err != nil {
+		return nil, err
+	}
+	this.frameEntries = tmp4
+	_, err = this._io.Seek(_pos, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	return this.frameEntries, nil
+}
+type Bam_CycleEntries struct {
+	Entry []*Bam_CycleEntry
 	_io *kaitai.Stream
 	_root *Bam
 	_parent *Bam
 }
-func NewBam_DataBlocks() *Bam_DataBlocks {
-	return &Bam_DataBlocks{
+func NewBam_CycleEntries() *Bam_CycleEntries {
+	return &Bam_CycleEntries{
 	}
 }
 
-func (this *Bam_DataBlocks) Read(io *kaitai.Stream, parent *Bam, root *Bam) (err error) {
+func (this Bam_CycleEntries) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Bam_CycleEntries) Read(io *kaitai.Stream, parent *Bam, root *Bam) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
 
-	for i := 0; i < int(this._root.Header.DataBlocksCount); i++ {
+	for i := 0; i < int(this._root.Header.CycleCount); i++ {
 		_ = i
-		tmp5 := NewBam_DataBlock()
+		tmp5 := NewBam_CycleEntry()
 		err = tmp5.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
-		this.Block = append(this.Block, tmp5)
+		this.Entry = append(this.Entry, tmp5)
 	}
 	return err
 }
-type Bam_FrameEntry struct {
-	Width uint16
-	Height uint16
-	CenterX int16
-	CenterY int16
-	DataBlocksStartIndex uint16
-	DataBlocksCount uint16
+type Bam_CycleEntry struct {
+	FrameCount uint16
+	FrameEntriesStartIndex uint16
 	_io *kaitai.Stream
 	_root *Bam
-	_parent *Bam_FrameEntries
+	_parent *Bam_CycleEntries
 }
-func NewBam_FrameEntry() *Bam_FrameEntry {
-	return &Bam_FrameEntry{
+func NewBam_CycleEntry() *Bam_CycleEntry {
+	return &Bam_CycleEntry{
 	}
 }
 
-func (this *Bam_FrameEntry) Read(io *kaitai.Stream, parent *Bam_FrameEntries, root *Bam) (err error) {
+func (this Bam_CycleEntry) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Bam_CycleEntry) Read(io *kaitai.Stream, parent *Bam_CycleEntries, root *Bam) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
@@ -179,32 +184,12 @@ func (this *Bam_FrameEntry) Read(io *kaitai.Stream, parent *Bam_FrameEntries, ro
 	if err != nil {
 		return err
 	}
-	this.Width = uint16(tmp6)
+	this.FrameCount = uint16(tmp6)
 	tmp7, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Height = uint16(tmp7)
-	tmp8, err := this._io.ReadS2le()
-	if err != nil {
-		return err
-	}
-	this.CenterX = int16(tmp8)
-	tmp9, err := this._io.ReadS2le()
-	if err != nil {
-		return err
-	}
-	this.CenterY = int16(tmp9)
-	tmp10, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.DataBlocksStartIndex = uint16(tmp10)
-	tmp11, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.DataBlocksCount = uint16(tmp11)
+	this.FrameEntriesStartIndex = uint16(tmp7)
 	return err
 }
 type Bam_DataBlock struct {
@@ -224,73 +209,169 @@ func NewBam_DataBlock() *Bam_DataBlock {
 	}
 }
 
+func (this Bam_DataBlock) IO_() *kaitai.Stream {
+	return this._io
+}
+
 func (this *Bam_DataBlock) Read(io *kaitai.Stream, parent *Bam_DataBlocks, root *Bam) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
 
+	tmp8, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.PrvzPage = uint32(tmp8)
+	tmp9, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.SourceX = uint32(tmp9)
+	tmp10, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.SourceY = uint32(tmp10)
+	tmp11, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.Width = uint32(tmp11)
 	tmp12, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.PrvzPage = uint32(tmp12)
+	this.Height = uint32(tmp12)
 	tmp13, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.SourceX = uint32(tmp13)
+	this.TargetX = uint32(tmp13)
 	tmp14, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.SourceY = uint32(tmp14)
-	tmp15, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.Width = uint32(tmp15)
-	tmp16, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.Height = uint32(tmp16)
-	tmp17, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.TargetX = uint32(tmp17)
-	tmp18, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.TargetY = uint32(tmp18)
+	this.TargetY = uint32(tmp14)
 	return err
 }
-type Bam_CycleEntries struct {
-	Entry []*Bam_CycleEntry
+type Bam_DataBlocks struct {
+	Block []*Bam_DataBlock
 	_io *kaitai.Stream
 	_root *Bam
 	_parent *Bam
 }
-func NewBam_CycleEntries() *Bam_CycleEntries {
-	return &Bam_CycleEntries{
+func NewBam_DataBlocks() *Bam_DataBlocks {
+	return &Bam_DataBlocks{
 	}
 }
 
-func (this *Bam_CycleEntries) Read(io *kaitai.Stream, parent *Bam, root *Bam) (err error) {
+func (this Bam_DataBlocks) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Bam_DataBlocks) Read(io *kaitai.Stream, parent *Bam, root *Bam) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
 
-	for i := 0; i < int(this._root.Header.CycleCount); i++ {
+	for i := 0; i < int(this._root.Header.DataBlocksCount); i++ {
 		_ = i
-		tmp19 := NewBam_CycleEntry()
-		err = tmp19.Read(this._io, this, this._root)
+		tmp15 := NewBam_DataBlock()
+		err = tmp15.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
-		this.Entry = append(this.Entry, tmp19)
+		this.Block = append(this.Block, tmp15)
 	}
+	return err
+}
+type Bam_FrameEntries struct {
+	Entry []*Bam_FrameEntry
+	_io *kaitai.Stream
+	_root *Bam
+	_parent *Bam
+}
+func NewBam_FrameEntries() *Bam_FrameEntries {
+	return &Bam_FrameEntries{
+	}
+}
+
+func (this Bam_FrameEntries) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Bam_FrameEntries) Read(io *kaitai.Stream, parent *Bam, root *Bam) (err error) {
+	this._io = io
+	this._parent = parent
+	this._root = root
+
+	for i := 0; i < int(this._root.Header.FrameCount); i++ {
+		_ = i
+		tmp16 := NewBam_FrameEntry()
+		err = tmp16.Read(this._io, this, this._root)
+		if err != nil {
+			return err
+		}
+		this.Entry = append(this.Entry, tmp16)
+	}
+	return err
+}
+type Bam_FrameEntry struct {
+	Width uint16
+	Height uint16
+	CenterX int16
+	CenterY int16
+	DataBlocksStartIndex uint16
+	DataBlocksCount uint16
+	_io *kaitai.Stream
+	_root *Bam
+	_parent *Bam_FrameEntries
+}
+func NewBam_FrameEntry() *Bam_FrameEntry {
+	return &Bam_FrameEntry{
+	}
+}
+
+func (this Bam_FrameEntry) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Bam_FrameEntry) Read(io *kaitai.Stream, parent *Bam_FrameEntries, root *Bam) (err error) {
+	this._io = io
+	this._parent = parent
+	this._root = root
+
+	tmp17, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.Width = uint16(tmp17)
+	tmp18, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.Height = uint16(tmp18)
+	tmp19, err := this._io.ReadS2le()
+	if err != nil {
+		return err
+	}
+	this.CenterX = int16(tmp19)
+	tmp20, err := this._io.ReadS2le()
+	if err != nil {
+		return err
+	}
+	this.CenterY = int16(tmp20)
+	tmp21, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.DataBlocksStartIndex = uint16(tmp21)
+	tmp22, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.DataBlocksCount = uint16(tmp22)
 	return err
 }
 type Bam_Header struct {
@@ -311,114 +392,62 @@ func NewBam_Header() *Bam_Header {
 	}
 }
 
+func (this Bam_Header) IO_() *kaitai.Stream {
+	return this._io
+}
+
 func (this *Bam_Header) Read(io *kaitai.Stream, parent *Bam, root *Bam) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
 
-	tmp20, err := this._io.ReadBytes(int(4))
+	tmp23, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	tmp20 = tmp20
-	this.Magic = tmp20
+	tmp23 = tmp23
+	this.Magic = tmp23
 	if !(bytes.Equal(this.Magic, []uint8{66, 65, 77, 32})) {
 		return kaitai.NewValidationNotEqualError([]uint8{66, 65, 77, 32}, this.Magic, this._io, "/types/header/seq/0")
 	}
-	tmp21, err := this._io.ReadBytes(int(4))
+	tmp24, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	tmp21 = tmp21
-	this.Version = tmp21
+	tmp24 = tmp24
+	this.Version = tmp24
 	if !(bytes.Equal(this.Version, []uint8{86, 50, 32, 32})) {
 		return kaitai.NewValidationNotEqualError([]uint8{86, 50, 32, 32}, this.Version, this._io, "/types/header/seq/1")
 	}
-	tmp22, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.FrameCount = uint32(tmp22)
-	tmp23, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CycleCount = uint32(tmp23)
-	tmp24, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.DataBlocksCount = uint32(tmp24)
 	tmp25, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.FrameEntriesOffset = uint32(tmp25)
+	this.FrameCount = uint32(tmp25)
 	tmp26, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.CycleEntriesOffset = uint32(tmp26)
+	this.CycleCount = uint32(tmp26)
 	tmp27, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.DataBlocksOffset = uint32(tmp27)
-	return err
-}
-type Bam_CycleEntry struct {
-	FrameCount uint16
-	FrameEntriesStartIndex uint16
-	_io *kaitai.Stream
-	_root *Bam
-	_parent *Bam_CycleEntries
-}
-func NewBam_CycleEntry() *Bam_CycleEntry {
-	return &Bam_CycleEntry{
-	}
-}
-
-func (this *Bam_CycleEntry) Read(io *kaitai.Stream, parent *Bam_CycleEntries, root *Bam) (err error) {
-	this._io = io
-	this._parent = parent
-	this._root = root
-
-	tmp28, err := this._io.ReadU2le()
+	this.DataBlocksCount = uint32(tmp27)
+	tmp28, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.FrameCount = uint16(tmp28)
-	tmp29, err := this._io.ReadU2le()
+	this.FrameEntriesOffset = uint32(tmp28)
+	tmp29, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.FrameEntriesStartIndex = uint16(tmp29)
-	return err
-}
-type Bam_FrameEntries struct {
-	Entry []*Bam_FrameEntry
-	_io *kaitai.Stream
-	_root *Bam
-	_parent *Bam
-}
-func NewBam_FrameEntries() *Bam_FrameEntries {
-	return &Bam_FrameEntries{
+	this.CycleEntriesOffset = uint32(tmp29)
+	tmp30, err := this._io.ReadU4le()
+	if err != nil {
+		return err
 	}
-}
-
-func (this *Bam_FrameEntries) Read(io *kaitai.Stream, parent *Bam, root *Bam) (err error) {
-	this._io = io
-	this._parent = parent
-	this._root = root
-
-	for i := 0; i < int(this._root.Header.FrameCount); i++ {
-		_ = i
-		tmp30 := NewBam_FrameEntry()
-		err = tmp30.Read(this._io, this, this._root)
-		if err != nil {
-			return err
-		}
-		this.Entry = append(this.Entry, tmp30)
-	}
+	this.DataBlocksOffset = uint32(tmp30)
 	return err
 }
