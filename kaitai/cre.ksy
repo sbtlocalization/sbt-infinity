@@ -7,7 +7,7 @@ meta:
   id: cre
   title: CRE
   file-extension: cre
-  ks-version: "0.10"
+  ks-version: "0.11"
   endian: le
   bit-endian: le
   imports:

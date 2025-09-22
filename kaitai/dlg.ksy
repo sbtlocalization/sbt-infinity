@@ -7,7 +7,7 @@ meta:
   id: dlg
   title: DLG v1
   file-extension: dlg
-  ks-version: "0.10"
+  ks-version: "0.11"
   endian: le
   bit-endian: le
 doc: |

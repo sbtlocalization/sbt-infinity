@@ -7,7 +7,7 @@ meta:
   id: eff
   title: EFF v2.0
   file-extension: eff
-  ks-version: "0.10"
+  ks-version: "0.11"
   endian: le
   bit-endian: le
 doc-ref: |

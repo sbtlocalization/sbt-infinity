@@ -18,14 +18,18 @@ type Eff struct {
 	Body *Eff_BodyV2
 	_io *kaitai.Stream
 	_root *Eff
-	_parent interface{}
+	_parent kaitai.Struct
 }
 func NewEff() *Eff {
 	return &Eff{
 	}
 }
 
-func (this *Eff) Read(io *kaitai.Stream, parent interface{}, root *Eff) (err error) {
+func (this Eff) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Eff) Read(io *kaitai.Stream, parent kaitai.Struct, root *Eff) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
@@ -57,6 +61,18 @@ func (this *Eff) Read(io *kaitai.Stream, parent interface{}, root *Eff) (err err
 	return err
 }
 
+type Eff_BodyV2_ParentResourceType int
+const (
+	Eff_BodyV2_ParentResourceType__None Eff_BodyV2_ParentResourceType = 0
+	Eff_BodyV2_ParentResourceType__Spell Eff_BodyV2_ParentResourceType = 1
+	Eff_BodyV2_ParentResourceType__Item Eff_BodyV2_ParentResourceType = 2
+)
+var values_Eff_BodyV2_ParentResourceType = map[Eff_BodyV2_ParentResourceType]struct{}{0: {}, 1: {}, 2: {}}
+func (v Eff_BodyV2_ParentResourceType) isDefined() bool {
+	_, ok := values_Eff_BodyV2_ParentResourceType[v]
+	return ok
+}
+
 type Eff_BodyV2_TargetType int
 const (
 	Eff_BodyV2_TargetType__None Eff_BodyV2_TargetType = 0
@@ -70,6 +86,11 @@ const (
 	Eff_BodyV2_TargetType__EveryoneButSelf Eff_BodyV2_TargetType = 8
 	Eff_BodyV2_TargetType__OriginalCaster Eff_BodyV2_TargetType = 9
 )
+var values_Eff_BodyV2_TargetType = map[Eff_BodyV2_TargetType]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}, 9: {}}
+func (v Eff_BodyV2_TargetType) isDefined() bool {
+	_, ok := values_Eff_BodyV2_TargetType[v]
+	return ok
+}
 
 type Eff_BodyV2_TimingMode int
 const (
@@ -86,13 +107,11 @@ const (
 	Eff_BodyV2_TimingMode__InstantLimitedTicks Eff_BodyV2_TimingMode = 10
 	Eff_BodyV2_TimingMode__AbsoluteDuration Eff_BodyV2_TimingMode = 4096
 )
-
-type Eff_BodyV2_ParentResourceType int
-const (
-	Eff_BodyV2_ParentResourceType__None Eff_BodyV2_ParentResourceType = 0
-	Eff_BodyV2_ParentResourceType__Spell Eff_BodyV2_ParentResourceType = 1
-	Eff_BodyV2_ParentResourceType__Item Eff_BodyV2_ParentResourceType = 2
-)
+var values_Eff_BodyV2_TimingMode = map[Eff_BodyV2_TimingMode]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}, 9: {}, 10: {}, 4096: {}}
+func (v Eff_BodyV2_TimingMode) isDefined() bool {
+	_, ok := values_Eff_BodyV2_TimingMode[v]
+	return ok
+}
 type Eff_BodyV2 struct {
 	Magic []byte
 	Version []byte
@@ -149,6 +168,10 @@ func NewEff_BodyV2(embedded bool) *Eff_BodyV2 {
 	return &Eff_BodyV2{
 		Embedded: embedded,
 	}
+}
+
+func (this Eff_BodyV2) IO_() *kaitai.Stream {
+	return this._io
 }
 
 func (this *Eff_BodyV2) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error) {
@@ -421,7 +444,7 @@ func (this *Eff_BodyV2) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err err
 		return err
 	}
 	this.SecondaryType = uint32(tmp48)
-	tmp49, err := this._io.ReadBytes(int((4 * 15)))
+	tmp49, err := this._io.ReadBytes(int(4 * 15))
 	if err != nil {
 		return err
 	}
@@ -453,6 +476,10 @@ func NewEff_BodyV2_Coord() *Eff_BodyV2_Coord {
 	}
 }
 
+func (this Eff_BodyV2_Coord) IO_() *kaitai.Stream {
+	return this._io
+}
+
 func (this *Eff_BodyV2_Coord) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
 	this._io = io
 	this._parent = parent
@@ -468,6 +495,132 @@ func (this *Eff_BodyV2_Coord) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *
 		return err
 	}
 	this.Y = uint32(tmp51)
+	return err
+}
+type Eff_BodyV2_DispelResistance struct {
+	Dispel bool
+	BypassResistance bool
+	BypassEe bool
+	SelfTargeted bool
+	_unnamed4 uint64
+	EffectAppliedByIte bool
+	_io *kaitai.Stream
+	_root *Eff
+	_parent *Eff_BodyV2
+}
+func NewEff_BodyV2_DispelResistance() *Eff_BodyV2_DispelResistance {
+	return &Eff_BodyV2_DispelResistance{
+	}
+}
+
+func (this Eff_BodyV2_DispelResistance) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Eff_BodyV2_DispelResistance) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
+	this._io = io
+	this._parent = parent
+	this._root = root
+
+	tmp52, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Dispel = tmp52 != 0
+	tmp53, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.BypassResistance = tmp53 != 0
+	tmp54, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.BypassEe = tmp54 != 0
+	tmp55, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.SelfTargeted = tmp55 != 0
+	tmp56, err := this._io.ReadBitsIntLe(27)
+	if err != nil {
+		return err
+	}
+	this._unnamed4 = tmp56
+	tmp57, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.EffectAppliedByIte = tmp57 != 0
+	return err
+}
+type Eff_BodyV2_ParentResourceFlags struct {
+	_unnamed0 uint64
+	Hostile bool
+	NoLosRequired bool
+	AllowSpotting bool
+	OutdoorsOnly bool
+	NonMagicalAbility bool
+	IgnoreWildSurge bool
+	NonCombatAbility bool
+	_io *kaitai.Stream
+	_root *Eff
+	_parent *Eff_BodyV2
+}
+func NewEff_BodyV2_ParentResourceFlags() *Eff_BodyV2_ParentResourceFlags {
+	return &Eff_BodyV2_ParentResourceFlags{
+	}
+}
+
+func (this Eff_BodyV2_ParentResourceFlags) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Eff_BodyV2_ParentResourceFlags) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
+	this._io = io
+	this._parent = parent
+	this._root = root
+
+	tmp58, err := this._io.ReadBitsIntLe(10)
+	if err != nil {
+		return err
+	}
+	this._unnamed0 = tmp58
+	tmp59, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Hostile = tmp59 != 0
+	tmp60, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.NoLosRequired = tmp60 != 0
+	tmp61, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.AllowSpotting = tmp61 != 0
+	tmp62, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.OutdoorsOnly = tmp62 != 0
+	tmp63, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.NonMagicalAbility = tmp63 != 0
+	tmp64, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.IgnoreWildSurge = tmp64 != 0
+	tmp65, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.NonCombatAbility = tmp65 != 0
 	return err
 }
 type Eff_BodyV2_SavingThrowType struct {
@@ -495,203 +648,89 @@ func NewEff_BodyV2_SavingThrowType() *Eff_BodyV2_SavingThrowType {
 	}
 }
 
+func (this Eff_BodyV2_SavingThrowType) IO_() *kaitai.Stream {
+	return this._io
+}
+
 func (this *Eff_BodyV2_SavingThrowType) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
 
-	tmp52, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Spells = tmp52 != 0
-	tmp53, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Breath = tmp53 != 0
-	tmp54, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.ParalyzePoisonDeath = tmp54 != 0
-	tmp55, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Wands = tmp55 != 0
-	tmp56, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.PetrifyPolymorph = tmp56 != 0
-	tmp57, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.EeSpells = tmp57 != 0
-	tmp58, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.EeBreath = tmp58 != 0
-	tmp59, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.EeParalyzePoisonDeath = tmp59 != 0
-	tmp60, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.EeWands = tmp60 != 0
-	tmp61, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.EePetrifyPolymorph = tmp61 != 0
-	tmp62, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.IgnorePrimaryTarget = tmp62 != 0
-	tmp63, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.IgnoreSecondaryTarget = tmp63 != 0
-	tmp64, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.BypassMirrorImage = tmp64 != 0
-	tmp65, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.IgnoreDifficulty = tmp65 != 0
 	tmp66, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Reserved = tmp66 != 0
-	return err
-}
-type Eff_BodyV2_DispelResistance struct {
-	Dispel bool
-	BypassResistance bool
-	BypassEe bool
-	SelfTargeted bool
-	_unnamed4 uint64
-	EffectAppliedByIte bool
-	_io *kaitai.Stream
-	_root *Eff
-	_parent *Eff_BodyV2
-}
-func NewEff_BodyV2_DispelResistance() *Eff_BodyV2_DispelResistance {
-	return &Eff_BodyV2_DispelResistance{
-	}
-}
-
-func (this *Eff_BodyV2_DispelResistance) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
-	this._io = io
-	this._parent = parent
-	this._root = root
-
+	this.Spells = tmp66 != 0
 	tmp67, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Dispel = tmp67 != 0
+	this.Breath = tmp67 != 0
 	tmp68, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.BypassResistance = tmp68 != 0
+	this.ParalyzePoisonDeath = tmp68 != 0
 	tmp69, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.BypassEe = tmp69 != 0
+	this.Wands = tmp69 != 0
 	tmp70, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.SelfTargeted = tmp70 != 0
-	tmp71, err := this._io.ReadBitsIntLe(27)
+	this.PetrifyPolymorph = tmp70 != 0
+	tmp71, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this._unnamed4 = tmp71
+	this.EeSpells = tmp71 != 0
 	tmp72, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.EffectAppliedByIte = tmp72 != 0
-	return err
-}
-type Eff_BodyV2_ParentResourceFlags struct {
-	_unnamed0 uint64
-	Hostile bool
-	NoLosRequired bool
-	AllowSpotting bool
-	OutdoorsOnly bool
-	NonMagicalAbility bool
-	IgnoreWildSurge bool
-	NonCombatAbility bool
-	_io *kaitai.Stream
-	_root *Eff
-	_parent *Eff_BodyV2
-}
-func NewEff_BodyV2_ParentResourceFlags() *Eff_BodyV2_ParentResourceFlags {
-	return &Eff_BodyV2_ParentResourceFlags{
-	}
-}
-
-func (this *Eff_BodyV2_ParentResourceFlags) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
-	this._io = io
-	this._parent = parent
-	this._root = root
-
-	tmp73, err := this._io.ReadBitsIntLe(10)
+	this.EeBreath = tmp72 != 0
+	tmp73, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this._unnamed0 = tmp73
+	this.EeParalyzePoisonDeath = tmp73 != 0
 	tmp74, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Hostile = tmp74 != 0
+	this.EeWands = tmp74 != 0
 	tmp75, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.NoLosRequired = tmp75 != 0
+	this.EePetrifyPolymorph = tmp75 != 0
 	tmp76, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AllowSpotting = tmp76 != 0
+	this.IgnorePrimaryTarget = tmp76 != 0
 	tmp77, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.OutdoorsOnly = tmp77 != 0
+	this.IgnoreSecondaryTarget = tmp77 != 0
 	tmp78, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.NonMagicalAbility = tmp78 != 0
+	this.BypassMirrorImage = tmp78 != 0
 	tmp79, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.IgnoreWildSurge = tmp79 != 0
+	this.IgnoreDifficulty = tmp79 != 0
 	tmp80, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.NonCombatAbility = tmp80 != 0
+	this.Reserved = tmp80 != 0
 	return err
 }
