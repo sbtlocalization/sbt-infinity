@@ -40,25 +40,44 @@ instances:
     pos: _root.ofs_res_entries
     repeat: expr
     repeat-expr: num_res_entries
-  
 types:
   biff_entry:
     seq:
       - id: len_file
         type: u4
-      - id: offset
+      - id: ofs_file_name
         type: u4
-      - id: len_file_name_ext
+      - id: len_file_name
         type: u2
       - id: location_bits
-        type: u2
+        type: location
+        size: 2
     instances:
       file_name_ext:
-        type: file_name
+        type: strz
+        encoding: ASCII
         io: _root._io
-        pos: offset
-        size: len_file_name_ext
-        
+        pos: ofs_file_name
+        size: len_file_name
+    types:
+      location:
+        seq:
+          - id: in_data
+            type: b1
+          - id: in_cache
+            type: b1
+          - id: cd1
+            type: b1
+          - id: cd2
+            type: b1
+          - id: cd3
+            type: b1
+          - id: cd4
+            type: b1
+          - id: cd5
+            type: b1
+          - id: cd6
+            type: b1
   res_entry:
     seq:
       - id: name
@@ -68,17 +87,18 @@ types:
       - id: type
         type: u2
       - id: locator
-        type: u4
-    instances:
-      source_index:
-        value: (locator &  0b11111111_11110000_00000000_00000000) >> 20
-      tileset_index:
-        value: (locator &  0b00000000_00001111_11000000_00000000) >> 14
-      non_tileset_index:
-        value: locator &  0b00000000_00000000_00111111_11111111
-  
-  file_name:
-    seq:
-      - id: name
-        type: strz
-        encoding: ASCII
+        type: locator
+    types:
+      locator:
+        seq:
+          - id: file_index
+            type: b14
+          - id: tileset_index
+            type: b6
+          - id: biff_file_index
+            type: b12
+        instances:
+          biff_file:
+            pos: _root.ofs_biff_entries + biff_file_index * 12
+            type: biff_entry
+            io: _root._io
