@@ -87,7 +87,7 @@ type Cre_BodyV1 struct {
 	_f_knownSpells bool
 	knownSpells []*Cre_BodyV1_KnownSpell
 	_f_effects bool
-	effects []*Eff_Body
+	effects []*Eff_BodyV2
 	_f_memorizedSpells bool
 	memorizedSpells []*Cre_BodyV1_MemorizedSpell
 	_f_items bool
@@ -168,7 +168,7 @@ func (this *Cre_BodyV1) KnownSpells() (v []*Cre_BodyV1_KnownSpell, err error) {
 	this._f_knownSpells = true
 	return this.knownSpells, nil
 }
-func (this *Cre_BodyV1) Effects() (v []*Eff_Body, err error) {
+func (this *Cre_BodyV1) Effects() (v []*Eff_BodyV2, err error) {
 	if (this._f_effects) {
 		return this.effects, nil
 	}
@@ -182,12 +182,15 @@ func (this *Cre_BodyV1) Effects() (v []*Eff_Body, err error) {
 	}
 	for i := 0; i < int(this.Header.NumEffects); i++ {
 		_ = i
-		tmp9 := NewEff_Body(true)
-		err = tmp9.Read(this._io, this, this._root)
-		if err != nil {
-			return nil, err
+		switch (this.Header.EffVersion) {
+		case Cre_BodyV1_Header_EffVersion__Version2:
+			tmp9 := NewEff_BodyV2(true)
+			err = tmp9.Read(this._io, this, this._root)
+			if err != nil {
+				return nil, err
+			}
+			this.effects = append(this.effects, tmp9)
 		}
-		this.effects = append(this.effects, tmp9)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {

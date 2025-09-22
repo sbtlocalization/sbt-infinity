@@ -15,7 +15,7 @@ import (
 type Eff struct {
 	Magic []byte
 	Version []byte
-	Body *Eff_Body
+	Body *Eff_BodyV2
 	_io *kaitai.Stream
 	_root *Eff
 	_parent interface{}
@@ -48,7 +48,7 @@ func (this *Eff) Read(io *kaitai.Stream, parent interface{}, root *Eff) (err err
 	if !(bytes.Equal(this.Version, []uint8{86, 50, 46, 48})) {
 		return kaitai.NewValidationNotEqualError([]uint8{86, 50, 46, 48}, this.Version, this._io, "/seq/1")
 	}
-	tmp3 := NewEff_Body(false)
+	tmp3 := NewEff_BodyV2(false)
 	err = tmp3.Read(this._io, this, this._root)
 	if err != nil {
 		return err
@@ -57,53 +57,53 @@ func (this *Eff) Read(io *kaitai.Stream, parent interface{}, root *Eff) (err err
 	return err
 }
 
-type Eff_Body_TargetType int
+type Eff_BodyV2_TargetType int
 const (
-	Eff_Body_TargetType__None Eff_Body_TargetType = 0
-	Eff_Body_TargetType__Self Eff_Body_TargetType = 1
-	Eff_Body_TargetType__ProjectileTarget Eff_Body_TargetType = 2
-	Eff_Body_TargetType__Party Eff_Body_TargetType = 3
-	Eff_Body_TargetType__Everyone Eff_Body_TargetType = 4
-	Eff_Body_TargetType__EveryoneButParty Eff_Body_TargetType = 5
-	Eff_Body_TargetType__CasterGroup Eff_Body_TargetType = 6
-	Eff_Body_TargetType__TargetGroup Eff_Body_TargetType = 7
-	Eff_Body_TargetType__EveryoneButSelf Eff_Body_TargetType = 8
-	Eff_Body_TargetType__OriginalCaster Eff_Body_TargetType = 9
+	Eff_BodyV2_TargetType__None Eff_BodyV2_TargetType = 0
+	Eff_BodyV2_TargetType__Self Eff_BodyV2_TargetType = 1
+	Eff_BodyV2_TargetType__ProjectileTarget Eff_BodyV2_TargetType = 2
+	Eff_BodyV2_TargetType__Party Eff_BodyV2_TargetType = 3
+	Eff_BodyV2_TargetType__Everyone Eff_BodyV2_TargetType = 4
+	Eff_BodyV2_TargetType__EveryoneButParty Eff_BodyV2_TargetType = 5
+	Eff_BodyV2_TargetType__CasterGroup Eff_BodyV2_TargetType = 6
+	Eff_BodyV2_TargetType__TargetGroup Eff_BodyV2_TargetType = 7
+	Eff_BodyV2_TargetType__EveryoneButSelf Eff_BodyV2_TargetType = 8
+	Eff_BodyV2_TargetType__OriginalCaster Eff_BodyV2_TargetType = 9
 )
 
-type Eff_Body_TimingMode int
+type Eff_BodyV2_TimingMode int
 const (
-	Eff_Body_TimingMode__InstantLimited Eff_Body_TimingMode = 0
-	Eff_Body_TimingMode__InstantPermanentUntilDeath Eff_Body_TimingMode = 1
-	Eff_Body_TimingMode__InstantWhileEquipped Eff_Body_TimingMode = 2
-	Eff_Body_TimingMode__DelayLimited Eff_Body_TimingMode = 3
-	Eff_Body_TimingMode__DelayPermanent Eff_Body_TimingMode = 4
-	Eff_Body_TimingMode__DelayWhileEquipped Eff_Body_TimingMode = 5
-	Eff_Body_TimingMode__LimitedAfterDuration Eff_Body_TimingMode = 6
-	Eff_Body_TimingMode__PermanentAfterDuration Eff_Body_TimingMode = 7
-	Eff_Body_TimingMode__EquippedAfterDuration Eff_Body_TimingMode = 8
-	Eff_Body_TimingMode__InstantPermanent Eff_Body_TimingMode = 9
-	Eff_Body_TimingMode__InstantLimitedTicks Eff_Body_TimingMode = 10
-	Eff_Body_TimingMode__AbsoluteDuration Eff_Body_TimingMode = 4096
+	Eff_BodyV2_TimingMode__InstantLimited Eff_BodyV2_TimingMode = 0
+	Eff_BodyV2_TimingMode__InstantPermanentUntilDeath Eff_BodyV2_TimingMode = 1
+	Eff_BodyV2_TimingMode__InstantWhileEquipped Eff_BodyV2_TimingMode = 2
+	Eff_BodyV2_TimingMode__DelayLimited Eff_BodyV2_TimingMode = 3
+	Eff_BodyV2_TimingMode__DelayPermanent Eff_BodyV2_TimingMode = 4
+	Eff_BodyV2_TimingMode__DelayWhileEquipped Eff_BodyV2_TimingMode = 5
+	Eff_BodyV2_TimingMode__LimitedAfterDuration Eff_BodyV2_TimingMode = 6
+	Eff_BodyV2_TimingMode__PermanentAfterDuration Eff_BodyV2_TimingMode = 7
+	Eff_BodyV2_TimingMode__EquippedAfterDuration Eff_BodyV2_TimingMode = 8
+	Eff_BodyV2_TimingMode__InstantPermanent Eff_BodyV2_TimingMode = 9
+	Eff_BodyV2_TimingMode__InstantLimitedTicks Eff_BodyV2_TimingMode = 10
+	Eff_BodyV2_TimingMode__AbsoluteDuration Eff_BodyV2_TimingMode = 4096
 )
 
-type Eff_Body_ParentResourceType int
+type Eff_BodyV2_ParentResourceType int
 const (
-	Eff_Body_ParentResourceType__None Eff_Body_ParentResourceType = 0
-	Eff_Body_ParentResourceType__Spell Eff_Body_ParentResourceType = 1
-	Eff_Body_ParentResourceType__Item Eff_Body_ParentResourceType = 2
+	Eff_BodyV2_ParentResourceType__None Eff_BodyV2_ParentResourceType = 0
+	Eff_BodyV2_ParentResourceType__Spell Eff_BodyV2_ParentResourceType = 1
+	Eff_BodyV2_ParentResourceType__Item Eff_BodyV2_ParentResourceType = 2
 )
-type Eff_Body struct {
+type Eff_BodyV2 struct {
 	Magic []byte
 	Version []byte
 	Magic2 []byte
 	Version2 []byte
 	Opcode uint32
-	TargetType Eff_Body_TargetType
+	TargetType Eff_BodyV2_TargetType
 	Power uint32
 	Parameter1 uint32
 	Parameter2 uint32
-	TimingMode Eff_Body_TimingMode
+	TimingMode Eff_BodyV2_TimingMode
 	_unnamed10 uint16
 	Duration uint32
 	Probability1 uint16
@@ -111,25 +111,25 @@ type Eff_Body struct {
 	ResName string
 	DiceThrown uint32
 	DiceSides uint32
-	SavingThrowType *Eff_Body_SavingThrowType
+	SavingThrowType *Eff_BodyV2_SavingThrowType
 	SaveBonus uint32
 	Special uint32
 	PrimaryType uint32
 	Reserved uint32
 	ParentResourceLowestAffectedLevel uint32
 	ParentResourceHighestAffectedLevel uint32
-	DispelResistance *Eff_Body_DispelResistance
+	DispelResistance *Eff_BodyV2_DispelResistance
 	Parameter3 uint32
 	Parameter4 uint32
 	Parameter5 uint32
 	TimeApplied uint32
 	ResName2 string
 	ResName3 string
-	CasterCoordinate *Eff_Body_Coord
-	TargetCoordinate *Eff_Body_Coord
-	ParentResourceType Eff_Body_ParentResourceType
+	CasterCoordinate *Eff_BodyV2_Coord
+	TargetCoordinate *Eff_BodyV2_Coord
+	ParentResourceType Eff_BodyV2_ParentResourceType
 	ParentResource string
-	ParentResourceFlags *Eff_Body_ParentResourceFlags
+	ParentResourceFlags *Eff_BodyV2_ParentResourceFlags
 	Projectile uint32
 	ParentResourceSlot uint32
 	VariableName string
@@ -145,13 +145,13 @@ type Eff_Body struct {
 	_raw_DispelResistance []byte
 	_raw_ParentResourceFlags []byte
 }
-func NewEff_Body(embedded bool) *Eff_Body {
-	return &Eff_Body{
+func NewEff_BodyV2(embedded bool) *Eff_BodyV2 {
+	return &Eff_BodyV2{
 		Embedded: embedded,
 	}
 }
 
-func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error) {
+func (this *Eff_BodyV2) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
@@ -164,7 +164,7 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 		tmp4 = tmp4
 		this.Magic = tmp4
 		if !(bytes.Equal(this.Magic, []uint8{69, 70, 70, 32})) {
-			return kaitai.NewValidationNotEqualError([]uint8{69, 70, 70, 32}, this.Magic, this._io, "/types/body/seq/0")
+			return kaitai.NewValidationNotEqualError([]uint8{69, 70, 70, 32}, this.Magic, this._io, "/types/body_v2/seq/0")
 		}
 	}
 	if (!(this.Embedded)) {
@@ -175,7 +175,7 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 		tmp5 = tmp5
 		this.Version = tmp5
 		if !(bytes.Equal(this.Version, []uint8{86, 50, 46, 48})) {
-			return kaitai.NewValidationNotEqualError([]uint8{86, 50, 46, 48}, this.Version, this._io, "/types/body/seq/1")
+			return kaitai.NewValidationNotEqualError([]uint8{86, 50, 46, 48}, this.Version, this._io, "/types/body_v2/seq/1")
 		}
 	}
 	if (this.Embedded) {
@@ -186,7 +186,7 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 		tmp6 = tmp6
 		this.Magic2 = tmp6
 		if !(bytes.Equal(this.Magic2, []uint8{0, 0, 0, 0})) {
-			return kaitai.NewValidationNotEqualError([]uint8{0, 0, 0, 0}, this.Magic2, this._io, "/types/body/seq/2")
+			return kaitai.NewValidationNotEqualError([]uint8{0, 0, 0, 0}, this.Magic2, this._io, "/types/body_v2/seq/2")
 		}
 	}
 	if (this.Embedded) {
@@ -197,7 +197,7 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 		tmp7 = tmp7
 		this.Version2 = tmp7
 		if !(bytes.Equal(this.Version2, []uint8{0, 0, 0, 0})) {
-			return kaitai.NewValidationNotEqualError([]uint8{0, 0, 0, 0}, this.Version2, this._io, "/types/body/seq/3")
+			return kaitai.NewValidationNotEqualError([]uint8{0, 0, 0, 0}, this.Version2, this._io, "/types/body_v2/seq/3")
 		}
 	}
 	tmp8, err := this._io.ReadU4le()
@@ -209,7 +209,7 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 	if err != nil {
 		return err
 	}
-	this.TargetType = Eff_Body_TargetType(tmp9)
+	this.TargetType = Eff_BodyV2_TargetType(tmp9)
 	tmp10, err := this._io.ReadU4le()
 	if err != nil {
 		return err
@@ -229,7 +229,7 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 	if err != nil {
 		return err
 	}
-	this.TimingMode = Eff_Body_TimingMode(tmp13)
+	this.TimingMode = Eff_BodyV2_TimingMode(tmp13)
 	tmp14, err := this._io.ReadU2le()
 	if err != nil {
 		return err
@@ -273,7 +273,7 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 	tmp21 = tmp21
 	this._raw_SavingThrowType = tmp21
 	_io__raw_SavingThrowType := kaitai.NewStream(bytes.NewReader(this._raw_SavingThrowType))
-	tmp22 := NewEff_Body_SavingThrowType()
+	tmp22 := NewEff_BodyV2_SavingThrowType()
 	err = tmp22.Read(_io__raw_SavingThrowType, this, this._root)
 	if err != nil {
 		return err
@@ -316,7 +316,7 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 	tmp29 = tmp29
 	this._raw_DispelResistance = tmp29
 	_io__raw_DispelResistance := kaitai.NewStream(bytes.NewReader(this._raw_DispelResistance))
-	tmp30 := NewEff_Body_DispelResistance()
+	tmp30 := NewEff_BodyV2_DispelResistance()
 	err = tmp30.Read(_io__raw_DispelResistance, this, this._root)
 	if err != nil {
 		return err
@@ -354,13 +354,13 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 	}
 	tmp36 = kaitai.BytesTerminate(tmp36, 0, false)
 	this.ResName3 = string(tmp36)
-	tmp37 := NewEff_Body_Coord()
+	tmp37 := NewEff_BodyV2_Coord()
 	err = tmp37.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
 	this.CasterCoordinate = tmp37
-	tmp38 := NewEff_Body_Coord()
+	tmp38 := NewEff_BodyV2_Coord()
 	err = tmp38.Read(this._io, this, this._root)
 	if err != nil {
 		return err
@@ -370,7 +370,7 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 	if err != nil {
 		return err
 	}
-	this.ParentResourceType = Eff_Body_ParentResourceType(tmp39)
+	this.ParentResourceType = Eff_BodyV2_ParentResourceType(tmp39)
 	tmp40, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
@@ -384,7 +384,7 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 	tmp41 = tmp41
 	this._raw_ParentResourceFlags = tmp41
 	_io__raw_ParentResourceFlags := kaitai.NewStream(bytes.NewReader(this._raw_ParentResourceFlags))
-	tmp42 := NewEff_Body_ParentResourceFlags()
+	tmp42 := NewEff_BodyV2_ParentResourceFlags()
 	err = tmp42.Read(_io__raw_ParentResourceFlags, this, this._root)
 	if err != nil {
 		return err
@@ -441,19 +441,19 @@ func (this *Eff_Body) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err error
 /**
  * See `MSECTYPE.2DA`.
  */
-type Eff_Body_Coord struct {
+type Eff_BodyV2_Coord struct {
 	X uint32
 	Y uint32
 	_io *kaitai.Stream
 	_root *Eff
-	_parent *Eff_Body
+	_parent *Eff_BodyV2
 }
-func NewEff_Body_Coord() *Eff_Body_Coord {
-	return &Eff_Body_Coord{
+func NewEff_BodyV2_Coord() *Eff_BodyV2_Coord {
+	return &Eff_BodyV2_Coord{
 	}
 }
 
-func (this *Eff_Body_Coord) Read(io *kaitai.Stream, parent *Eff_Body, root *Eff) (err error) {
+func (this *Eff_BodyV2_Coord) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
@@ -470,7 +470,7 @@ func (this *Eff_Body_Coord) Read(io *kaitai.Stream, parent *Eff_Body, root *Eff)
 	this.Y = uint32(tmp51)
 	return err
 }
-type Eff_Body_SavingThrowType struct {
+type Eff_BodyV2_SavingThrowType struct {
 	Spells bool
 	Breath bool
 	ParalyzePoisonDeath bool
@@ -488,14 +488,14 @@ type Eff_Body_SavingThrowType struct {
 	Reserved bool
 	_io *kaitai.Stream
 	_root *Eff
-	_parent *Eff_Body
+	_parent *Eff_BodyV2
 }
-func NewEff_Body_SavingThrowType() *Eff_Body_SavingThrowType {
-	return &Eff_Body_SavingThrowType{
+func NewEff_BodyV2_SavingThrowType() *Eff_BodyV2_SavingThrowType {
+	return &Eff_BodyV2_SavingThrowType{
 	}
 }
 
-func (this *Eff_Body_SavingThrowType) Read(io *kaitai.Stream, parent *Eff_Body, root *Eff) (err error) {
+func (this *Eff_BodyV2_SavingThrowType) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
@@ -577,7 +577,7 @@ func (this *Eff_Body_SavingThrowType) Read(io *kaitai.Stream, parent *Eff_Body, 
 	this.Reserved = tmp66 != 0
 	return err
 }
-type Eff_Body_DispelResistance struct {
+type Eff_BodyV2_DispelResistance struct {
 	Dispel bool
 	BypassResistance bool
 	BypassEe bool
@@ -586,14 +586,14 @@ type Eff_Body_DispelResistance struct {
 	EffectAppliedByIte bool
 	_io *kaitai.Stream
 	_root *Eff
-	_parent *Eff_Body
+	_parent *Eff_BodyV2
 }
-func NewEff_Body_DispelResistance() *Eff_Body_DispelResistance {
-	return &Eff_Body_DispelResistance{
+func NewEff_BodyV2_DispelResistance() *Eff_BodyV2_DispelResistance {
+	return &Eff_BodyV2_DispelResistance{
 	}
 }
 
-func (this *Eff_Body_DispelResistance) Read(io *kaitai.Stream, parent *Eff_Body, root *Eff) (err error) {
+func (this *Eff_BodyV2_DispelResistance) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
@@ -630,7 +630,7 @@ func (this *Eff_Body_DispelResistance) Read(io *kaitai.Stream, parent *Eff_Body,
 	this.EffectAppliedByIte = tmp72 != 0
 	return err
 }
-type Eff_Body_ParentResourceFlags struct {
+type Eff_BodyV2_ParentResourceFlags struct {
 	_unnamed0 uint64
 	Hostile bool
 	NoLosRequired bool
@@ -641,14 +641,14 @@ type Eff_Body_ParentResourceFlags struct {
 	NonCombatAbility bool
 	_io *kaitai.Stream
 	_root *Eff
-	_parent *Eff_Body
+	_parent *Eff_BodyV2
 }
-func NewEff_Body_ParentResourceFlags() *Eff_Body_ParentResourceFlags {
-	return &Eff_Body_ParentResourceFlags{
+func NewEff_BodyV2_ParentResourceFlags() *Eff_BodyV2_ParentResourceFlags {
+	return &Eff_BodyV2_ParentResourceFlags{
 	}
 }
 
-func (this *Eff_Body_ParentResourceFlags) Read(io *kaitai.Stream, parent *Eff_Body, root *Eff) (err error) {
+func (this *Eff_BodyV2_ParentResourceFlags) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root

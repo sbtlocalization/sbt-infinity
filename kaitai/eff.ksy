@@ -18,9 +18,9 @@ seq:
   - id: version
     contents: "V2.0"
   - id: body
-    type: body(false)
+    type: body_v2(false)
 types:
-  body:
+  body_v2:
     params:
       - id: embedded
         type: bool
