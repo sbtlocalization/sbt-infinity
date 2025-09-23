@@ -19,3 +19,9 @@ Hasbro and its logo are trademarks of Hasbro, Inc. and are used with permission.
 Bioware Corp. Black Isle Studios and the Black Isle Studios logo are trademarks of Interplay Entertainment Corp..
 All other trademarks are the property of their respective owners.
 """
+
+[[annotations]]
+path = ["parser/*.go"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "© 2025 SBT Localization https://sbt.localization.com.ua"
+SPDX-License-Identifier = "GPL-3.0-only"
