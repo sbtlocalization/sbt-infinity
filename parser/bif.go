@@ -10,18 +10,32 @@ import (
 
 
 /**
- * General Description
- * This file format is a simple archive format, used mainly both to simplify organization of the files by grouping logically related files together (especially for areas). There is also a gain from having few large files rather than many small files, due to the wastage in the FAT and NTFS file systems. BIF files containing areas typically contain:
- * * one or more WED files, detailing tiles and wallgroups
- * * one or more TIS files, containing the tileset itself
- * * one or more MOS files, containing the minimap graphic
- * * 3 or 4 bitmap files which contain one pixel for each tile needed to cover the region
+ * This file format is a simple archive format, used mainly both to simplify organization of the files by grouping
+ * logically related files together (especially for areas). There is also a gain from having few large files rather than
+ * many small files, due to the wastage in the FAT and NTFS file systems. BIF files containing areas typically contain:
+ * - one or more WED files, detailing tiles and wallgroups;
+ * - one or more TIS files, containing the tileset itself;
+ * - one or more MOS files, containing the minimap graphic;
+ * - 3 or 4 bitmap files which contain one pixel for each tile needed to cover the region.
  * 
- * The bitmaps are named xxxxxxHT.BMP, xxxxxxLM.BMP, xxxxxxSR.BMP and optionally xxxxxxLN.BMP.
- * * xxxxxxHT.BMP: Height map, detailing altitude of each tile cell in the associated wed file
- * * xxxxxxLM.BMP: Light map, detailing the level and colour of illumination each tile cell on the map. Used during daytime
- * * xxxxxxLN.BMP: Light map, detailing the level and colour of illumination each tile cell on the map. Used during night-time
- * * xxxxxxSR.BMP: Search Map, detailing where characters cannot walk, and the footstep sounds
+ * The bitmaps are named `xxxxxxHT.BMP`, `xxxxxxLM.BMP`, `xxxxxxSR.BMP` and optionally `xxxxxxLN.BMP`.
+ * - `xxxxxxHT.BMP`: Height map, detailing altitude of each tile cell in the associated wed file.
+ * - `xxxxxxLM.BMP`: Light map, detailing the level and colour of illumination each tile cell on the map. Used during
+ * daytime.
+ * - `xxxxxxLN.BMP`: Light map, detailing the level and colour of illumination each tile cell on the map. Used during
+ * night-time.
+ * - `xxxxxxSR.BMP`: Search Map, detailing where characters cannot walk, and the footstep sounds.
+ * 
+ * ## Overall structure
+ * 
+ *   - Header
+ *   - File entries
+ *   - Tileset entries
+ *   - Data for the contained files, as described in the file and tileset entries
+ * 
+ * Note that the data of the contained files might be after the header, and the file/tileset entries after the contained
+ * files. The offset to the file entries and the offset to each contained file should be used to know the exact location
+ * of each.
  * @see <a href="https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bif_v1.htm
  * ">Source</a>
  */
@@ -125,7 +139,7 @@ func (this *Bif) TilesetEntries() (v []*Bif_TilesetEntry, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this.OfsFileEntries), io.SeekStart)
+	_, err = this._io.Seek(int64(this.OfsFileEntries + this.NumFileEntries * 16), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
@@ -144,19 +158,21 @@ func (this *Bif) TilesetEntries() (v []*Bif_TilesetEntry, err error) {
 	}
 	return this.tilesetEntries, nil
 }
+
+/**
+ * @see <a href="https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bif_v1.htm#bif_v1_FileEntry">Source</a>
+ */
 type Bif_FileEntry struct {
-	ResLocator uint32
-	ResOffset uint32
-	LenResBlob uint32
-	ResType uint16
-	Unknown uint16
+	Locator *Key_ResEntry_Locator
+	OfsData uint32
+	LenData uint32
+	ResType Key_ResEntry_ResType
+	Reserved uint16
 	_io *kaitai.Stream
 	_root *Bif
 	_parent *Bif
-	_f_fileExtension bool
-	fileExtension string
-	_f_resBlob bool
-	resBlob []byte
+	_f_data bool
+	data []byte
 }
 func NewBif_FileEntry() *Bif_FileEntry {
 	return &Bif_FileEntry{
@@ -172,93 +188,75 @@ func (this *Bif_FileEntry) Read(io *kaitai.Stream, parent *Bif, root *Bif) (err 
 	this._parent = parent
 	this._root = root
 
-	tmp8, err := this._io.ReadU4le()
+	tmp8 := NewKey_ResEntry_Locator(true)
+	err = tmp8.Read(this._io, nil, nil)
 	if err != nil {
 		return err
 	}
-	this.ResLocator = uint32(tmp8)
+	this.Locator = tmp8
 	tmp9, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.ResOffset = uint32(tmp9)
+	this.OfsData = uint32(tmp9)
 	tmp10, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.LenResBlob = uint32(tmp10)
+	this.LenData = uint32(tmp10)
 	tmp11, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ResType = uint16(tmp11)
+	this.ResType = Key_ResEntry_ResType(tmp11)
 	tmp12, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Unknown = uint16(tmp12)
+	this.Reserved = uint16(tmp12)
 	return err
 }
-func (this *Bif_FileEntry) FileExtension() (v string, err error) {
-	if (this._f_fileExtension) {
-		return this.fileExtension, nil
+func (this *Bif_FileEntry) Data() (v []byte, err error) {
+	if (this._f_data) {
+		return this.data, nil
 	}
-	this._f_fileExtension = true
-	_pos, err := this._io.Pos()
-	if err != nil {
-		return "", err
-	}
-	_, err = this._io.Seek(int64(this.ResOffset), io.SeekStart)
-	if err != nil {
-		return "", err
-	}
-	tmp13, err := this._io.ReadBytes(int(4))
-	if err != nil {
-		return "", err
-	}
-	tmp13 = kaitai.BytesTerminate(tmp13, 0, false)
-	this.fileExtension = string(tmp13)
-	_, err = this._io.Seek(_pos, io.SeekStart)
-	if err != nil {
-		return "", err
-	}
-	return this.fileExtension, nil
-}
-func (this *Bif_FileEntry) ResBlob() (v []byte, err error) {
-	if (this._f_resBlob) {
-		return this.resBlob, nil
-	}
-	this._f_resBlob = true
+	this._f_data = true
 	_pos, err := this._io.Pos()
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this.ResOffset), io.SeekStart)
+	_, err = this._io.Seek(int64(this.OfsData), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	tmp14, err := this._io.ReadBytes(int(this.LenResBlob))
+	tmp13, err := this._io.ReadBytes(int(this.LenData))
 	if err != nil {
 		return nil, err
 	}
-	tmp14 = tmp14
-	this.resBlob = tmp14
+	tmp13 = tmp13
+	this.data = tmp13
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	return this.resBlob, nil
+	return this.data, nil
 }
+
+/**
+ * @see <a href="https://gibberlings3.github.io/iesdp/file_formats/ie_formats/bif_v1.htm#bif_v1_TilesetEntry">Source</a>
+ */
 type Bif_TilesetEntry struct {
-	TlsLocator uint32
-	TlsOffset uint32
-	TlsCount uint32
-	TlsLen uint32
-	TlsType uint16
-	Unknown uint16
+	Locator *Key_ResEntry_Locator
+	OfsData uint32
+	NumTiles uint32
+	LenTile uint32
+	ResType Key_ResEntry_ResType
+	Reserved uint16
 	_io *kaitai.Stream
 	_root *Bif
 	_parent *Bif
+	_f_data bool
+	data []byte
 }
 func NewBif_TilesetEntry() *Bif_TilesetEntry {
 	return &Bif_TilesetEntry{
@@ -274,35 +272,64 @@ func (this *Bif_TilesetEntry) Read(io *kaitai.Stream, parent *Bif, root *Bif) (e
 	this._parent = parent
 	this._root = root
 
+	tmp14 := NewKey_ResEntry_Locator(true)
+	err = tmp14.Read(this._io, nil, nil)
+	if err != nil {
+		return err
+	}
+	this.Locator = tmp14
 	tmp15, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.TlsLocator = uint32(tmp15)
+	this.OfsData = uint32(tmp15)
 	tmp16, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.TlsOffset = uint32(tmp16)
+	this.NumTiles = uint32(tmp16)
 	tmp17, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.TlsCount = uint32(tmp17)
-	tmp18, err := this._io.ReadU4le()
+	this.LenTile = uint32(tmp17)
+	tmp18, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.TlsLen = uint32(tmp18)
+	this.ResType = Key_ResEntry_ResType(tmp18)
+	if !(this.ResType == Key_ResEntry_ResType__Tis) {
+		return kaitai.NewValidationNotEqualError(Key_ResEntry_ResType__Tis, this.ResType, this._io, "/types/tileset_entry/seq/4")
+	}
 	tmp19, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.TlsType = uint16(tmp19)
-	tmp20, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.Unknown = uint16(tmp20)
+	this.Reserved = uint16(tmp19)
 	return err
+}
+func (this *Bif_TilesetEntry) Data() (v []byte, err error) {
+	if (this._f_data) {
+		return this.data, nil
+	}
+	this._f_data = true
+	_pos, err := this._io.Pos()
+	if err != nil {
+		return nil, err
+	}
+	_, err = this._io.Seek(int64(this.OfsData), io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	tmp20, err := this._io.ReadBytes(int(this.NumTiles * this.LenTile))
+	if err != nil {
+		return nil, err
+	}
+	tmp20 = tmp20
+	this.data = tmp20
+	_, err = this._io.Seek(_pos, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	return this.data, nil
 }

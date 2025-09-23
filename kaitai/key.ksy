@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: © 2025 SBT Localization https://sbt.localization.com.ua
+# SPDX-FileContributor: @definitelythehuman
 # SPDX-FileContributor: Serhii Olendarenko <sergey.olendarenko@gmail.com>
 #
 # SPDX-License-Identifier: GPL-3.0-only
@@ -9,11 +10,10 @@ meta:
   endian: le
   bit-endian: le
 doc: |
-  This file format acts as a central reference point to locate files required
-  by the game (in a BIFF file on a CD or in the override directory). The key
-  file also maintains a mapping from an 8 byte resource name (refref) to a
-  32 byte ID (using the lowest 12 bits to identify a resource). There is
-  generally only one key file with each game (chitin.key).
+  This file format acts as a central reference point to locate files required by the game (in a BIFF file on a CD or in
+  the `override` directory). The key file also maintains a mapping from an 8 byte resource name (refref) to a 32 byte ID
+  (using the lowest 12 bits to identify a resource). There is generally only one key file with each game (`chitin.key`).
+
 doc-ref: |
   https://gibberlings3.github.io/iesdp/file_formats/ie_formats/key_v1.htm
 seq:
@@ -88,9 +88,12 @@ types:
         type: u2
         enum: res_type
       - id: locator
-        type: locator
+        type: locator(false)
     types:
       locator:
+        params:
+          - id: in_biff
+            type: bool
         seq:
           - id: file_index
             type: b14
@@ -100,9 +103,10 @@ types:
             type: b12
         instances:
           biff_file:
-            pos: _root.ofs_biff_entries + biff_file_index * 12
+            pos: _root.ofs_biff_entries + biff_file_index * 12  # size of biff_entry
             type: biff_entry
             io: _root._io
+            if: not in_biff
     enums:
       res_type:
         0x001: bmp
