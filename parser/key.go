@@ -143,15 +143,15 @@ func (this *Key) ResEntries() (v []*Key_ResEntry, err error) {
 }
 type Key_BiffEntry struct {
 	LenFile uint32
-	OfsFileName uint32
-	LenFileName uint16
+	OfsFilePath uint32
+	LenFilePath uint16
 	LocationBits *Key_BiffEntry_Location
 	_io *kaitai.Stream
 	_root *Key
 	_parent kaitai.Struct
 	_raw_LocationBits []byte
-	_f_fileNameExt bool
-	fileNameExt string
+	_f_filePath bool
+	filePath string
 }
 func NewKey_BiffEntry() *Key_BiffEntry {
 	return &Key_BiffEntry{
@@ -176,12 +176,12 @@ func (this *Key_BiffEntry) Read(io *kaitai.Stream, parent kaitai.Struct, root *K
 	if err != nil {
 		return err
 	}
-	this.OfsFileName = uint32(tmp10)
+	this.OfsFilePath = uint32(tmp10)
 	tmp11, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.LenFileName = uint16(tmp11)
+	this.LenFilePath = uint16(tmp11)
 	tmp12, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
@@ -197,31 +197,31 @@ func (this *Key_BiffEntry) Read(io *kaitai.Stream, parent kaitai.Struct, root *K
 	this.LocationBits = tmp13
 	return err
 }
-func (this *Key_BiffEntry) FileNameExt() (v string, err error) {
-	if (this._f_fileNameExt) {
-		return this.fileNameExt, nil
+func (this *Key_BiffEntry) FilePath() (v string, err error) {
+	if (this._f_filePath) {
+		return this.filePath, nil
 	}
-	this._f_fileNameExt = true
+	this._f_filePath = true
 	thisIo := this._root._io
 	_pos, err := thisIo.Pos()
 	if err != nil {
 		return "", err
 	}
-	_, err = thisIo.Seek(int64(this.OfsFileName), io.SeekStart)
+	_, err = thisIo.Seek(int64(this.OfsFilePath), io.SeekStart)
 	if err != nil {
 		return "", err
 	}
-	tmp14, err := thisIo.ReadBytes(int(this.LenFileName))
+	tmp14, err := thisIo.ReadBytes(int(this.LenFilePath))
 	if err != nil {
 		return "", err
 	}
 	tmp14 = kaitai.BytesTerminate(tmp14, 0, false)
-	this.fileNameExt = string(tmp14)
+	this.filePath = string(tmp14)
 	_, err = thisIo.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return "", err
 	}
-	return this.fileNameExt, nil
+	return this.filePath, nil
 }
 type Key_BiffEntry_Location struct {
 	InData bool
@@ -443,7 +443,7 @@ func (this *Key_ResEntry_Locator) BiffFile() (v *Key_BiffEntry, err error) {
 		if err != nil {
 			return nil, err
 		}
-		_, err = thisIo.Seek(int64(this._root.OfsBiffEntries + this.BiffFileIndex * 12), io.SeekStart)
+		_, err = thisIo.Seek(int64(uint64(this._root.OfsBiffEntries) + this.BiffFileIndex * 12), io.SeekStart)
 		if err != nil {
 			return nil, err
 		}

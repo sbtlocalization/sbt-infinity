@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: © 2025 SBT Localization https://sbt.localization.com.ua
+// SPDX-FileContributor: @definitelythehuman
 // SPDX-FileContributor: Serhii Olendarenko <sergey.olendarenko@gmail.com>
 //
 // SPDX-License-Identifier: GPL-3.0-only
@@ -9,7 +10,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
 	"github.com/sbtlocalization/infinity-tools/parser"
@@ -59,22 +59,22 @@ func runUnpackBif(cmd *cobra.Command, args []string) {
 
 	biffs, _ := keyFile.BiffEntries()
 	for key, value := range biffs {
-		fileName, _ := value.FileNameExt()
-		fmt.Printf("Biff index %d, for file %s\n", key, fileName.Name)
+		filePath, _ := value.FilePath()
+		fmt.Printf("Biff index %d, for file %s\n", key, filePath)
 	}
 
 	resEntries, _ := keyFile.ResEntries()
 	for key, value := range resEntries {
-		if value.Type == 1011 {
-			si, _ := value.SourceIndex()
-			nti, _ := value.NonTilesetIndex()
+		if value.Type == parser.Key_ResEntry_ResType__Dlg {
+			si := value.Locator.BiffFileIndex
+			nti := value.Locator.FileIndex
 			fmt.Printf("Found dlg res: index %d, name %s, source_index %d, ntls_index %d\n", key, value.Name, si, nti)
 
-			targetFilePath, _ := biffs[si].FileNameExt()
-			fmt.Printf("Going to unpack %s\n", targetFilePath.Name)
+			targetFilePath, _ := biffs[si].FilePath()
+			fmt.Printf("Going to unpack %s\n", targetFilePath)
 
 			p := filepath.Dir(keyFilePath)
-			bFile, err := os.Open(filepath.Join(p, targetFilePath.Name))
+			bFile, err := os.Open(filepath.Join(p, targetFilePath))
 			if err != nil {
 				fmt.Printf("Error opening BIFF file: %v\n", err)
 				return
@@ -96,15 +96,14 @@ func runUnpackBif(cmd *cobra.Command, args []string) {
 			fmt.Printf("BIF.NumFileEntries: %d\n", bifFile.NumFileEntries)
 			fmt.Printf("BIF.NumTilesetEntries: %d\n", bifFile.NumTilesetEntries)
 
-			if nti >= 0 && nti < int(bifFile.NumFileEntries) {
+			if nti < uint64(bifFile.NumFileEntries) {
 				fileEntries, _ := bifFile.FileEntries()
 				currentEntry := fileEntries[nti]
-				targetExtension, _ := currentEntry.FileExtension()
-				targetExtension = strings.TrimSpace(targetExtension)
-				targetBlob, _ := currentEntry.ResBlob()
-				fmt.Printf("Process entry with locator %d, type %d, extension %s\n", currentEntry.ResLocator, currentEntry.ResType, targetExtension)
+				targetType := currentEntry.ResType
+				targetBlob, _ := currentEntry.Data()
+				fmt.Printf("Process entry with locator %d, type %d, extension %s\n", currentEntry.Locator.FileIndex, currentEntry.ResType, targetType)
 
-				outputPath := filepath.Join(outputDir, fmt.Sprintf("%s.%s", value.Name, targetExtension))
+				outputPath := filepath.Join(outputDir, fmt.Sprintf("%s.%s", value.Name, targetType))
 
 				err := saveBlobToFile(targetBlob, outputPath)
 				if err != nil {
@@ -112,14 +111,9 @@ func runUnpackBif(cmd *cobra.Command, args []string) {
 					return
 				}
 
-			} else {
-				fmt.Printf("Tilesets not yet supported\n")
 			}
 		}
 	}
-
-	//TODO: implement filters later, now unpack all stuff
-
 }
 
 // saveBlobToFile saves extracted data into path

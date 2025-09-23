@@ -45,20 +45,20 @@ types:
     seq:
       - id: len_file
         type: u4
-      - id: ofs_file_name
+      - id: ofs_file_path
         type: u4
-      - id: len_file_name
+      - id: len_file_path
         type: u2
       - id: location_bits
         type: location
         size: 2
     instances:
-      file_name_ext:
+      file_path:
         type: strz
         encoding: ASCII
         io: _root._io
-        pos: ofs_file_name
-        size: len_file_name
+        pos: ofs_file_path
+        size: len_file_path
     types:
       location:
         seq:
@@ -103,7 +103,7 @@ types:
             type: b12
         instances:
           biff_file:
-            pos: _root.ofs_biff_entries + biff_file_index * 12  # size of biff_entry
+            pos: _root.ofs_biff_entries.as<u8> + biff_file_index * 12  # size of biff_entry
             type: biff_entry
             io: _root._io
             if: not in_biff
