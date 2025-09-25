@@ -77,7 +77,7 @@ types:
         type: u4
       - id: res_type
         type: u2
-        enum: key::res_entry::res_type
+        enum: key::res_type
       - id: reserved
         type: u2
     instances:
@@ -98,8 +98,8 @@ types:
         type: u4
       - id: res_type
         type: u2
-        enum: key::res_entry::res_type
-        valid: key::res_entry::res_type::tis
+        enum: key::res_type
+        valid: key::res_type::tis
       - id: reserved
         type: u2
     instances:

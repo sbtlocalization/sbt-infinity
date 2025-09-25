@@ -3,6 +3,7 @@ module github.com/sbtlocalization/infinity-tools
 go 1.24.4
 
 require (
+	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/kaitai-io/kaitai_struct_go_runtime v0.11.0
 	github.com/spf13/afero v1.15.0
 	github.com/spf13/cobra v1.10.1
