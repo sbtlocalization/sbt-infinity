@@ -16,8 +16,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// runUnpackBif handles the unpack-bif command execution
-func runUnpackBif(cmd *cobra.Command, args []string) {
+// runExtractBif handles the `bif ex` command execution
+func runExtractBif(cmd *cobra.Command, args []string) {
 	keyFilePath := args[0]
 	fmt.Printf("unpack-bif called with key file: %s\n", keyFilePath)
 
@@ -127,29 +127,4 @@ func saveBlobToFile(blob []byte, path string) error {
 	_, err = file.Write(blob)
 
 	return err
-}
-
-// unpackBifCmd represents the unpack-bif command
-var unpackBifCmd = &cobra.Command{
-	Use:   "unpack-bif <path to chitin.key>",
-	Short: "unpack BIF files into resources",
-	Long: `unpack BIF files into set of resources.
-	Structure of resources is read from chitin.key,
-	so all related .bif files picked automatically.
-
-	Additional filter may be passed to unpack only specific resources
-	`,
-	Args: cobra.ExactArgs(1),
-	Run:  runUnpackBif,
-}
-
-func init() {
-	rootCmd.AddCommand(unpackBifCmd)
-
-	// Add output directory flag
-	unpackBifCmd.Flags().StringP("output", "o", "", "Output directory for resource files (default: current directory)")
-	// TODO:
-	unpackBifCmd.Flags().StringP("type", "t", "", "Type filter. Take type number from https://gibberlings3.github.io/iesdp/file_formats/general.htm")
-	// TODO:
-	unpackBifCmd.Flags().StringP("filter", "f", "", "Regexp for filtering")
 }
