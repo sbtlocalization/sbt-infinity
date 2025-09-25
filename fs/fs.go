@@ -16,7 +16,7 @@ import (
 
 type fileRecord struct {
 	FullName     string
-	Type         p.Key_ResType
+	Type         FileType
 	BifFile      string
 	FileIndex    uint64
 	TilesetIndex uint64
@@ -53,13 +53,13 @@ func (r *fileRecord) Sys() any {
 
 type fileCatalog struct {
 	byName map[string]*fileRecord
-	byType map[p.Key_ResType]map[string]*fileRecord
+	byType map[FileType]map[string]*fileRecord
 }
 
 func newFileCatalog() *fileCatalog {
 	return &fileCatalog{
 		byName: make(map[string]*fileRecord),
-		byType: make(map[p.Key_ResType]map[string]*fileRecord),
+		byType: make(map[FileType]map[string]*fileRecord),
 	}
 }
 
@@ -70,13 +70,13 @@ type fileEntry struct {
 
 type InfinityFs struct {
 	KeyFile  string
-	filters  []p.Key_ResType
+	filters  []FileType
 	catalog  *fileCatalog
 	cache    *BifFileCache
 	openBifs map[string]*fileEntry
 }
 
-func NewInfinityFs(keyFilePath string, filters ...p.Key_ResType) *InfinityFs {
+func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
 	fs := afero.NewOsFs()
 	keyFile, err := fs.Open(keyFilePath)
 	if err != nil {
@@ -101,7 +101,9 @@ func NewInfinityFs(keyFilePath string, filters ...p.Key_ResType) *InfinityFs {
 
 	catalog := newFileCatalog()
 	for _, res := range resources {
-		if len(filters) > 0 && !slices.Contains(filters, res.Type) {
+		recordType := FileTypeFromParserType(res.Type)
+
+		if len(filters) > 0 && !slices.Contains(filters, recordType) {
 			continue
 		}
 
@@ -126,23 +128,22 @@ func NewInfinityFs(keyFilePath string, filters ...p.Key_ResType) *InfinityFs {
 		}
 
 		record := &fileRecord{
-			FullName:     res.Name + "." + res.Type.String(),
+			FullName:     res.Name + "." + recordType.String(),
 			FileTime:     fileTime,
-			Type:         res.Type,
+			Type:         recordType,
 			BifFile:      bifPath,
 			FileIndex:    res.Locator.FileIndex,
 			TilesetIndex: res.Locator.TilesetIndex,
-			IsTileset:    res.Type == p.Key_ResType__Tis,
+			IsTileset:    recordType == FileType_TIS,
 			FileLength:   -1,
 			FileOffset:   -1,
 		}
-		// log.Print(record.FullName)
 
 		catalog.byName[record.FullName] = record
-		if catalog.byType[res.Type] == nil {
-			catalog.byType[res.Type] = make(map[string]*fileRecord)
+		if catalog.byType[record.Type] == nil {
+			catalog.byType[record.Type] = make(map[string]*fileRecord)
 		}
-		catalog.byType[res.Type][record.FullName] = record
+		catalog.byType[record.Type][record.FullName] = record
 	}
 
 	cache, err := NewBifFileCache(path.Dir(keyFilePath), 10)
