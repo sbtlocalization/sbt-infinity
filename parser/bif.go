@@ -166,7 +166,7 @@ type Bif_FileEntry struct {
 	Locator *Key_ResEntry_Locator
 	OfsData uint32
 	LenData uint32
-	ResType Key_ResEntry_ResType
+	ResType Key_ResType
 	Reserved uint16
 	_io *kaitai.Stream
 	_root *Bif
@@ -208,7 +208,7 @@ func (this *Bif_FileEntry) Read(io *kaitai.Stream, parent *Bif, root *Bif) (err 
 	if err != nil {
 		return err
 	}
-	this.ResType = Key_ResEntry_ResType(tmp11)
+	this.ResType = Key_ResType(tmp11)
 	tmp12, err := this._io.ReadU2le()
 	if err != nil {
 		return err
@@ -250,7 +250,7 @@ type Bif_TilesetEntry struct {
 	OfsData uint32
 	NumTiles uint32
 	LenTile uint32
-	ResType Key_ResEntry_ResType
+	ResType Key_ResType
 	Reserved uint16
 	_io *kaitai.Stream
 	_root *Bif
@@ -297,9 +297,9 @@ func (this *Bif_TilesetEntry) Read(io *kaitai.Stream, parent *Bif, root *Bif) (e
 	if err != nil {
 		return err
 	}
-	this.ResType = Key_ResEntry_ResType(tmp18)
-	if !(this.ResType == Key_ResEntry_ResType__Tis) {
-		return kaitai.NewValidationNotEqualError(Key_ResEntry_ResType__Tis, this.ResType, this._io, "/types/tileset_entry/seq/4")
+	this.ResType = Key_ResType(tmp18)
+	if !(this.ResType == Key_ResType__Tis) {
+		return kaitai.NewValidationNotEqualError(Key_ResType__Tis, this.ResType, this._io, "/types/tileset_entry/seq/4")
 	}
 	tmp19, err := this._io.ReadU2le()
 	if err != nil {

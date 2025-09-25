@@ -16,6 +16,62 @@ import (
  * @see <a href="https://gibberlings3.github.io/iesdp/file_formats/ie_formats/key_v1.htm
  * ">Source</a>
  */
+
+type Key_ResType int
+const (
+	Key_ResType__Bmp Key_ResType = 1
+	Key_ResType__Mve Key_ResType = 2
+	Key_ResType__Wav Key_ResType = 4
+	Key_ResType__Wfx Key_ResType = 5
+	Key_ResType__Plt Key_ResType = 6
+	Key_ResType__Tga Key_ResType = 952
+	Key_ResType__Bam Key_ResType = 1000
+	Key_ResType__Wed Key_ResType = 1001
+	Key_ResType__Chu Key_ResType = 1002
+	Key_ResType__Tis Key_ResType = 1003
+	Key_ResType__Mos Key_ResType = 1004
+	Key_ResType__Itm Key_ResType = 1005
+	Key_ResType__Spl Key_ResType = 1006
+	Key_ResType__Bcs Key_ResType = 1007
+	Key_ResType__Ids Key_ResType = 1008
+	Key_ResType__Cre Key_ResType = 1009
+	Key_ResType__Are Key_ResType = 1010
+	Key_ResType__Dlg Key_ResType = 1011
+	Key_ResType__TwoDa Key_ResType = 1012
+	Key_ResType__Gam Key_ResType = 1013
+	Key_ResType__Sto Key_ResType = 1014
+	Key_ResType__Wmp Key_ResType = 1015
+	Key_ResType__Eff Key_ResType = 1016
+	Key_ResType__Bs Key_ResType = 1017
+	Key_ResType__Chr Key_ResType = 1018
+	Key_ResType__Vvc Key_ResType = 1019
+	Key_ResType__Vef Key_ResType = 1020
+	Key_ResType__Pro Key_ResType = 1021
+	Key_ResType__Bio Key_ResType = 1022
+	Key_ResType__Wbm Key_ResType = 1023
+	Key_ResType__Fnt Key_ResType = 1024
+	Key_ResType__Gui Key_ResType = 1026
+	Key_ResType__Sql Key_ResType = 1027
+	Key_ResType__Pvrz Key_ResType = 1028
+	Key_ResType__Glsl Key_ResType = 1029
+	Key_ResType__Tot Key_ResType = 1030
+	Key_ResType__Toh Key_ResType = 1031
+	Key_ResType__Menu Key_ResType = 1032
+	Key_ResType__Lua Key_ResType = 1033
+	Key_ResType__Ttf Key_ResType = 1034
+	Key_ResType__Png Key_ResType = 1035
+	Key_ResType__Bah Key_ResType = 1100
+	Key_ResType__Ini Key_ResType = 2050
+	Key_ResType__Src Key_ResType = 2051
+	Key_ResType__Maze Key_ResType = 2052
+	Key_ResType__Mus Key_ResType = 4094
+	Key_ResType__Acm Key_ResType = 4095
+)
+var values_Key_ResType = map[Key_ResType]struct{}{1: {}, 2: {}, 4: {}, 5: {}, 6: {}, 952: {}, 1000: {}, 1001: {}, 1002: {}, 1003: {}, 1004: {}, 1005: {}, 1006: {}, 1007: {}, 1008: {}, 1009: {}, 1010: {}, 1011: {}, 1012: {}, 1013: {}, 1014: {}, 1015: {}, 1016: {}, 1017: {}, 1018: {}, 1019: {}, 1020: {}, 1021: {}, 1022: {}, 1023: {}, 1024: {}, 1026: {}, 1027: {}, 1028: {}, 1029: {}, 1030: {}, 1031: {}, 1032: {}, 1033: {}, 1034: {}, 1035: {}, 1100: {}, 2050: {}, 2051: {}, 2052: {}, 4094: {}, 4095: {}}
+func (v Key_ResType) isDefined() bool {
+	_, ok := values_Key_ResType[v]
+	return ok
+}
 type Key struct {
 	Magic []byte
 	Version []byte
@@ -292,65 +348,9 @@ func (this *Key_BiffEntry_Location) Read(io *kaitai.Stream, parent *Key_BiffEntr
 	this.Cd6 = tmp22 != 0
 	return err
 }
-
-type Key_ResEntry_ResType int
-const (
-	Key_ResEntry_ResType__Bmp Key_ResEntry_ResType = 1
-	Key_ResEntry_ResType__Mve Key_ResEntry_ResType = 2
-	Key_ResEntry_ResType__Wav Key_ResEntry_ResType = 4
-	Key_ResEntry_ResType__Wfx Key_ResEntry_ResType = 5
-	Key_ResEntry_ResType__Plt Key_ResEntry_ResType = 6
-	Key_ResEntry_ResType__Tga Key_ResEntry_ResType = 952
-	Key_ResEntry_ResType__Bam Key_ResEntry_ResType = 1000
-	Key_ResEntry_ResType__Wed Key_ResEntry_ResType = 1001
-	Key_ResEntry_ResType__Chu Key_ResEntry_ResType = 1002
-	Key_ResEntry_ResType__Tis Key_ResEntry_ResType = 1003
-	Key_ResEntry_ResType__Mos Key_ResEntry_ResType = 1004
-	Key_ResEntry_ResType__Itm Key_ResEntry_ResType = 1005
-	Key_ResEntry_ResType__Spl Key_ResEntry_ResType = 1006
-	Key_ResEntry_ResType__Bcs Key_ResEntry_ResType = 1007
-	Key_ResEntry_ResType__Ids Key_ResEntry_ResType = 1008
-	Key_ResEntry_ResType__Cre Key_ResEntry_ResType = 1009
-	Key_ResEntry_ResType__Are Key_ResEntry_ResType = 1010
-	Key_ResEntry_ResType__Dlg Key_ResEntry_ResType = 1011
-	Key_ResEntry_ResType__TwoDa Key_ResEntry_ResType = 1012
-	Key_ResEntry_ResType__Gam Key_ResEntry_ResType = 1013
-	Key_ResEntry_ResType__Sto Key_ResEntry_ResType = 1014
-	Key_ResEntry_ResType__Wmp Key_ResEntry_ResType = 1015
-	Key_ResEntry_ResType__Eff Key_ResEntry_ResType = 1016
-	Key_ResEntry_ResType__Bs Key_ResEntry_ResType = 1017
-	Key_ResEntry_ResType__Chr Key_ResEntry_ResType = 1018
-	Key_ResEntry_ResType__Vvc Key_ResEntry_ResType = 1019
-	Key_ResEntry_ResType__Vef Key_ResEntry_ResType = 1020
-	Key_ResEntry_ResType__Pro Key_ResEntry_ResType = 1021
-	Key_ResEntry_ResType__Bio Key_ResEntry_ResType = 1022
-	Key_ResEntry_ResType__Wbm Key_ResEntry_ResType = 1023
-	Key_ResEntry_ResType__Fnt Key_ResEntry_ResType = 1024
-	Key_ResEntry_ResType__Gui Key_ResEntry_ResType = 1026
-	Key_ResEntry_ResType__Sql Key_ResEntry_ResType = 1027
-	Key_ResEntry_ResType__Pvrz Key_ResEntry_ResType = 1028
-	Key_ResEntry_ResType__Glsl Key_ResEntry_ResType = 1029
-	Key_ResEntry_ResType__Tot Key_ResEntry_ResType = 1030
-	Key_ResEntry_ResType__Toh Key_ResEntry_ResType = 1031
-	Key_ResEntry_ResType__Menu Key_ResEntry_ResType = 1032
-	Key_ResEntry_ResType__Lua Key_ResEntry_ResType = 1033
-	Key_ResEntry_ResType__Ttf Key_ResEntry_ResType = 1034
-	Key_ResEntry_ResType__Png Key_ResEntry_ResType = 1035
-	Key_ResEntry_ResType__Bah Key_ResEntry_ResType = 1100
-	Key_ResEntry_ResType__Ini Key_ResEntry_ResType = 2050
-	Key_ResEntry_ResType__Src Key_ResEntry_ResType = 2051
-	Key_ResEntry_ResType__Maze Key_ResEntry_ResType = 2052
-	Key_ResEntry_ResType__Mus Key_ResEntry_ResType = 4094
-	Key_ResEntry_ResType__Acm Key_ResEntry_ResType = 4095
-)
-var values_Key_ResEntry_ResType = map[Key_ResEntry_ResType]struct{}{1: {}, 2: {}, 4: {}, 5: {}, 6: {}, 952: {}, 1000: {}, 1001: {}, 1002: {}, 1003: {}, 1004: {}, 1005: {}, 1006: {}, 1007: {}, 1008: {}, 1009: {}, 1010: {}, 1011: {}, 1012: {}, 1013: {}, 1014: {}, 1015: {}, 1016: {}, 1017: {}, 1018: {}, 1019: {}, 1020: {}, 1021: {}, 1022: {}, 1023: {}, 1024: {}, 1026: {}, 1027: {}, 1028: {}, 1029: {}, 1030: {}, 1031: {}, 1032: {}, 1033: {}, 1034: {}, 1035: {}, 1100: {}, 2050: {}, 2051: {}, 2052: {}, 4094: {}, 4095: {}}
-func (v Key_ResEntry_ResType) isDefined() bool {
-	_, ok := values_Key_ResEntry_ResType[v]
-	return ok
-}
 type Key_ResEntry struct {
 	Name string
-	Type Key_ResEntry_ResType
+	Type Key_ResType
 	Locator *Key_ResEntry_Locator
 	_io *kaitai.Stream
 	_root *Key
@@ -380,7 +380,7 @@ func (this *Key_ResEntry) Read(io *kaitai.Stream, parent *Key, root *Key) (err e
 	if err != nil {
 		return err
 	}
-	this.Type = Key_ResEntry_ResType(tmp24)
+	this.Type = Key_ResType(tmp24)
 	tmp25 := NewKey_ResEntry_Locator(false)
 	err = tmp25.Read(this._io, this, this._root)
 	if err != nil {

@@ -65,7 +65,7 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 
 	resEntries, _ := keyFile.ResEntries()
 	for key, value := range resEntries {
-		if value.Type == parser.Key_ResEntry_ResType__Dlg {
+		if value.Type == parser.Key_ResType__Dlg {
 			si := value.Locator.BiffFileIndex
 			nti := value.Locator.FileIndex
 			fmt.Printf("Found dlg res: index %d, name %s, source_index %d, ntls_index %d\n", key, value.Name, si, nti)
