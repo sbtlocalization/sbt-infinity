@@ -1,13 +1,15 @@
 module github.com/sbtlocalization/infinity-tools
 
-go 1.24.4
+go 1.25
 
 require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/kaitai-io/kaitai_struct_go_runtime v0.11.0
+	github.com/nulab/autog v0.11.0
 	github.com/spf13/afero v1.15.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
+	github.com/supersonicpineapple/go-jsoncanvas v0.0.0-20240323133339-233662d1418e
 )
 
 require (
