@@ -9,5 +9,4 @@ release
 
 .DS_Store
 
-input/
-output/
+output

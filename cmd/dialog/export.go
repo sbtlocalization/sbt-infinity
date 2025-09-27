@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sbtlocalization/sbt-infinity/config"
 	"github.com/sbtlocalization/sbt-infinity/dialog"
 	"github.com/sbtlocalization/sbt-infinity/fs"
 	"github.com/spf13/afero"
@@ -21,29 +22,35 @@ import (
 // exportDialogsCmd represents the export-dialogs command
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "export <path to chitin.key> [tlk files...] [dlg files...]",
+		Use:   "export [path to chitin.key] [tlk files...] [dlg files...]",
 		Short: "Export dialogs as JSON Canvas files",
 		Long: `Export dialogs from DLG files (with texts from TLK file) as JSON Canvas files.
-Creates a visual representation of dialog structures.`,
-		Args: cobra.MinimumNArgs(1),
+Creates a visual representation of dialog structures.
+
+If no key file path is provided, uses the first game from .sbt-inf.toml config.`,
+		Args: cobra.MinimumNArgs(0),
 		RunE: runExportDialogs,
 	}
 
 	cmd.Flags().StringP("output", "o", "", "Output directory")
 	cmd.Flags().StringP("tlk", "t", "", "Path to dialog.tlk file")
 	cmd.Flags().Bool("verbose", false, "Enable verbose output")
+	config.AddGameFlag(cmd)
 
 	return cmd
 }
 
 func runExportDialogs(cmd *cobra.Command, args []string) error {
-	keyPath := args[0]
-	dialogFiles := args[1:]
-
+	gameName, _ := cmd.Flags().GetString("game")
 	tlkPath, _ := cmd.Flags().GetString("tlk")
 	outputDir, _ := cmd.Flags().GetString("output")
-
 	verbose, _ := cmd.Flags().GetBool("verbose")
+
+	// Resolve the key path and parse other files using the common helper
+	keyPath, dialogFiles, err := config.ResolveKeyPathFromArgs(args, gameName)
+	if err != nil {
+		return err
+	}
 
 	osFs := afero.NewOsFs()
 
