@@ -6,8 +6,10 @@
 package dialog
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/sbtlocalization/sbt-infinity/dialog"
 	"github.com/sbtlocalization/sbt-infinity/fs"
@@ -71,10 +73,39 @@ func runLs(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("error loading dialogs: %v", err)
 		}
 
-		_ = jsonOutput
+		// Get BIF file path for this dialog file
+		var bifPath string
+		if jsonOutput {
+			fullDlgName := df
+			if !strings.HasSuffix(strings.ToLower(fullDlgName), ".dlg") {
+				fullDlgName = fullDlgName + ".DLG"
+			}
+
+			// Get BIF file path from the InfinityFs
+			if path, err := dlgFs.GetBifFilePath(fullDlgName); err == nil {
+				bifPath = path
+			}
+		}
 
 		for _, d := range dlg.Dialogs {
-			fmt.Println(d.Id)
+			if jsonOutput {
+				output := struct {
+					Name string `json:"name"`
+					File string `json:"file"`
+					Bif  string `json:"bif"`
+				}{
+					Name: d.Id.String(),
+					File: df,
+					Bif:  bifPath,
+				}
+				jsonData, err := json.Marshal(output)
+				if err != nil {
+					return fmt.Errorf("error marshaling JSON: %v", err)
+				}
+				fmt.Println(string(jsonData))
+			} else {
+				fmt.Println(d.Id)
+			}
 		}
 	}
 

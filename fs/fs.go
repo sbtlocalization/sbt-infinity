@@ -449,3 +449,11 @@ func (fs *InfinityFs) closeBif(bifPath string) error {
 		return os.ErrClosed
 	}
 }
+
+// GetBifFilePath returns the BIF file path for a given file name
+func (fs *InfinityFs) GetBifFilePath(name string) (string, error) {
+	if record, ok := fs.catalog.byName[name]; ok {
+		return record.BifFile, nil
+	}
+	return "", os.ErrNotExist
+}
