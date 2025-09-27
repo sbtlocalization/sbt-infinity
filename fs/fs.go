@@ -9,7 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 	"slices"
 	"time"
 
@@ -154,7 +154,7 @@ func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
 			continue
 		}
 
-		dirFs := afero.NewBasePathFs(fs, path.Dir(keyFilePath))
+		dirFs := afero.NewBasePathFs(fs, filepath.Dir(keyFilePath))
 		bifStat, err := dirFs.Stat(bifPath)
 		fileTime := time.Time{}
 		if err != nil {
@@ -189,7 +189,7 @@ func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
 		}
 	}
 
-	cache, err := NewBifFileCache(path.Dir(keyFilePath), 10)
+	cache, err := NewBifFileCache(filepath.Dir(keyFilePath), 10)
 	if err != nil {
 		log.Panicln("Error creating BIF file cache:", err)
 		return nil
