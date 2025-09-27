@@ -1,4 +1,4 @@
-package cli
+package dialog
 
 import "github.com/spf13/cobra"
 
@@ -10,5 +10,6 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(NewLsCommand())
+	cmd.AddCommand(NewExportCommand())
 	return cmd
 }

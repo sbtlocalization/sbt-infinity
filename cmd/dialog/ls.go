@@ -1,4 +1,4 @@
-package cli
+package dialog
 
 import (
 	"fmt"
@@ -12,8 +12,9 @@ import (
 
 func NewLsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "ls <path to chitin.key> [dialog files...]",
-		Short: "List dialogs from the game",
+		Use:     "list <path to chitin.key> [dialog files...]",
+		Aliases: []string{"ls"},
+		Short:   "List dialogs from the game",
 		Long: `List all dialogs or specific dialog files from the game.
 		Reads the game structure from chitin.key file and dialog.tlk file, and optionally lists
 		only specified dialog files (e.g., ABISHAB.DLG, DMORTE.DLG).`,
@@ -60,7 +61,7 @@ func runLs(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, df := range dialogFiles {
-		dlg, err := dc.LoadAllDialogs(tlkPath, df)
+		dlg, err := dc.LoadAllRootStates(df)
 		if err != nil {
 			return fmt.Errorf("error loading dialogs: %v", err)
 		}

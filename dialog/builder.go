@@ -31,6 +31,37 @@ func NewDialogBuilder(dlgFsys afero.Fs, tlkFsys afero.Fs) *DialogBuilder {
 	}
 }
 
+func (b *DialogBuilder) LoadAllRootStates(dlgNames ...string) (*DialogCollection, error) {
+	collection := NewDialogCollection()
+
+	for _, dlgName := range dlgNames {
+		dlg, err := b.readDlgFile(dlgName)
+		if err != nil {
+			log.Printf("error loading DLG file %s: %v", dlgName, err)
+			continue
+		}
+
+		states, err := dlg.States()
+		if err != nil {
+			log.Printf("error getting states from DLG file %s: %v", dlgName, err)
+			continue
+		}
+
+		for stateIndex, stateEntry := range states {
+			if _, isRoot := stateEntry.GetTriggerText(); isRoot {
+				d := NewDialog(NewNodeOrigin(dlgName, uint32(stateIndex)))
+				collection.Dialogs = append(collection.Dialogs, d)
+			}
+		}
+		for _, loadedDlg := range b.loadedDlgFiles {
+			loadedDlg.Close()
+		}
+		clear(b.loadedDlgFiles)
+	}
+
+	return collection, nil
+}
+
 func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames ...string) (*DialogCollection, error) {
 	collection := NewDialogCollection()
 

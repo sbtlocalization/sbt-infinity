@@ -32,8 +32,7 @@ func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 	edges := make(map[string]*canvas.Edge)
 	nodes := make(map[string]*canvas.Node)
 	layoutEdges := make([][]string, 0)
-	for dNodeOrigin, dNode := range d.All() {
-		_ = dNodeOrigin
+	for _, dNode := range d.All() {
 		cNode := newNode(dNode)
 		if cNode != nil {
 			c.AddNodes(cNode)
@@ -46,11 +45,11 @@ func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 				continue
 			}
 
-			if _, ok := edges[cEdge.ID]; !ok {
-				edges[cEdge.ID] = cEdge
-				layoutEdges = append(layoutEdges, []string{cEdge.FromNode, cEdge.ToNode})
-				c.AddEdges(cEdge)
-			}
+			// if _, ok := edges[cEdge.ID]; !ok {
+			edges[cEdge.ID] = cEdge
+			layoutEdges = append(layoutEdges, []string{cEdge.FromNode, cEdge.ToNode})
+			c.AddEdges(cEdge)
+			// }
 		}
 	}
 
@@ -58,13 +57,14 @@ func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 	layout := autog.Layout(
 		src,
 		autog.WithNodeFixedSize(Width, Height),
+		autog.WithLayerSpacing(200),
 	)
 	for _, n := range layout.Nodes {
 		if cNode, ok := nodes[n.ID]; ok {
 			cNode.X = int(n.X)
 			cNode.Y = int(n.Y)
 		} else {
-			fmt.Printf("Warning: node %s not found in canvas nodes\n", n.ID)
+			fmt.Printf("warning: node %s not found in canvas nodes\n", n.ID)
 		}
 	}
 
@@ -110,7 +110,7 @@ func newNode(node *Node) *canvas.Node {
 			if node.Transition.HasText {
 				sb.WriteString("\n\n-----\n\n")
 			}
-			sb.WriteString(fmt.Sprintf("<small>Journal Text **#%d**</small>\n\n", node.Transition.TextRef))
+			sb.WriteString(fmt.Sprintf("<small>Journal Text **#%d**</small>\n\n", node.Transition.JournalTextRef))
 			sb.WriteString(node.Transition.JournalText)
 		}
 	case ErrorNodeType:
@@ -128,9 +128,10 @@ func newEdge(node *Node) *canvas.Edge {
 	if node.Parent == nil {
 		return nil
 	}
+
+	fromNode, toNode := node.Parent.String(), node.String()
 	fromSide, toSide, toEnd := "bottom", "top", "arrow"
 	var color string
-	fromNode, toNode := node.Parent.String(), node.String()
 
 	cEdge := &canvas.Edge{
 		ID:       fmt.Sprintf("%s-%s", fromNode, toNode),
@@ -141,5 +142,15 @@ func newEdge(node *Node) *canvas.Edge {
 		ToEnd:    &toEnd,
 		Color:    &color,
 	}
+
+	var triggerText string
+	if node.Type == TransitionNodeType && node.Transition.HasTrigger {
+		triggerText = node.Transition.Trigger
+	}
+
+	if triggerText != "" {
+		cEdge.Label = &triggerText
+	}
+
 	return cEdge
 }

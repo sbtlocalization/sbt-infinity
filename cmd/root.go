@@ -8,7 +8,7 @@ package cmd
 import (
 	"os"
 
-	dialog_cli "github.com/sbtlocalization/infinity-tools/dialog/cli"
+	"github.com/sbtlocalization/infinity-tools/cmd/dialog"
 	"github.com/spf13/cobra"
 )
 
@@ -34,5 +34,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(dialog_cli.NewCommand())
+	rootCmd.AddCommand(dialog.NewCommand())
 }

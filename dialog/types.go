@@ -5,7 +5,10 @@
 
 package dialog
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type NodeType int
 
@@ -22,6 +25,9 @@ type NodeOrigin struct {
 }
 
 func NewNodeOrigin(dlgName string, index uint32) NodeOrigin {
+	if strings.HasSuffix(strings.ToLower(dlgName), ".dlg") {
+		dlgName = dlgName[:len(dlgName)-4]
+	}
 	return NodeOrigin{DlgName: dlgName, Index: index}
 }
 
