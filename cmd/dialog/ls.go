@@ -83,8 +83,9 @@ func runLs(cmd *cobra.Command, args []string) error {
 
 		// Get BIF file path for this dialog file
 		var bifPath string
+		var fullDlgName string
 		if jsonOutput {
-			fullDlgName := df
+			fullDlgName = df
 			if !strings.HasSuffix(strings.ToLower(fullDlgName), ".dlg") {
 				fullDlgName = fullDlgName + ".DLG"
 			}
@@ -103,7 +104,7 @@ func runLs(cmd *cobra.Command, args []string) error {
 					Bif  string `json:"bif"`
 				}{
 					Name: d.Id.String(),
-					File: df,
+					File: fullDlgName,
 					Bif:  bifPath,
 				}
 				jsonData, err := json.Marshal(output)
