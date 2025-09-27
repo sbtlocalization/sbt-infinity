@@ -13,6 +13,7 @@ const (
 	StateNodeType NodeType = iota
 	TransitionNodeType
 	LoopNodeType
+	ErrorNodeType
 )
 
 type NodeOrigin struct {
@@ -31,7 +32,9 @@ func (t NodeType) String() string {
 	case TransitionNodeType:
 		return "transition"
 	case LoopNodeType:
-		return "loop"
+		return "state"
+	case ErrorNodeType:
+		return "error"
 	default:
 		return "unknown"
 	}
@@ -74,11 +77,7 @@ type TransitionData struct {
 }
 
 func (n *Node) String() string {
-	if n.Parent != nil {
-		return fmt.Sprintf("%s %s <- %s %s", n.Type, n.Origin, n.Parent.Type, n.Parent.Origin)
-	} else {
-		return fmt.Sprintf("%s %s", n.Type, n.Origin)
-	}
+	return fmt.Sprintf("%s-%s", n.Type, n.Origin)
 }
 
 type DialogID = NodeOrigin
@@ -86,12 +85,14 @@ type DialogID = NodeOrigin
 type Dialog struct {
 	Id        DialogID
 	RootState *Node
+	AllStates map[NodeOrigin]struct{}
 }
 
 func NewDialog(id DialogID) *Dialog {
 	return &Dialog{
 		Id:        id,
 		RootState: nil,
+		AllStates: make(map[NodeOrigin]struct{}),
 	}
 }
 

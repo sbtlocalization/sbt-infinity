@@ -9,6 +9,11 @@ import (
 	"iter"
 )
 
+type nodeId struct {
+	Type   NodeType
+	Origin NodeOrigin
+}
+
 func (d *Dialog) All() iter.Seq2[NodeOrigin, *Node] {
 	return func(yield func(NodeOrigin, *Node) bool) {
 		if d.RootState == nil {
@@ -17,17 +22,19 @@ func (d *Dialog) All() iter.Seq2[NodeOrigin, *Node] {
 
 		// Stack for DFS traversal
 		stack := []*Node{d.RootState}
-		visited := make(map[*Node]bool)
+		visited := make(map[nodeId]bool)
 
 		for len(stack) > 0 {
 			// Pop from stack
 			current := stack[len(stack)-1]
 			stack = stack[:len(stack)-1]
 
-			if visited[current] {
+			currentId := nodeId{Type: current.Type, Origin: current.Origin}
+
+			if visited[currentId] {
 				continue
 			}
-			visited[current] = true
+			visited[currentId] = true
 
 			if !yield(current.Origin, current) {
 				return
@@ -35,7 +42,8 @@ func (d *Dialog) All() iter.Seq2[NodeOrigin, *Node] {
 
 			// Add children to stack in reverse order for left-to-right DFS
 			for i := len(current.Children) - 1; i >= 0; i-- {
-				if !visited[current.Children[i]] {
+				nextId := nodeId{Type: current.Children[i].Type, Origin: current.Children[i].Origin}
+				if !visited[nextId] {
 					stack = append(stack, current.Children[i])
 				}
 			}

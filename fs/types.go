@@ -14,53 +14,54 @@ import (
 type FileType int
 
 const (
-	FileType_BMP  FileType = 1
-	FileType_MVE  FileType = 2
-	FileType_WAV  FileType = 4
-	FileType_WFX  FileType = 5
-	FileType_PLT  FileType = 6
-	FileType_TGA  FileType = 952
-	FileType_BAM  FileType = 1000
-	FileType_WED  FileType = 1001
-	FileType_CHU  FileType = 1002
-	FileType_TIS  FileType = 1003
-	FileType_MOS  FileType = 1004
-	FileType_ITM  FileType = 1005
-	FileType_SPL  FileType = 1006
-	FileType_BCS  FileType = 1007
-	FileType_IDS  FileType = 1008
-	FileType_CRE  FileType = 1009
-	FileType_ARE  FileType = 1010
-	FileType_DLG  FileType = 1011
-	FileType_2DA  FileType = 1012
-	FileType_GAM  FileType = 1013
-	FileType_STO  FileType = 1014
-	FileType_WMP  FileType = 1015
-	FileType_EFF  FileType = 1016
-	FileType_BS   FileType = 1017
-	FileType_CHR  FileType = 1018
-	FileType_VVC  FileType = 1019
-	FileType_VEF  FileType = 1020
-	FileType_PRO  FileType = 1021
-	FileType_BIO  FileType = 1022
-	FileType_WBM  FileType = 1023
-	FileType_FNT  FileType = 1024
-	FileType_GUI  FileType = 1026
-	FileType_SQL  FileType = 1027
-	FileType_PVRZ FileType = 1028
-	FileType_GLSL FileType = 1029
-	FileType_TOT  FileType = 1030
-	FileType_TOH  FileType = 1031
-	FileType_MENU FileType = 1032
-	FileType_LUA  FileType = 1033
-	FileType_TTF  FileType = 1034
-	FileType_PNG  FileType = 1035
-	FileType_BAH  FileType = 1100
-	FileType_INI  FileType = 2050
-	FileType_SRC  FileType = 2051
-	FileType_MAZE FileType = 2052
-	FileType_MUS  FileType = 4094
-	FileType_ACM  FileType = 4095
+	FileType_Invalid FileType = 0
+	FileType_BMP     FileType = 1
+	FileType_MVE     FileType = 2
+	FileType_WAV     FileType = 4
+	FileType_WFX     FileType = 5
+	FileType_PLT     FileType = 6
+	FileType_TGA     FileType = 952
+	FileType_BAM     FileType = 1000
+	FileType_WED     FileType = 1001
+	FileType_CHU     FileType = 1002
+	FileType_TIS     FileType = 1003
+	FileType_MOS     FileType = 1004
+	FileType_ITM     FileType = 1005
+	FileType_SPL     FileType = 1006
+	FileType_BCS     FileType = 1007
+	FileType_IDS     FileType = 1008
+	FileType_CRE     FileType = 1009
+	FileType_ARE     FileType = 1010
+	FileType_DLG     FileType = 1011
+	FileType_2DA     FileType = 1012
+	FileType_GAM     FileType = 1013
+	FileType_STO     FileType = 1014
+	FileType_WMP     FileType = 1015
+	FileType_EFF     FileType = 1016
+	FileType_BS      FileType = 1017
+	FileType_CHR     FileType = 1018
+	FileType_VVC     FileType = 1019
+	FileType_VEF     FileType = 1020
+	FileType_PRO     FileType = 1021
+	FileType_BIO     FileType = 1022
+	FileType_WBM     FileType = 1023
+	FileType_FNT     FileType = 1024
+	FileType_GUI     FileType = 1026
+	FileType_SQL     FileType = 1027
+	FileType_PVRZ    FileType = 1028
+	FileType_GLSL    FileType = 1029
+	FileType_TOT     FileType = 1030
+	FileType_TOH     FileType = 1031
+	FileType_MENU    FileType = 1032
+	FileType_LUA     FileType = 1033
+	FileType_TTF     FileType = 1034
+	FileType_PNG     FileType = 1035
+	FileType_BAH     FileType = 1100
+	FileType_INI     FileType = 2050
+	FileType_SRC     FileType = 2051
+	FileType_MAZE    FileType = 2052
+	FileType_MUS     FileType = 4094
+	FileType_ACM     FileType = 4095
 )
 
 func (t FileType) String() string {
@@ -79,7 +80,7 @@ func FileTypeFromExtension(ext string) FileType {
 	if t, ok := extensionToType[ext]; ok {
 		return t
 	}
-	return 0
+	return FileType_Invalid
 }
 
 func FileTypeFromParserType(t parser.Key_ResType) FileType {

@@ -56,15 +56,46 @@ func (r *fileRecord) Sys() any {
 	return nil
 }
 
+type dirRecord struct {
+	Type  FileType
+	Count int64
+}
+
+func (d *dirRecord) Name() string {
+	return d.Type.String()
+}
+
+func (d *dirRecord) Size() int64 {
+	return d.Count
+}
+
+func (d *dirRecord) Mode() os.FileMode {
+	return 0o444 // Read-only
+}
+
+func (d *dirRecord) ModTime() time.Time {
+	return time.Time{}
+}
+
+func (d *dirRecord) IsDir() bool {
+	return true
+}
+
+func (d *dirRecord) Sys() any {
+	return nil
+}
+
 type fileCatalog struct {
 	byName map[string]*fileRecord
 	byType map[FileType]map[string]*fileRecord
+	dirs   map[string]*dirRecord
 }
 
 func newFileCatalog() *fileCatalog {
 	return &fileCatalog{
 		byName: make(map[string]*fileRecord),
 		byType: make(map[FileType]map[string]*fileRecord),
+		dirs:   make(map[string]*dirRecord),
 	}
 }
 
@@ -151,6 +182,13 @@ func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
 		catalog.byType[record.Type][record.FullName] = record
 	}
 
+	for fileType, records := range catalog.byType {
+		catalog.dirs[fileType.String()] = &dirRecord{
+			Type:  fileType,
+			Count: int64(len(records)),
+		}
+	}
+
 	cache, err := NewBifFileCache(path.Dir(keyFilePath), 10)
 	if err != nil {
 		log.Panicln("Error creating BIF file cache:", err)
@@ -186,6 +224,18 @@ func (fs *InfinityFs) MkdirAll(path string, perm os.FileMode) error {
 
 // Open opens a file, returning it or an error, if any happens.
 func (fs *InfinityFs) Open(name string) (afero.File, error) {
+	if FileTypeFromExtension(name) != FileType_Invalid {
+		if dir, ok := fs.catalog.dirs[name]; ok {
+			return NewInfinityDir(fs, dir), nil
+		} else {
+			return nil, os.ErrNotExist
+		}
+	} else {
+		return fs.openFile(name)
+	}
+}
+
+func (fs *InfinityFs) openFile(name string) (afero.File, error) {
 	if record, ok := fs.catalog.byName[name]; ok {
 		if bifStream, err := fs.openBif(record.BifFile); err == nil {
 			bif := p.NewBif()
@@ -275,6 +325,18 @@ func (fs *InfinityFs) Rename(oldname, newname string) error {
 
 // Stat returns a FileInfo describing the named file, or an error, if any happens.
 func (fs *InfinityFs) Stat(name string) (os.FileInfo, error) {
+	if FileTypeFromExtension(name) != FileType_Invalid {
+		if dir, ok := fs.catalog.dirs[name]; ok {
+			return dir, nil
+		} else {
+			return nil, os.ErrNotExist
+		}
+	} else {
+		return fs.statFile(name)
+	}
+}
+
+func (fs *InfinityFs) statFile(name string) (os.FileInfo, error) {
 	if record, ok := fs.catalog.byName[name]; ok {
 		if record.FileLength != -1 && record.FileOffset != -1 {
 			return record, nil
