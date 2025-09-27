@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/sbtlocalization/infinity-tools/dialog"
-	"github.com/sbtlocalization/infinity-tools/fs"
+	"github.com/sbtlocalization/sbt-infinity/dialog"
+	"github.com/sbtlocalization/sbt-infinity/fs"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )

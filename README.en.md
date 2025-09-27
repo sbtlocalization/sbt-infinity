@@ -11,7 +11,7 @@ SPDX-License-Identifier: GPL-3.0-only
 
 Here you can find our auxiliary tools for working with Infinity Engine-based games, such as Baldur’s Gate, Baldur’s Gate II, Planescape: Torment, and others.
 
-Read about texture localization in Planescape: Torment in our [comprehensive article](https://sbt.localization.com.ua/article/lokalizatsiia-tekstur-u-planescape-torment) (in Ukrainian).
+Read about texture localization in Planescape: Torment in our [comprehensive article](https://sbt.localization.com.ua/en/article/texture-localization-in-planescape-torment/).
 
 ## Building the Project
 
@@ -28,7 +28,7 @@ These PVRZ files are often built as texture atlases in which a single final imag
 
 To export all individual frames from a BAM animation as PNG files, use the extract-bam command:
 ```
-./infinity-tools extract-bam path/to/config.toml
+./sbt-inf extract-bam path/to/config.toml
 ```
 
 ### Configuration
@@ -80,7 +80,7 @@ Note that it is not necessary to specify all frames. If some are omitted, the pr
 Usage of the command is similar to the previous one:
 
 ```
-./infinity-tools update-bam path/to/config.toml
+./sbt-inf update-bam path/to/config.toml
 ```
 
 ## Examples
@@ -93,4 +93,4 @@ Without open source contributions from many people, localizing games would be mu
 
 So, all code in this repository is available under the [GPL 3.0](./LICENSES/GPL-3.0-only.txt) license, and all graphic assets (except original game resources) are licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>&nbsp;<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" width="16px" height="16px"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" width="16px" height="16px"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" width="16px" height="16px">
 
-<a href="https://github.com/sbtlocalization/infinity-tools">SBT Infinity Tools</a> © 2025 by <a href="https://sbt.localization.com.ua">SBT Localization</a>
+<a href="https://github.com/sbtlocalization/sbt-infinity">SBT Infinity Tools</a> © 2025 by <a href="https://sbt.localization.com.ua">SBT Localization</a>

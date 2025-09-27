@@ -28,7 +28,7 @@ go build
 
 Для експорту всіх окремих кадрів з BAM-анімації у вигляді PNG-файлів є команда `extract-bam`:
 ```
-./infinity-tools extract-bam path/to/config.toml
+./sbt-inf extract-bam path/to/config.toml
 ```
 
 ### Конфігурація
@@ -77,7 +77,7 @@ update = "override"
 
 Використання команди аналогічне до попередньої:
 ```
-./infinity-tools update-bam path/to/config.toml
+./sbt-inf update-bam path/to/config.toml
 ```
 
 ## Приклади
@@ -90,4 +90,4 @@ update = "override"
 
 Тому весь код у цьому репозиторії доступний під ліцензією [GPL 3.0](./LICENSES/GPL-3.0-only.txt), а всі графічні ресурси (окрім оригінальних ресурсів з гри) — під ліцензією <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>&nbsp;<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" width="16px" height="16px"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" width="16px" height="16px"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" width="16px" height="16px">
 
-<a href="https://github.com/sbtlocalization/infinity-tools">SBT Infinity Tools</a> © 2025 by <a href="https://sbt.localization.com.ua">SBT Localization</a>
+<a href="https://github.com/sbtlocalization/sbt-infinity">SBT Infinity Tools</a> © 2025 by <a href="https://sbt.localization.com.ua">SBT Localization</a>

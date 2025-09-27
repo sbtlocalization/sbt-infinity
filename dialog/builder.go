@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
-	p "github.com/sbtlocalization/infinity-tools/parser"
+	p "github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/spf13/afero"
 )
 

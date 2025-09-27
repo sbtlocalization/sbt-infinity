@@ -1,4 +1,4 @@
-module github.com/sbtlocalization/infinity-tools
+module github.com/sbtlocalization/sbt-infinity
 
 go 1.25
 

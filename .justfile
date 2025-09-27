@@ -10,11 +10,14 @@ update-parser:
 	kaitai-struct-compiler --target go --go-package parser --outdir . kaitai/*.ksy
 
 build:
-	go build
+	go build -o sbt-inf .
 
 build-win:
-	GOOS=windows GOARCH=amd64 go build -o infinity-tools.exe .
+	GOOS=windows GOARCH=amd64 go build -o sbt-inf.exe .
 
 generate-mos: build
-	./infinity-tools update-bam inputs/1-startbut/startbut.toml
-	./infinity-tools update-bam inputs/2-cgattr/cgattr.toml 
+	./sbt-inf update-bam inputs/1-startbut/startbut.toml
+	./sbt-inf update-bam inputs/2-cgattr/cgattr.toml 
+
+run *params: build
+	./sbt-inf {{params}}

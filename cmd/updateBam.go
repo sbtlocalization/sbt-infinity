@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
-	"github.com/sbtlocalization/infinity-tools/parser"
+	"github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +42,7 @@ func runUpdateBam(cmd *cobra.Command, args []string) {
 			outputDir = "override" // Default output directory
 		}
 	}
-	
+
 	enableTrace, _ := cmd.Flags().GetBool("trace")
 
 	// Create output directory if it doesn't exist
@@ -61,7 +61,6 @@ func runUpdateBam(cmd *cobra.Command, args []string) {
 		}
 		fmt.Printf("Trace mode enabled. Trace images will be saved to: %s\n", traceDir)
 	}
-
 
 	// Parse the BAM file
 	fmt.Printf("\nParsing BAM file: %s\n", config.BamPath)
@@ -131,9 +130,7 @@ func runUpdateBam(cmd *cobra.Command, args []string) {
 		// Check if we have a new frame for this index
 		if newFrameImg, hasNewFrame := newFrameImages[uint32(frameIndex)]; hasNewFrame {
 			fmt.Printf("Updating frame %d with new image\n", frameIndex)
-			
 
-			
 			err := updateAtlasWithNewFrame(frame, dataBlocks.Block, atlasImages, newFrameImg, frameIndex, enableTrace)
 			if err != nil {
 				fmt.Printf("Error updating frame %d: %v\n", frameIndex, err)
@@ -216,9 +213,9 @@ func updateAtlasWithNewFrame(frame *parser.Bam_FrameEntry, dataBlocks []*parser.
 			for x := 0; x < extendedWidth; x++ {
 				sourceX := int(block.TargetX) - 1 + x
 				sourceY := int(block.TargetY) - 1 + y
-				
+
 				if sourceX >= newFrameBounds.Min.X && sourceX < newFrameBounds.Max.X &&
-				   sourceY >= newFrameBounds.Min.Y && sourceY < newFrameBounds.Max.Y {
+					sourceY >= newFrameBounds.Min.Y && sourceY < newFrameBounds.Max.Y {
 					// Source pixel is within bounds, copy it
 					extendedImg.Set(x, y, newFrameImg.At(sourceX, sourceY))
 				} else {
@@ -237,9 +234,9 @@ func updateAtlasWithNewFrame(frame *parser.Bam_FrameEntry, dataBlocks []*parser.
 		}
 
 		// TRACE: Print block details
-		if enableTrace { 
-			fmt.Printf("  Block %d: src(%d,%d %dx%d) -> dst(%d,%d %dx%d) page=%d\n", 
-				blockCounter, 
+		if enableTrace {
+			fmt.Printf("  Block %d: src(%d,%d %dx%d) -> dst(%d,%d %dx%d) page=%d\n",
+				blockCounter,
 				block.TargetX, block.TargetY, block.Width, block.Height,
 				block.SourceX, block.SourceY, block.Width, block.Height,
 				block.PrvzPage)
