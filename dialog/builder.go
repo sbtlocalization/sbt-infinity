@@ -54,6 +54,7 @@ func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames ...string) (*Dia
 		for _, loadedDlg := range b.loadedDlgFiles {
 			loadedDlg.Close()
 		}
+		clear(b.loadedDlgFiles)
 	}
 
 	return collection, nil
