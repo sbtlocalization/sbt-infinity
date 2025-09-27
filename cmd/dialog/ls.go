@@ -99,13 +99,13 @@ func runLs(cmd *cobra.Command, args []string) error {
 		for _, d := range dlg.Dialogs {
 			if jsonOutput {
 				output := struct {
-					Name string `json:"name"`
-					File string `json:"file"`
-					Bif  string `json:"bif"`
+					State uint32 `json:"root_state"`
+					File  string `json:"file"`
+					Bif   string `json:"bif"`
 				}{
-					Name: d.Id.String(),
-					File: fullDlgName,
-					Bif:  bifPath,
+					State: d.Id.Index,
+					File:  fullDlgName,
+					Bif:   bifPath,
 				}
 				jsonData, err := json.Marshal(output)
 				if err != nil {
