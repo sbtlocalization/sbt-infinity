@@ -22,7 +22,7 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 	fmt.Printf("unpack-bif called with key file: %s\n", keyFilePath)
 
 	// Get output directory flag, with fallback to config, then to default
-	outputDir, _ := cmd.Flags().GetString("output")
+	outputDir, _ := cmd.Flags().GetString(Bif_Flag_Output_Dir)
 	if outputDir == "" {
 		outputDir = "." // Current directory as default
 	}

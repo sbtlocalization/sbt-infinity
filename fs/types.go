@@ -63,6 +63,11 @@ const (
 	FileType_ACM  FileType = 4095
 )
 
+func (t FileType) IsValid() bool {
+	_, ok := typeToExtension[t]
+	return ok
+}
+
 func (t FileType) String() string {
 	if ext, ok := typeToExtension[t]; ok {
 		return ext
