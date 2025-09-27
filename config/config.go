@@ -143,12 +143,12 @@ func ParseArgsWithKeyPath(args []string) (string, []string) {
 // This is the main function that commands should use to handle key path resolution
 func ResolveKeyPathFromArgs(args []string, gameName string) (string, []string, error) {
 	keyPath, otherFiles := ParseArgsWithKeyPath(args)
-	
+
 	resolvedKeyPath, err := ResolveKeyPath(keyPath, gameName)
 	if err != nil {
 		return "", nil, err
 	}
-	
+
 	return resolvedKeyPath, otherFiles, nil
 }
 
