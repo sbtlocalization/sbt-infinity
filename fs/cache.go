@@ -6,6 +6,8 @@
 package fs
 
 import (
+	"path/filepath"
+
 	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/spf13/afero"
 )
@@ -45,7 +47,7 @@ func (c *BifFileCache) Get(bifPath string) (*fileEntry, bool) {
 
 	fs := afero.NewOsFs()
 	dirFs := afero.NewBasePathFs(fs, c.baseDir)
-	f, err := dirFs.Open(bifPath)
+	f, err := dirFs.Open(filepath.FromSlash(bifPath))
 	if err != nil {
 		return nil, false
 	}
