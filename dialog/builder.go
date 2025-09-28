@@ -8,7 +8,6 @@ package dialog
 import (
 	"fmt"
 	"log"
-	"slices"
 	"strings"
 
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
@@ -32,14 +31,44 @@ func NewDialogBuilder(dlgFsys afero.Fs, tlkFsys afero.Fs) *DialogBuilder {
 	}
 }
 
-func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames []string) (*DialogCollection, error) {
+func (b *DialogBuilder) LoadAllRootStates(dlgNames ...string) (*DialogCollection, error) {
+	collection := NewDialogCollection()
+
+	for _, dlgName := range dlgNames {
+		dlg, err := b.readDlgFile(dlgName)
+		if err != nil {
+			log.Printf("error loading DLG file %s: %v", dlgName, err)
+			continue
+		}
+
+		states, err := dlg.States()
+		if err != nil {
+			log.Printf("error getting states from DLG file %s: %v", dlgName, err)
+			continue
+		}
+
+		for stateIndex, stateEntry := range states {
+			if _, isRoot := stateEntry.GetTriggerText(); isRoot {
+				d := NewDialog(NewNodeOrigin(dlgName, uint32(stateIndex)))
+				collection.Dialogs = append(collection.Dialogs, d)
+			}
+		}
+		for _, loadedDlg := range b.loadedDlgFiles {
+			loadedDlg.Close()
+		}
+		clear(b.loadedDlgFiles)
+	}
+
+	return collection, nil
+}
+
+func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames ...string) (*DialogCollection, error) {
 	collection := NewDialogCollection()
 
 	if b.tlkFile == nil || b.tlkFile.FileName() != tlkName {
 		tlkFile, err := b.readTlkFile(tlkName)
 		if err != nil {
-			log.Printf("Error loading TLK file %s: %v", tlkName, err)
-			return nil, err
+			return nil, fmt.Errorf("error loading TLK file %s: %v", tlkName, err)
 		}
 		b.tlkFile = tlkFile
 	}
@@ -56,6 +85,7 @@ func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames []string) (*Dial
 		for _, loadedDlg := range b.loadedDlgFiles {
 			loadedDlg.Close()
 		}
+		clear(b.loadedDlgFiles)
 	}
 
 	return collection, nil
@@ -146,14 +176,19 @@ func (b *DialogBuilder) loadDialog(rootStateOrigin NodeOrigin) (*Dialog, error) 
 func (b *DialogBuilder) loadTree(dialog *Dialog, previousStates []NodeOrigin, stateOrigin NodeOrigin) (*Node, error) {
 	state, err := b.loadStateWithTransitions(stateOrigin)
 	if err != nil {
-		log.Fatalln("Can't load state:", err)
-		return nil, err
+		return &Node{
+			Type:     ErrorNodeType,
+			Origin:   stateOrigin,
+			Parent:   nil,
+			Children: make([]*Node, 0),
+		}, nil
 	}
+	dialog.AllStates[stateOrigin] = struct{}{}
 
 	for _, child := range state.Children {
 		if child.Type == TransitionNodeType && !child.Transition.IsDialogEnd {
 			nextStateOrigin := child.Transition.NextStateOrigin
-			if slices.Contains(previousStates, nextStateOrigin) {
+			if _, ok := dialog.AllStates[nextStateOrigin]; ok {
 				child.Children[0] = &Node{
 					Type:     LoopNodeType,
 					Origin:   nextStateOrigin,
@@ -163,7 +198,7 @@ func (b *DialogBuilder) loadTree(dialog *Dialog, previousStates []NodeOrigin, st
 			} else {
 				nextState, err := b.loadTree(dialog, append(previousStates, stateOrigin), nextStateOrigin)
 				if err != nil {
-					log.Fatalf("Error loading state %s: %v", nextStateOrigin, err)
+					log.Printf("Error loading state %s: %v", nextStateOrigin, err)
 					continue
 				}
 				nextState.Parent = child
@@ -181,14 +216,15 @@ func (b *DialogBuilder) loadTree(dialog *Dialog, previousStates []NodeOrigin, st
 func (b *DialogBuilder) loadStateWithTransitions(origin NodeOrigin) (*Node, error) {
 	dlg, err := b.readDlgFile(origin.DlgName)
 	if err != nil {
-		log.Printf("Error loading DLG file %s: %v", origin.DlgName, err)
-		return nil, err
+		return nil, fmt.Errorf("error loading DLG file %s: %v", origin.DlgName, err)
 	}
 
 	states, err := dlg.States()
 	if err != nil {
-		log.Printf("Error getting states from DLG file %s: %v", origin.DlgName, err)
-		return nil, err
+		return nil, fmt.Errorf("error getting states from DLG file %s: %v", origin.DlgName, err)
+	}
+	if int(origin.Index) >= len(states) {
+		return nil, fmt.Errorf("state index %d out of range in DLG file %s", origin.Index, origin.DlgName)
 	}
 
 	state := states[origin.Index]

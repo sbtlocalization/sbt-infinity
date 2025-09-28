@@ -15,30 +15,21 @@ func (d *Dialog) All() iter.Seq2[NodeOrigin, *Node] {
 			return
 		}
 
-		// Stack for DFS traversal
-		stack := []*Node{d.RootState}
-		visited := make(map[*Node]bool)
-
-		for len(stack) > 0 {
-			// Pop from stack
-			current := stack[len(stack)-1]
-			stack = stack[:len(stack)-1]
-
-			if visited[current] {
-				continue
-			}
-			visited[current] = true
-
-			if !yield(current.Origin, current) {
-				return
+		var dfs func(*Node) bool
+		dfs = func(node *Node) bool {
+			if !yield(node.Origin, node) {
+				return false
 			}
 
-			// Add children to stack in reverse order for left-to-right DFS
-			for i := len(current.Children) - 1; i >= 0; i-- {
-				if !visited[current.Children[i]] {
-					stack = append(stack, current.Children[i])
+			for _, child := range node.Children {
+				if !dfs(child) {
+					return false
 				}
 			}
+
+			return true
 		}
+
+		dfs(d.RootState)
 	}
 }

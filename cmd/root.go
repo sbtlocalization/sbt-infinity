@@ -8,19 +8,16 @@ package cmd
 import (
 	"os"
 
+	"github.com/sbtlocalization/infinity-tools/cmd/dialog"
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "infinity-tools",
 	Short: "A set of tools for Infinity Engine games",
 	Long: `SBT Infinity Tools is a collection of utilities designed to assist with the localization and 
 modification of games based on the Infinity Engine, such as Baldur's Gate, Baldur's Gate II, 
 and Planescape: Torment.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -33,4 +30,5 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.AddCommand(dialog.NewCommand())
 }

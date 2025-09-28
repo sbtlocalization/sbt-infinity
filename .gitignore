@@ -8,3 +8,6 @@ override
 release
 
 .DS_Store
+
+input/
+output/
