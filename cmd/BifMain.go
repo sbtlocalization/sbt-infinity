@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
-	"github.com/sbtlocalization/infinity-tools/fs"
-	"github.com/sbtlocalization/infinity-tools/parser"
+	"github.com/sbtlocalization/sbt-infinity/fs"
+	"github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/spf13/cobra"
 )
 

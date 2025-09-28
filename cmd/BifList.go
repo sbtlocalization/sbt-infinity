@@ -12,7 +12,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/sbtlocalization/infinity-tools/parser"
+	"github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/spf13/cobra"
 )
 
