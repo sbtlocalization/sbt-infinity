@@ -3,11 +3,12 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-infinity-tools
+sbt-inf
+sbt-infinity
+.sbt-inf.toml
 override
 release
 
 .DS_Store
 
-input/
-output/
+output

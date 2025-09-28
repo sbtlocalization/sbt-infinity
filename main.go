@@ -5,7 +5,7 @@
 
 package main
 
-import "github.com/sbtlocalization/infinity-tools/cmd"
+import "github.com/sbtlocalization/sbt-infinity/cmd"
 
 func main() {
 	cmd.Execute()

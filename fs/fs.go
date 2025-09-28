@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
-	p "github.com/sbtlocalization/infinity-tools/parser"
+	p "github.com/sbtlocalization/sbt-infinity/parser"
 
 	"github.com/spf13/afero"
 )
@@ -449,4 +449,12 @@ func (fs *InfinityFs) closeBif(bifPath string) error {
 		log.Fatalln("Can't close BIF file", bifPath)
 		return os.ErrClosed
 	}
+}
+
+// GetBifFilePath returns the BIF file path for a given file name
+func (fs *InfinityFs) GetBifFilePath(name string) (string, error) {
+	if record, ok := fs.catalog.byName[name]; ok {
+		return record.BifFile, nil
+	}
+	return "", os.ErrNotExist
 }

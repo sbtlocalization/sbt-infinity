@@ -8,12 +8,12 @@ package cmd
 import (
 	"os"
 
-	"github.com/sbtlocalization/infinity-tools/cmd/dialog"
+	"github.com/sbtlocalization/sbt-infinity/cmd/dialog"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "infinity-tools",
+	Use:   "sbt-inf",
 	Short: "A set of tools for Infinity Engine games",
 	Long: `SBT Infinity Tools is a collection of utilities designed to assist with the localization and 
 modification of games based on the Infinity Engine, such as Baldur's Gate, Baldur's Gate II, 

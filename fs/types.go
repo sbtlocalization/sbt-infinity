@@ -8,7 +8,7 @@ package fs
 import (
 	"strings"
 
-	"github.com/sbtlocalization/infinity-tools/parser"
+	"github.com/sbtlocalization/sbt-infinity/parser"
 )
 
 type FileType int
