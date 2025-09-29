@@ -8,6 +8,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -18,8 +19,10 @@ import (
 
 // runExtractBif handles the `bif ex` command execution
 func runExtractBif(cmd *cobra.Command, args []string) {
+	initLogF(cmd)
+
 	keyFilePath := args[0]
-	fmt.Printf("unpack-bif called with key file: %s\n", keyFilePath)
+	printLogF("bif ex called with key file: %s\n", keyFilePath)
 
 	// Get output directory flag, with fallback to config, then to default
 	outputDir, _ := cmd.Flags().GetString(Bif_Flag_Output_Dir)
@@ -29,38 +32,24 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 
 	// Create output directory if it doesn't exist
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		fmt.Printf("Error creating output directory: %v\n", err)
+		log.Fatalf("Error creating output directory: %v\n", err)
 		return
 	}
 
-	// Open the KEY file
-	file, err := os.Open(keyFilePath)
-	if err != nil {
-		fmt.Printf("Error opening KEY file: %v\n", err)
-		return
-	}
-	defer file.Close()
-
-	// Create a Kaitai stream from the file
-	stream := kaitai.NewStream(file)
-
-	// Parse the KEY file
-	keyFile := parser.NewKey()
-	err = keyFile.Read(stream, nil, keyFile)
-	if err != nil {
-		fmt.Printf("Error parsing KEY file: %v\n", err)
-		return
-	}
+	keyFile, realFile := parseKeyFile(keyFilePath)
+	// Close file on this level to avoid keep interface opened
+	// TODO: use NewInfinityFs ?
+	defer realFile.Close()
 
 	// Display KEY file information
-	fmt.Printf("KEY file parsed successfully!\n")
-	fmt.Printf("BIF files count: %d\n", keyFile.NumBiffEntries)
-	fmt.Printf("Packed resource count: %d\n", keyFile.NumResEntries)
+	printLogF("KEY file parsed successfully!\n")
+	printLogF("BIF files count: %d\n", keyFile.NumBiffEntries)
+	printLogF("Packed resource count: %d\n", keyFile.NumResEntries)
 
 	biffs, _ := keyFile.BiffEntries()
 	for key, value := range biffs {
 		filePath, _ := value.FilePath()
-		fmt.Printf("Biff index %d, for file %s\n", key, filePath)
+		printLogF("Biff index %d, for file %s\n", key, filePath)
 	}
 
 	resEntries, _ := keyFile.ResEntries()
@@ -68,15 +57,15 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 		if value.Type == parser.Key_ResType__Dlg {
 			si := value.Locator.BiffFileIndex
 			nti := value.Locator.FileIndex
-			fmt.Printf("Found dlg res: index %d, name %s, source_index %d, ntls_index %d\n", key, value.Name, si, nti)
+			printLogF("Found dlg res: index %d, name %s, source_index %d, ntls_index %d\n", key, value.Name, si, nti)
 
 			targetFilePath, _ := biffs[si].FilePath()
-			fmt.Printf("Going to unpack %s\n", targetFilePath)
+			printLogF("Going to unpack %s\n", targetFilePath)
 
 			p := filepath.Dir(keyFilePath)
 			bFile, err := os.Open(filepath.Join(p, targetFilePath))
 			if err != nil {
-				fmt.Printf("Error opening BIFF file: %v\n", err)
+				log.Fatalf("Error opening BIFF file: %v\n", err)
 				return
 			}
 			defer bFile.Close()
@@ -88,26 +77,26 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 			bifFile := parser.NewBif()
 			err = bifFile.Read(stream, nil, bifFile)
 			if err != nil {
-				fmt.Printf("Error parsing Bif file: %v\n", err)
+				log.Fatalf("Error parsing Bif file: %v\n", err)
 				return
 			}
 
-			fmt.Printf("BIF file parsed successfully!\n")
-			fmt.Printf("BIF.NumFileEntries: %d\n", bifFile.NumFileEntries)
-			fmt.Printf("BIF.NumTilesetEntries: %d\n", bifFile.NumTilesetEntries)
+			printLogF("BIF file parsed successfully!\n")
+			printLogF("BIF.NumFileEntries: %d\n", bifFile.NumFileEntries)
+			printLogF("BIF.NumTilesetEntries: %d\n", bifFile.NumTilesetEntries)
 
 			if nti < uint64(bifFile.NumFileEntries) {
 				fileEntries, _ := bifFile.FileEntries()
 				currentEntry := fileEntries[nti]
 				targetType := currentEntry.ResType
 				targetBlob, _ := currentEntry.Data()
-				fmt.Printf("Process entry with locator %d, type %d, extension %s\n", currentEntry.Locator.FileIndex, currentEntry.ResType, targetType)
+				printLogF("Process entry with locator %d, type %d, extension %s\n", currentEntry.Locator.FileIndex, currentEntry.ResType, targetType)
 
 				outputPath := filepath.Join(outputDir, fmt.Sprintf("%s.%s", value.Name, targetType))
 
 				err := saveBlobToFile(targetBlob, outputPath)
 				if err != nil {
-					fmt.Printf("Error saving %s file: %v\n", outputPath, err)
+					log.Fatalf("Error saving %s file: %v\n", outputPath, err)
 					return
 				}
 

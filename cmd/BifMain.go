@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -159,4 +160,49 @@ func getContentFilter(cmd *cobra.Command) *regexp.Regexp {
 	}
 
 	return compiled
+}
+
+func filterBifContent(cmd *cobra.Command, args []string, processResult func(index int, name string, bifPath string, resType parser.Key_ResType)) {
+	initLogF(cmd)
+
+	keyFilePath := args[0]
+	printLogF("bif ls called with key file: %s\n", keyFilePath)
+
+	keyFile, realFile := parseKeyFile(keyFilePath)
+	// Close file on this level to avoid keep interface opened
+	// TODO: use NewInfinityFs ?
+	defer realFile.Close()
+
+	// Display KEY file information
+	printLogF("KEY file parsed successfully!\n")
+	printLogF("BIF files count: %d\n", keyFile.NumBiffEntries)
+	printLogF("Packed resource count: %d\n", keyFile.NumResEntries)
+
+	typeFilter := getTypeFilter(cmd)
+	printLogF("Active type filters: %v\n", typeFilter)
+
+	contentFilter := getContentFilter(cmd)
+
+	resEntries, _ := keyFile.ResEntries()
+
+	for key, value := range resEntries {
+		if len(typeFilter) > 0 && !slices.Contains(typeFilter, value.Type) {
+			continue
+		}
+
+		index := key
+		resourseName := value.Name
+		bifFile, _ := value.Locator.BiffFile()
+		bifFilePath, _ := bifFile.FilePath()
+
+		if contentFilter != nil {
+			if !(contentFilter.MatchString(strconv.Itoa(index)) ||
+				contentFilter.MatchString(resourseName) ||
+				contentFilter.MatchString(bifFilePath)) {
+				continue
+			}
+		}
+
+		processResult(index, resourseName, bifFilePath, value.Type)
+	}
 }
