@@ -16,8 +16,9 @@ import (
 
 // runListBif handles the `bif ls` command execution
 func runListBif(cmd *cobra.Command, args []string) {
+	keyFilePath := args[0]
 	isJson, _ := cmd.Flags().GetBool(Bif_Flag_JSON)
-	filterBifContent(cmd, args, func(index int, name string, bifPath string, resType parser.Key_ResType) {
+	filterBifContent(cmd, keyFilePath, func(index int, name string, bifPath string, resType parser.Key_ResType) {
 		outputFound(isJson, index, name, bifPath, resType)
 	})
 }

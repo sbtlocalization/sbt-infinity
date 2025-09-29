@@ -155,17 +155,16 @@ func getContentFilter(cmd *cobra.Command) *regexp.Regexp {
 
 	compiled, err := regexp.Compile(rawInput)
 	if err != nil {
-		log.Fatalf("Value %s is not Regexp\n", rawInput)
+		log.Fatalf("Value %s is not Regexp: %v\n", rawInput, err)
 		return nil
 	}
 
 	return compiled
 }
 
-func filterBifContent(cmd *cobra.Command, args []string, processResult func(index int, name string, bifPath string, resType parser.Key_ResType)) {
+func filterBifContent(cmd *cobra.Command, keyFilePath string, processResult func(index int, name string, bifPath string, resType parser.Key_ResType)) {
 	initLogF(cmd)
 
-	keyFilePath := args[0]
 	printLogF("bif ls called with key file: %s\n", keyFilePath)
 
 	keyFile, realFile := parseKeyFile(keyFilePath)
