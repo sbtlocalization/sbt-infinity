@@ -54,6 +54,7 @@ func resourseFound(outputDir string, keyFilePath string, index int, name string,
 	if err != nil {
 		log.Fatalf("failed to extract file %s: %v", fullName, err)
 	}
+	defer file.Close()
 
 	outputPath := filepath.Join(outputDir, fullName)
 
