@@ -89,16 +89,18 @@ func (n *Node) String() string {
 type DialogID = NodeOrigin
 
 type Dialog struct {
-	Id        DialogID
-	RootState *Node
-	AllStates map[NodeOrigin]struct{}
+	Id           DialogID
+	RootState    *Node
+	AllStates    map[NodeOrigin]struct{}
+	AllCreatures map[string]*Creature
 }
 
 func NewDialog(id DialogID) *Dialog {
 	return &Dialog{
-		Id:        id,
-		RootState: nil,
-		AllStates: make(map[NodeOrigin]struct{}),
+		Id:           id,
+		RootState:    nil,
+		AllStates:    make(map[NodeOrigin]struct{}),
+		AllCreatures: make(map[string]*Creature),
 	}
 }
 
@@ -110,4 +112,13 @@ func NewDialogCollection() *DialogCollection {
 	return &DialogCollection{
 		Dialogs: make([]*Dialog, 0),
 	}
+}
+
+type Creature struct {
+	ShortNameId uint32
+	ShortName   string
+	LongNameId  uint32
+	LongName    string
+	Portrait    string
+	Dialog      string
 }

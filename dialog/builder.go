@@ -16,18 +16,24 @@ import (
 )
 
 type DialogBuilder struct {
-	dlgFsys        afero.Fs
+	infFsys        afero.Fs
 	tlkFsys        afero.Fs
 	loadedDlgFiles map[string]*p.DlgFile
 	tlkFile        *p.TlkFile
+	creatures      map[string]*Creature
 }
 
-func NewDialogBuilder(dlgFsys afero.Fs, tlkFsys afero.Fs) *DialogBuilder {
+func NewDialogBuilder(infFsys afero.Fs, tlkFsys afero.Fs, withCreatures bool) *DialogBuilder {
+	var creatures map[string]*Creature = nil
+	if withCreatures {
+		creatures = make(map[string]*Creature)
+	}
 	return &DialogBuilder{
-		dlgFsys:        dlgFsys,
+		infFsys:        infFsys,
 		tlkFsys:        tlkFsys,
 		loadedDlgFiles: make(map[string]*p.DlgFile),
 		tlkFile:        nil,
+		creatures:      creatures,
 	}
 }
 
@@ -73,6 +79,10 @@ func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames ...string) (*Dia
 		b.tlkFile = tlkFile
 	}
 
+	if b.creatures != nil {
+		_ = b.loadCreatures()
+	}
+
 	for _, dlgName := range dlgNames {
 		dlg, err := b.readDlgFile(dlgName)
 		if err != nil {
@@ -89,6 +99,63 @@ func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames ...string) (*Dia
 	}
 
 	return collection, nil
+}
+
+func (b *DialogBuilder) loadCreatures() error {
+	if len(b.creatures) > 0 {
+		// already loaded
+		return nil
+	}
+
+	if b.tlkFile == nil {
+		return fmt.Errorf("TLK file must be loaded before loading creatures")
+	}
+
+	dir, err := b.infFsys.Open("CRE")
+	if err != nil {
+		return fmt.Errorf("unable to read CRE files: %v", err)
+	}
+	defer dir.Close()
+
+	creFiles, err := dir.Readdirnames(0)
+	if err != nil {
+		return fmt.Errorf("unable to read CRE file names: %v", err)
+	}
+
+	for _, creFileName := range creFiles {
+		creFile, err := b.infFsys.Open(creFileName)
+		if err != nil {
+			log.Printf("unable to open CRE file %s: %v", creFileName, err)
+			continue
+		}
+		defer creFile.Close()
+
+		cre := p.NewCre()
+		stream := kaitai.NewStream(creFile)
+		err = cre.Read(stream, nil, cre)
+		if err != nil {
+			log.Printf("unable to read CRE file %s: %v", creFileName, err)
+			continue
+		}
+
+		shortName := b.tlkFile.GetText(cre.ShortName)
+		longName := b.tlkFile.GetText(cre.LongName)
+
+		creature := &Creature{
+			ShortNameId: cre.ShortName,
+			ShortName:   shortName,
+			LongNameId:  cre.LongName,
+			LongName:    longName,
+			Portrait:    cre.Body.Header.SmallPortrait + ".BMP",
+			Dialog:      cre.Body.Header.Dialog,
+		}
+
+		log.Println(longName, "-", cre.Body.Header.Dialog)
+
+		b.creatures[strings.ToUpper(creature.Dialog)] = creature
+	}
+
+	return nil
 }
 
 func (b *DialogBuilder) readTlkFile(tlkFileName string) (*p.TlkFile, error) {
@@ -121,7 +188,7 @@ func (b *DialogBuilder) readDlgFile(dlgFileName string) (*p.DlgFile, error) {
 		fullName = fullName + ".DLG"
 	}
 
-	file, err := b.dlgFsys.Open(fullName)
+	file, err := b.infFsys.Open(fullName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open DLG file %s: %w", fullName, err)
 	}
@@ -184,6 +251,10 @@ func (b *DialogBuilder) loadTree(dialog *Dialog, previousStates []NodeOrigin, st
 		}, nil
 	}
 	dialog.AllStates[stateOrigin] = struct{}{}
+
+	if cre, ok := b.creatures[stateOrigin.DlgName]; ok {
+		dialog.AllCreatures[stateOrigin.DlgName] = cre
+	}
 
 	for _, child := range state.Children {
 		if child.Type == TransitionNodeType && !child.Transition.IsDialogEnd {

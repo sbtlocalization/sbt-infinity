@@ -32,8 +32,7 @@ func NewLsCommand() *cobra.Command {
 		RunE: runLs,
 	}
 
-	cmd.Flags().Bool("json", false, "Output in JSON format")
-	cmd.Flags().StringP("tlk", "t", "", "Path to dialog.tlk file")
+	cmd.Flags().BoolP("json", "j", false, "Output in JSON format")
 	config.AddGameFlag(cmd)
 
 	return cmd
@@ -62,7 +61,7 @@ func runLs(cmd *cobra.Command, args []string) error {
 
 	dlgFs := fs.NewInfinityFs(keyPath, fs.FileType_DLG)
 
-	dc := dialog.NewDialogBuilder(dlgFs, tlkFs)
+	dc := dialog.NewDialogBuilder(dlgFs, tlkFs, false)
 
 	if len(dialogFiles) == 0 {
 		dir, err := dlgFs.Open("DLG")

@@ -12,6 +12,7 @@ import (
 	"github.com/nulab/autog"
 	"github.com/nulab/autog/graph"
 	"github.com/supersonicpineapple/go-jsoncanvas/canvas"
+	"go.yaml.in/yaml/v3"
 )
 
 const (
@@ -22,34 +23,85 @@ const (
 var (
 	StateColor           = "3"
 	TransitionColor      = "4"
-	FinalTransitionColor = "2"
-	LoopEdgeColor        = "6"
+	FinalTransitionColor = "1"
 )
+
+type Character struct {
+	Name     string `yaml:"name"`
+	Portrait string `yaml:"portrait"`
+}
+
+type FrontMatter struct {
+	NodeId        string     `yaml:"nodeId"`
+	Character     *Character `yaml:"character,omitempty"`
+	TextID        string     `yaml:"textId,omitempty"`
+	JournalTextID string     `yaml:"journalTextId,omitempty"`
+	Trigger       string     `yaml:"trigger,omitempty"`
+	Action        string     `yaml:"action,omitempty"`
+}
+
+func NewFrontMatter(nodeId string) *FrontMatter {
+	return &FrontMatter{
+		NodeId: nodeId,
+	}
+}
+
+func (fm *FrontMatter) SetCharacter(name, portrait string) {
+	if fm.Character == nil {
+		fm.Character = &Character{}
+	}
+	fm.Character.Name = name
+	fm.Character.Portrait = strings.Replace(portrait, ".BMP", ".png", 1)
+}
+
+func isEmptyTransitionNode(node *Node) bool {
+	return node.Type == TransitionNodeType &&
+		!node.Transition.IsDialogEnd &&
+		!node.Transition.HasText &&
+		!node.Transition.HasJournalText &&
+		!node.Transition.HasTrigger &&
+		!node.Transition.HasAction
+}
 
 func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 	c := canvas.NewCanvas()
+
+	// Create color mapping for unique DlgName values (built on-demand)
+	stateColors := []string{"3", "6", "2", "5"}
+	dlgNameToColor := make(map[string]string)
+	colorIndex := 0
 
 	edges := make(map[string]*canvas.Edge)
 	nodes := make(map[string]*canvas.Node)
 	layoutEdges := make([][]string, 0)
 	for _, dNode := range d.All() {
-		cNode := newNode(dNode)
-		if cNode != nil {
-			c.AddNodes(cNode)
-			nodes[cNode.ID] = cNode
-		}
-
-		if dNode.Parent != nil {
-			cEdge := newEdge(dNode)
-			if cEdge == nil {
-				continue
+		if isEmptyTransitionNode(dNode) {
+			continue
+		} else {
+			// Build color mapping on-demand for StateNodeType
+			if dNode.Type == StateNodeType {
+				if _, exists := dlgNameToColor[dNode.Origin.DlgName]; !exists {
+					dlgNameToColor[dNode.Origin.DlgName] = stateColors[colorIndex%len(stateColors)]
+					colorIndex++
+				}
 			}
 
-			// if _, ok := edges[cEdge.ID]; !ok {
-			edges[cEdge.ID] = cEdge
-			layoutEdges = append(layoutEdges, []string{cEdge.FromNode, cEdge.ToNode})
-			c.AddEdges(cEdge)
-			// }
+			cNode := newNode(d, dNode, dlgNameToColor)
+			if cNode != nil {
+				c.AddNodes(cNode)
+				nodes[cNode.ID] = cNode
+			}
+
+			if dNode.Parent != nil {
+				cEdge := newEdge(dNode)
+				if cEdge == nil {
+					continue
+				}
+
+				edges[cEdge.ID] = cEdge
+				layoutEdges = append(layoutEdges, []string{cEdge.FromNode, cEdge.ToNode})
+				c.AddEdges(cEdge)
+			}
 		}
 	}
 
@@ -71,7 +123,7 @@ func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 	return c
 }
 
-func newNode(node *Node) *canvas.Node {
+func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string) *canvas.Node {
 	cNode := canvas.Node{
 		ID:     node.String(),
 		X:      0,
@@ -81,19 +133,44 @@ func newNode(node *Node) *canvas.Node {
 	}
 
 	var sb strings.Builder
-	name := node.Origin.String()
-	if node.Type == TransitionNodeType {
-		if node.Transition.IsDialogEnd {
-			name = "Кінець діалогу " + name
-		} else {
-			name = "Відповідь " + name
-		}
-	}
-	sb.WriteString(fmt.Sprintf("#### %s\n\n", name))
+
+	// front matter
+	sb.WriteString("---\n")
+	fm := NewFrontMatter(node.Origin.String())
 	switch node.Type {
 	case StateNodeType:
-		cNode.Color = &StateColor
-		sb.WriteString(fmt.Sprintf("<small>Text **#%d**</small>\n\n", node.State.TextRef))
+		fm.TextID = fmt.Sprintf("#%d", node.State.TextRef)
+		fm.Trigger = strings.TrimSpace(node.State.Trigger)
+		if cre, ok := d.AllCreatures[node.Origin.DlgName]; ok {
+			fm.SetCharacter(cre.LongName, cre.Portrait)
+		}
+	case TransitionNodeType:
+		if node.Transition.HasText {
+			fm.TextID = fmt.Sprintf("#%d", node.Transition.TextRef)
+		}
+		if node.Transition.HasJournalText {
+			fm.JournalTextID = fmt.Sprintf("#%d", node.Transition.JournalTextRef)
+		}
+		fm.Action = strings.TrimSpace(node.Transition.Action)
+		if node.Transition.IsDialogEnd {
+			fm.SetCharacter("End dialog", "")
+		} else {
+			fm.SetCharacter("Answer", "")
+		}
+	}
+
+	fms, _ := yaml.Marshal(fm)
+	sb.Write(fms)
+	sb.WriteString("---\n")
+
+	// content
+	switch node.Type {
+	case StateNodeType:
+		if color, exists := dlgNameToColor[node.Origin.DlgName]; exists {
+			cNode.Color = &color
+		} else {
+			cNode.Color = &StateColor
+		}
 		sb.WriteString(node.State.Text)
 	case TransitionNodeType:
 		if node.Transition.IsDialogEnd {
@@ -103,14 +180,11 @@ func newNode(node *Node) *canvas.Node {
 		}
 
 		if node.Transition.HasText {
-			sb.WriteString(fmt.Sprintf("<small>Text **#%d**</small>\n\n", node.Transition.TextRef))
 			sb.WriteString(node.Transition.Text)
 		}
+
 		if node.Transition.HasJournalText {
-			if node.Transition.HasText {
-				sb.WriteString("\n\n-----\n\n")
-			}
-			sb.WriteString(fmt.Sprintf("<small>Journal Text **#%d**</small>\n\n", node.Transition.JournalTextRef))
+			sb.WriteString("\n\n>---- JOURNAL ----<\n\n")
 			sb.WriteString(node.Transition.JournalText)
 		}
 	case ErrorNodeType:
@@ -133,6 +207,11 @@ func newEdge(node *Node) *canvas.Edge {
 	fromSide, toSide, toEnd := "bottom", "top", "arrow"
 	var color string
 
+	if isEmptyTransitionNode(node.Parent) && node.Parent.Parent != nil {
+		// skip empty transition nodes, connect parent state to next state directly
+		fromNode = node.Parent.Parent.String()
+	}
+
 	cEdge := &canvas.Edge{
 		ID:       fmt.Sprintf("%s-%s", fromNode, toNode),
 		FromNode: fromNode,
@@ -145,7 +224,7 @@ func newEdge(node *Node) *canvas.Edge {
 
 	var triggerText string
 	if node.Type == TransitionNodeType && node.Transition.HasTrigger {
-		triggerText = node.Transition.Trigger
+		triggerText = strings.TrimSpace(node.Transition.Trigger)
 	}
 
 	if triggerText != "" {
