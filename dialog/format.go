@@ -105,18 +105,43 @@ func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 		}
 	}
 
-	src := graph.EdgeSlice(layoutEdges)
-	layout := autog.Layout(
-		src,
-		autog.WithNodeFixedSize(Width, Height),
-		autog.WithLayerSpacing(200),
-	)
-	for _, n := range layout.Nodes {
-		if cNode, ok := nodes[n.ID]; ok {
-			cNode.X = int(n.X)
-			cNode.Y = int(n.Y)
-		} else {
-			fmt.Printf("warning: node %s not found in canvas nodes\n", n.ID)
+	// Validate graph structure before layout
+	if len(nodes) == 0 {
+		fmt.Println("warning: no nodes to layout, skipping autolayout")
+		return c
+	}
+
+	// Add panic recovery for the autog.Layout call
+	var layout graph.Layout
+	layoutSuccess := false
+
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Printf("warning: layout algorithm failed: %v\n", r)
+				fmt.Println("Nodes will be placed at default positions")
+				layoutSuccess = false
+			}
+		}()
+
+		src := graph.EdgeSlice(layoutEdges)
+		layout = autog.Layout(
+			src,
+			autog.WithNodeFixedSize(Width, Height),
+			autog.WithLayerSpacing(200),
+		)
+		layoutSuccess = true
+	}()
+
+	// Apply layout if successful
+	if layoutSuccess {
+		for _, n := range layout.Nodes {
+			if cNode, ok := nodes[n.ID]; ok {
+				cNode.X = int(n.X)
+				cNode.Y = int(n.Y)
+			} else {
+				fmt.Printf("warning: node %s not found in canvas nodes\n", n.ID)
+			}
 		}
 	}
 

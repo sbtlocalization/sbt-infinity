@@ -151,7 +151,7 @@ func (b *DialogBuilder) loadCreatures() error {
 			Dialog:      cre.Body.Header.Dialog,
 		}
 
-		fmt.Printf("Loading character: %s (dialog: %s)\n", longName, cre.Body.Header.Dialog)
+		b.Printf("Loading character: %s (dialog: %s)\n", longName, cre.Body.Header.Dialog)
 
 		b.creatures[strings.ToUpper(creature.Dialog)] = creature
 	}
