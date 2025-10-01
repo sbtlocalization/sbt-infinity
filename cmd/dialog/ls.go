@@ -61,7 +61,7 @@ func runLs(cmd *cobra.Command, args []string) error {
 
 	dlgFs := fs.NewInfinityFs(keyPath, fs.FileType_DLG)
 
-	dc := dialog.NewDialogBuilder(dlgFs, tlkFs, false)
+	dc := dialog.NewDialogBuilder(dlgFs, tlkFs, false, false)
 
 	if len(dialogFiles) == 0 {
 		dir, err := dlgFs.Open("DLG")
