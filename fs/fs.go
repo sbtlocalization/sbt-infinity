@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
@@ -175,11 +176,11 @@ func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
 			FileOffset:   -1,
 		}
 
-		catalog.byName[record.FullName] = record
+		catalog.byName[strings.ToLower(record.FullName)] = record
 		if catalog.byType[record.Type] == nil {
 			catalog.byType[record.Type] = make(map[string]*fileRecord)
 		}
-		catalog.byType[record.Type][record.FullName] = record
+		catalog.byType[record.Type][strings.ToLower(record.FullName)] = record
 	}
 
 	for fileType, records := range catalog.byType {
@@ -236,7 +237,7 @@ func (fs *InfinityFs) Open(name string) (afero.File, error) {
 }
 
 func (fs *InfinityFs) openFile(name string) (afero.File, error) {
-	if record, ok := fs.catalog.byName[name]; ok {
+	if record, ok := fs.catalog.byName[strings.ToLower(name)]; ok {
 		if bifStream, err := fs.openBif(record.BifFile); err == nil {
 			bif := p.NewBif()
 			stream := kaitai.NewStream(bifStream)
@@ -337,7 +338,7 @@ func (fs *InfinityFs) Stat(name string) (os.FileInfo, error) {
 }
 
 func (fs *InfinityFs) statFile(name string) (os.FileInfo, error) {
-	if record, ok := fs.catalog.byName[name]; ok {
+	if record, ok := fs.catalog.byName[strings.ToLower(name)]; ok {
 		if record.FileLength != -1 && record.FileOffset != -1 {
 			return record, nil
 		}
@@ -452,7 +453,7 @@ func (fs *InfinityFs) closeBif(bifPath string) error {
 
 // GetBifFilePath returns the BIF file path for a given file name
 func (fs *InfinityFs) GetBifFilePath(name string) (string, error) {
-	if record, ok := fs.catalog.byName[name]; ok {
+	if record, ok := fs.catalog.byName[strings.ToLower(name)]; ok {
 		return record.BifFile, nil
 	}
 	return "", os.ErrNotExist
