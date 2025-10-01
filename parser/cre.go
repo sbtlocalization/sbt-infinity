@@ -593,199 +593,91 @@ func (this *Cre_BodyV1_Header) Read(io *kaitai.Stream, parent *Cre_BodyV1, root 
 		return err
 	}
 	this.Thac0 = tmp39
-	if !(this.Thac0 >= 1) {
-		return kaitai.NewValidationLessThanError(1, this.Thac0, this._io, "/types/body_v1/types/header/seq/26")
-	}
-	if !(this.Thac0 <= 25) {
-		return kaitai.NewValidationGreaterThanError(25, this.Thac0, this._io, "/types/body_v1/types/header/seq/26")
-	}
 	tmp40, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.NumAttacks = tmp40
-	if !(this.NumAttacks >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.NumAttacks, this._io, "/types/body_v1/types/header/seq/27")
-	}
-	if !(this.NumAttacks <= 10) {
-		return kaitai.NewValidationGreaterThanError(10, this.NumAttacks, this._io, "/types/body_v1/types/header/seq/27")
-	}
 	tmp41, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.SaveVsDeath = tmp41
-	if !(this.SaveVsDeath >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.SaveVsDeath, this._io, "/types/body_v1/types/header/seq/28")
-	}
-	if !(this.SaveVsDeath <= 20) {
-		return kaitai.NewValidationGreaterThanError(20, this.SaveVsDeath, this._io, "/types/body_v1/types/header/seq/28")
-	}
 	tmp42, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.SaveVsWands = tmp42
-	if !(this.SaveVsWands >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.SaveVsWands, this._io, "/types/body_v1/types/header/seq/29")
-	}
-	if !(this.SaveVsWands <= 20) {
-		return kaitai.NewValidationGreaterThanError(20, this.SaveVsWands, this._io, "/types/body_v1/types/header/seq/29")
-	}
 	tmp43, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.SaveVsPolymorph = tmp43
-	if !(this.SaveVsPolymorph >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.SaveVsPolymorph, this._io, "/types/body_v1/types/header/seq/30")
-	}
-	if !(this.SaveVsPolymorph <= 20) {
-		return kaitai.NewValidationGreaterThanError(20, this.SaveVsPolymorph, this._io, "/types/body_v1/types/header/seq/30")
-	}
 	tmp44, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.SaveVsBreathAttacks = tmp44
-	if !(this.SaveVsBreathAttacks >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.SaveVsBreathAttacks, this._io, "/types/body_v1/types/header/seq/31")
-	}
-	if !(this.SaveVsBreathAttacks <= 20) {
-		return kaitai.NewValidationGreaterThanError(20, this.SaveVsBreathAttacks, this._io, "/types/body_v1/types/header/seq/31")
-	}
 	tmp45, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.SaveVsSpells = tmp45
-	if !(this.SaveVsSpells >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.SaveVsSpells, this._io, "/types/body_v1/types/header/seq/32")
-	}
-	if !(this.SaveVsSpells <= 20) {
-		return kaitai.NewValidationGreaterThanError(20, this.SaveVsSpells, this._io, "/types/body_v1/types/header/seq/32")
-	}
 	tmp46, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistFire = tmp46
-	if !(this.ResistFire >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistFire, this._io, "/types/body_v1/types/header/seq/33")
-	}
-	if !(this.ResistFire <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistFire, this._io, "/types/body_v1/types/header/seq/33")
-	}
 	tmp47, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistCold = tmp47
-	if !(this.ResistCold >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistCold, this._io, "/types/body_v1/types/header/seq/34")
-	}
-	if !(this.ResistCold <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistCold, this._io, "/types/body_v1/types/header/seq/34")
-	}
 	tmp48, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistElectricity = tmp48
-	if !(this.ResistElectricity >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistElectricity, this._io, "/types/body_v1/types/header/seq/35")
-	}
-	if !(this.ResistElectricity <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistElectricity, this._io, "/types/body_v1/types/header/seq/35")
-	}
 	tmp49, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistAcid = tmp49
-	if !(this.ResistAcid >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistAcid, this._io, "/types/body_v1/types/header/seq/36")
-	}
-	if !(this.ResistAcid <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistAcid, this._io, "/types/body_v1/types/header/seq/36")
-	}
 	tmp50, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistMagic = tmp50
-	if !(this.ResistMagic >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistMagic, this._io, "/types/body_v1/types/header/seq/37")
-	}
-	if !(this.ResistMagic <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistMagic, this._io, "/types/body_v1/types/header/seq/37")
-	}
 	tmp51, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistMagicFire = tmp51
-	if !(this.ResistMagicFire >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistMagicFire, this._io, "/types/body_v1/types/header/seq/38")
-	}
-	if !(this.ResistMagicFire <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistMagicFire, this._io, "/types/body_v1/types/header/seq/38")
-	}
 	tmp52, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistMagicCold = tmp52
-	if !(this.ResistMagicCold >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistMagicCold, this._io, "/types/body_v1/types/header/seq/39")
-	}
-	if !(this.ResistMagicCold <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistMagicCold, this._io, "/types/body_v1/types/header/seq/39")
-	}
 	tmp53, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistSlashing = tmp53
-	if !(this.ResistSlashing >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistSlashing, this._io, "/types/body_v1/types/header/seq/40")
-	}
-	if !(this.ResistSlashing <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistSlashing, this._io, "/types/body_v1/types/header/seq/40")
-	}
 	tmp54, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistCrushing = tmp54
-	if !(this.ResistCrushing >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistCrushing, this._io, "/types/body_v1/types/header/seq/41")
-	}
-	if !(this.ResistCrushing <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistCrushing, this._io, "/types/body_v1/types/header/seq/41")
-	}
 	tmp55, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistPiercing = tmp55
-	if !(this.ResistPiercing >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistPiercing, this._io, "/types/body_v1/types/header/seq/42")
-	}
-	if !(this.ResistPiercing <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistPiercing, this._io, "/types/body_v1/types/header/seq/42")
-	}
 	tmp56, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.ResistMissile = tmp56
-	if !(this.ResistMissile >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.ResistMissile, this._io, "/types/body_v1/types/header/seq/43")
-	}
-	if !(this.ResistMissile <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.ResistMissile, this._io, "/types/body_v1/types/header/seq/43")
-	}
 	tmp57, err := this._io.ReadU1()
 	if err != nil {
 		return err
@@ -801,12 +693,6 @@ func (this *Cre_BodyV1_Header) Read(io *kaitai.Stream, parent *Cre_BodyV1, root 
 		return err
 	}
 	this.Lore = tmp59
-	if !(this.Lore >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.Lore, this._io, "/types/body_v1/types/header/seq/46")
-	}
-	if !(this.Lore <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.Lore, this._io, "/types/body_v1/types/header/seq/46")
-	}
 	tmp60, err := this._io.ReadU1()
 	if err != nil {
 		return err
@@ -832,23 +718,11 @@ func (this *Cre_BodyV1_Header) Read(io *kaitai.Stream, parent *Cre_BodyV1, root 
 		return err
 	}
 	this.Fatigue = tmp64
-	if !(this.Fatigue >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.Fatigue, this._io, "/types/body_v1/types/header/seq/51")
-	}
-	if !(this.Fatigue <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.Fatigue, this._io, "/types/body_v1/types/header/seq/51")
-	}
 	tmp65, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.Intoxication = tmp65
-	if !(this.Intoxication >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.Intoxication, this._io, "/types/body_v1/types/header/seq/52")
-	}
-	if !(this.Intoxication <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.Intoxication, this._io, "/types/body_v1/types/header/seq/52")
-	}
 	tmp66, err := this._io.ReadU1()
 	if err != nil {
 		return err
@@ -1003,89 +877,41 @@ func (this *Cre_BodyV1_Header) Read(io *kaitai.Stream, parent *Cre_BodyV1, root 
 		return err
 	}
 	this.Strength = tmp95
-	if !(this.Strength >= 1) {
-		return kaitai.NewValidationLessThanError(1, this.Strength, this._io, "/types/body_v1/types/header/seq/82")
-	}
-	if !(this.Strength <= 25) {
-		return kaitai.NewValidationGreaterThanError(25, this.Strength, this._io, "/types/body_v1/types/header/seq/82")
-	}
 	tmp96, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.StrengthBonus = tmp96
-	if !(this.StrengthBonus >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.StrengthBonus, this._io, "/types/body_v1/types/header/seq/83")
-	}
-	if !(this.StrengthBonus <= 100) {
-		return kaitai.NewValidationGreaterThanError(100, this.StrengthBonus, this._io, "/types/body_v1/types/header/seq/83")
-	}
 	tmp97, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.Intelligence = tmp97
-	if !(this.Intelligence >= 1) {
-		return kaitai.NewValidationLessThanError(1, this.Intelligence, this._io, "/types/body_v1/types/header/seq/84")
-	}
-	if !(this.Intelligence <= 25) {
-		return kaitai.NewValidationGreaterThanError(25, this.Intelligence, this._io, "/types/body_v1/types/header/seq/84")
-	}
 	tmp98, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.Wisdom = tmp98
-	if !(this.Wisdom >= 1) {
-		return kaitai.NewValidationLessThanError(1, this.Wisdom, this._io, "/types/body_v1/types/header/seq/85")
-	}
-	if !(this.Wisdom <= 25) {
-		return kaitai.NewValidationGreaterThanError(25, this.Wisdom, this._io, "/types/body_v1/types/header/seq/85")
-	}
 	tmp99, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.Dexterity = tmp99
-	if !(this.Dexterity >= 1) {
-		return kaitai.NewValidationLessThanError(1, this.Dexterity, this._io, "/types/body_v1/types/header/seq/86")
-	}
-	if !(this.Dexterity <= 25) {
-		return kaitai.NewValidationGreaterThanError(25, this.Dexterity, this._io, "/types/body_v1/types/header/seq/86")
-	}
 	tmp100, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.Constitution = tmp100
-	if !(this.Constitution >= 1) {
-		return kaitai.NewValidationLessThanError(1, this.Constitution, this._io, "/types/body_v1/types/header/seq/87")
-	}
-	if !(this.Constitution <= 25) {
-		return kaitai.NewValidationGreaterThanError(25, this.Constitution, this._io, "/types/body_v1/types/header/seq/87")
-	}
 	tmp101, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.Charisma = tmp101
-	if !(this.Charisma >= 1) {
-		return kaitai.NewValidationLessThanError(1, this.Charisma, this._io, "/types/body_v1/types/header/seq/88")
-	}
-	if !(this.Charisma <= 25) {
-		return kaitai.NewValidationGreaterThanError(25, this.Charisma, this._io, "/types/body_v1/types/header/seq/88")
-	}
 	tmp102, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
 	this.Morale = tmp102
-	if !(this.Morale >= 0) {
-		return kaitai.NewValidationLessThanError(0, this.Morale, this._io, "/types/body_v1/types/header/seq/89")
-	}
-	if !(this.Morale <= 20) {
-		return kaitai.NewValidationGreaterThanError(20, this.Morale, this._io, "/types/body_v1/types/header/seq/89")
-	}
 	tmp103, err := this._io.ReadU1()
 	if err != nil {
 		return err

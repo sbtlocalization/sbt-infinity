@@ -6,7 +6,6 @@
 package parser
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/spf13/afero"
@@ -17,47 +16,12 @@ type DlgFile struct {
 	File afero.File
 }
 
-type TlkFile struct {
-	*Tlk
-	File afero.File
-}
-
 func (d *DlgFile) FileName() string {
 	return d.File.Name()
 }
 
 func (d *DlgFile) Close() error {
 	return d.File.Close()
-}
-
-func (t *TlkFile) GetText(strref uint32) string {
-	invalid_result := fmt.Sprintf("<invalid text reference #%d>", strref)
-
-	if t == nil || t.Tlk == nil {
-		log.Fatal("TLK file is not loaded")
-		return invalid_result
-	}
-
-	if strref == 0xFFFFFFFF || strref > t.NumEntries {
-		log.Printf("TLK entry #%d does not exist", strref)
-		return invalid_result
-	}
-
-	text, err := t.Entries[strref].Text()
-	if err != nil {
-		log.Printf("Error retrieving TLK text for entry #%d: %v", strref, err)
-		return invalid_result
-	}
-
-	return text
-}
-
-func (t *TlkFile) FileName() string {
-	return t.File.Name()
-}
-
-func (t *TlkFile) Close() error {
-	return t.File.Close()
 }
 
 func (s *Dlg_StateEntry) GetTriggerText() (string, bool) {
