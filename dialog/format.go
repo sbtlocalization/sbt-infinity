@@ -51,7 +51,10 @@ func (fm *FrontMatter) SetCharacter(name, portrait string) {
 		fm.Character = &Character{}
 	}
 	fm.Character.Name = name
-	fm.Character.Portrait = strings.Replace(portrait, ".BMP", ".png", 1)
+	portrait = strings.TrimSuffix(portrait, ".BMP")
+	if portrait != "" {
+		fm.Character.Portrait = portrait + ".png"
+	}
 }
 
 func isEmptyTransitionNode(node *Node) bool {
@@ -59,7 +62,6 @@ func isEmptyTransitionNode(node *Node) bool {
 		!node.Transition.IsDialogEnd &&
 		!node.Transition.HasText &&
 		!node.Transition.HasJournalText &&
-		!node.Transition.HasTrigger &&
 		!node.Transition.HasAction
 }
 
@@ -107,7 +109,7 @@ func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 
 	// Validate graph structure before layout
 	if len(nodes) == 0 {
-		fmt.Println("warning: no nodes to layout, skipping autolayout")
+		fmt.Printf("warning(%s): no nodes to layout, skipping autolayout", d.Id)
 		return c
 	}
 
@@ -118,7 +120,7 @@ func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 	func() {
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Printf("warning: layout algorithm failed: %v\n", r)
+				fmt.Printf("warning(%s): layout algorithm failed: %v\n", d.Id, r)
 				fmt.Println("Nodes will be placed at default positions")
 				layoutSuccess = false
 			}
@@ -140,7 +142,7 @@ func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 				cNode.X = int(n.X)
 				cNode.Y = int(n.Y)
 			} else {
-				fmt.Printf("warning: node %s not found in canvas nodes\n", n.ID)
+				fmt.Printf("warning(%s): node %s not found in canvas nodes\n", d.Id, n.ID)
 			}
 		}
 	}
@@ -232,9 +234,18 @@ func newEdge(node *Node) *canvas.Edge {
 	fromSide, toSide, toEnd := "bottom", "top", "arrow"
 	var color string
 
+	var triggerText string
+	if node.Type == TransitionNodeType && node.Transition.HasTrigger {
+		triggerText = strings.TrimSpace(node.Transition.Trigger)
+	}
+
 	if isEmptyTransitionNode(node.Parent) && node.Parent.Parent != nil {
 		// skip empty transition nodes, connect parent state to next state directly
 		fromNode = node.Parent.Parent.String()
+
+		if node.Parent.Type == TransitionNodeType && node.Parent.Transition.HasTrigger {
+			triggerText = strings.TrimSpace(node.Parent.Transition.Trigger)
+		}
 	}
 
 	cEdge := &canvas.Edge{
@@ -245,11 +256,6 @@ func newEdge(node *Node) *canvas.Edge {
 		ToSide:   &toSide,
 		ToEnd:    &toEnd,
 		Color:    &color,
-	}
-
-	var triggerText string
-	if node.Type == TransitionNodeType && node.Transition.HasTrigger {
-		triggerText = strings.TrimSpace(node.Transition.Trigger)
 	}
 
 	if triggerText != "" {
