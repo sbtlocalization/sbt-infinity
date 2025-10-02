@@ -33,7 +33,6 @@ func NewLsCommand() *cobra.Command {
 	}
 
 	cmd.Flags().BoolP("json", "j", false, "Output in JSON format")
-	config.AddGameFlag(cmd)
 
 	return cmd
 }

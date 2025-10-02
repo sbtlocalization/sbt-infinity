@@ -39,7 +39,6 @@ If no key file path is provided, uses the first game from .sbt-inf.toml config.`
 	cmd.Flags().StringP("tlk", "t", "", "Path to dialog.tlk file (default: <key_dir>/lang/en_US/dialog.tlk)")
 	cmd.Flags().BoolP("verbose", "v", false, "Enable verbose output")
 	cmd.Flags().BoolP("speakers", "s", true, "Load and export information about characters from CRE files")
-	config.AddGameFlag(cmd)
 
 	return cmd
 }
