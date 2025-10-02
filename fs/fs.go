@@ -312,7 +312,17 @@ func (fs *InfinityFs) statFile(name string) (os.FileInfo, error) {
 		if record.FileLength != -1 && record.FileOffset != -1 {
 			return record, nil
 		} else {
-			return nil, fmt.Errorf("file metadata not loaded correctly for %s", name)
+			_, err := fs.openBif(record.BifFile)
+			if err != nil {
+				return nil, err
+			}
+			defer fs.closeBif(record.BifFile)
+
+			if record.FileLength != -1 && record.FileOffset != -1 {
+				return record, nil
+			} else {
+				return nil, fmt.Errorf("file metadata not loaded correctly for %s", name)
+			}
 		}
 	} else {
 		return nil, os.ErrNotExist
