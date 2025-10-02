@@ -155,5 +155,5 @@ func ResolveKeyPathFromArgs(args []string, gameName string) (string, []string, e
 // AddGameFlag adds the standard --game flag to a cobra command
 // This is a helper function to ensure consistent flag naming across commands
 func AddGameFlag(cmd *cobra.Command) {
-	cmd.Flags().StringP("game", "g", "", "Game name from config to use")
+	cmd.PersistentFlags().StringP("game", "g", "", "Game name from config to use")
 }

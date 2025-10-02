@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/sbtlocalization/sbt-infinity/cmd/dialog"
+	"github.com/sbtlocalization/sbt-infinity/cmd/text"
 	"github.com/spf13/cobra"
 )
 
@@ -31,4 +32,5 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(dialog.NewCommand())
+	rootCmd.AddCommand(text.NewCommand())
 }

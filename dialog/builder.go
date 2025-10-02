@@ -160,23 +160,7 @@ func (b *DialogBuilder) loadCreatures() error {
 }
 
 func (b *DialogBuilder) readTlkFile(tlkFileName string) (*p.TlkFile, error) {
-	file, err := b.tlkFsys.Open(tlkFileName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open TLK file %s: %w", tlkFileName, err)
-	}
-
-	tlk := p.NewTlk()
-	stream := kaitai.NewStream(file)
-	err = tlk.Read(stream, nil, tlk)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read TLK file %s: %w", tlkFileName, err)
-	}
-
-	tlkFile := &p.TlkFile{
-		Tlk:  tlk,
-		File: file,
-	}
-	return tlkFile, nil
+	return p.ReadTlkFile(b.tlkFsys, tlkFileName)
 }
 
 func (b *DialogBuilder) readDlgFile(dlgFileName string) (*p.DlgFile, error) {

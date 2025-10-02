@@ -9,12 +9,33 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
 	"github.com/spf13/afero"
 )
 
 type TlkFile struct {
 	*Tlk
 	File afero.File
+}
+
+func ReadTlkFile(fs afero.Fs, fileName string) (*TlkFile, error) {
+	file, err := fs.Open(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open TLK file %s: %w", fileName, err)
+	}
+
+	tlk := NewTlk()
+	stream := kaitai.NewStream(file)
+	err = tlk.Read(stream, nil, tlk)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read TLK file %s: %w", fileName, err)
+	}
+
+	tlkFile := &TlkFile{
+		Tlk:  tlk,
+		File: file,
+	}
+	return tlkFile, nil
 }
 
 func (t *TlkFile) GetText(strref uint32) string {
