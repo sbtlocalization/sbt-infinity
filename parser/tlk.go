@@ -132,7 +132,7 @@ func (this *Tlk_StringEntry) Read(io *kaitai.Stream, parent *Tlk, root *Tlk) (er
 	if err != nil {
 		return err
 	}
-	tmp9 = tmp9
+	tmp9 = kaitai.BytesTerminate(tmp9, 0, false)
 	this.AudioName = string(tmp9)
 	tmp10, err := this._io.ReadU4le()
 	if err != nil {
@@ -182,10 +182,8 @@ func (this *Tlk_StringEntry) Text() (v string, err error) {
 	return this.text, nil
 }
 type Tlk_StringEntry_Flags struct {
-	NoMessage bool
 	TextExists bool
 	SoundExists bool
-	StandardMessage bool
 	TokenExists bool
 	_io *kaitai.Stream
 	_root *Tlk
@@ -209,26 +207,16 @@ func (this *Tlk_StringEntry_Flags) Read(io *kaitai.Stream, parent *Tlk_StringEnt
 	if err != nil {
 		return err
 	}
-	this.NoMessage = tmp15 != 0
+	this.TextExists = tmp15 != 0
 	tmp16, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.TextExists = tmp16 != 0
+	this.SoundExists = tmp16 != 0
 	tmp17, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.SoundExists = tmp17 != 0
-	tmp18, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.StandardMessage = tmp18 != 0
-	tmp19, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.TokenExists = tmp19 != 0
+	this.TokenExists = tmp17 != 0
 	return err
 }

@@ -25,7 +25,7 @@ import (
 // exportDialogsCmd represents the export-dialogs command
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "export [path to chitin.key] [tlk files...] [dlg files...]",
+		Use:   "export [path to chitin.key] [dlg files...]",
 		Short: "Export dialogs as JSON Canvas files",
 		Long: `Export dialogs from DLG files (with texts from TLK file) as JSON Canvas files.
 Creates a visual representation of dialog structures.
@@ -36,7 +36,7 @@ If no key file path is provided, uses the first game from .sbt-inf.toml config.`
 	}
 
 	cmd.Flags().StringP("output", "o", "", "Output directory")
-	cmd.Flags().StringP("tlk", "t", "", "Path to dialog.tlk file (default: <key_dir>/lang/en_US/dialog.tlk)")
+	cmd.Flags().StringP("tlk", "t", "<key_dir>/lang/en_US/dialog.tlk)", "Path to dialog.tlk file")
 	cmd.Flags().BoolP("verbose", "v", false, "Enable verbose output")
 	cmd.Flags().BoolP("speakers", "s", true, "Load and export information about characters from CRE files")
 

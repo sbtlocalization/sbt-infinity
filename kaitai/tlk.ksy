@@ -40,7 +40,7 @@ types:
         size: 2
         type: flags
       - id: audio_name
-        type: str
+        type: strz
         size: 8
         encoding: ASCII
       - id: volume_variance
@@ -55,19 +55,14 @@ types:
       text:
         pos: _root.ofs_data + ofs_string
         size: len_string
-        type: str
-        terminator: 0
+        type: strz
         encoding: UTF-8
     types:
       flags:
         seq:
-          - id: no_message
-            type: b1
           - id: text_exists
             type: b1
           - id: sound_exists
-            type: b1
-          - id: standard_message
             type: b1
           - id: token_exists
             type: b1
