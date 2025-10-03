@@ -6,6 +6,7 @@
 package fs
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -87,22 +88,27 @@ func (d *dirRecord) Sys() any {
 }
 
 type fileCatalog struct {
-	byName map[string]*fileRecord
-	byType map[FileType]map[string]*fileRecord
-	dirs   map[string]*dirRecord
+	byName        map[string]*fileRecord
+	byType        map[FileType]map[string]*fileRecord
+	dirs          map[string]*dirRecord
+	filesByBif    map[string]map[int]*fileRecord
+	tilesetsByBif map[string]map[int]*fileRecord
 }
 
 func newFileCatalog() *fileCatalog {
 	return &fileCatalog{
-		byName: make(map[string]*fileRecord),
-		byType: make(map[FileType]map[string]*fileRecord),
-		dirs:   make(map[string]*dirRecord),
+		byName:        make(map[string]*fileRecord),
+		byType:        make(map[FileType]map[string]*fileRecord),
+		dirs:          make(map[string]*dirRecord),
+		filesByBif:    make(map[string]map[int]*fileRecord),
+		tilesetsByBif: make(map[string]map[int]*fileRecord),
 	}
 }
 
 type fileEntry struct {
 	file     *afero.File
 	refCount int
+	parsed   bool
 }
 
 type InfinityFs struct {
@@ -181,6 +187,18 @@ func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
 			catalog.byType[record.Type] = make(map[string]*fileRecord)
 		}
 		catalog.byType[record.Type][strings.ToLower(record.FullName)] = record
+
+		if !record.IsTileset {
+			if catalog.filesByBif[record.BifFile] == nil {
+				catalog.filesByBif[record.BifFile] = make(map[int]*fileRecord)
+			}
+			catalog.filesByBif[record.BifFile][int(res.Locator.FileIndex)] = record
+		} else {
+			if catalog.tilesetsByBif[record.BifFile] == nil {
+				catalog.tilesetsByBif[record.BifFile] = make(map[int]*fileRecord)
+			}
+			catalog.tilesetsByBif[record.BifFile][int(res.Locator.TilesetIndex)] = record
+		}
 	}
 
 	for fileType, records := range catalog.byType {
@@ -239,57 +257,9 @@ func (fs *InfinityFs) Open(name string) (afero.File, error) {
 func (fs *InfinityFs) openFile(name string) (afero.File, error) {
 	if record, ok := fs.catalog.byName[strings.ToLower(name)]; ok {
 		if bifStream, err := fs.openBif(record.BifFile); err == nil {
-			bif := p.NewBif()
-			stream := kaitai.NewStream(bifStream)
-			err = bif.Read(stream, nil, bif)
-			if err != nil {
-				log.Println("Error reading BIF file", record.BifFile)
-				return nil, err
+			if record.FileLength == -1 || record.FileOffset == -1 {
+				return nil, fmt.Errorf("file metadata not loaded correctly for %s", name)
 			}
-
-			if !record.IsTileset {
-				entries, err := bif.FileEntries()
-				if err != nil {
-					log.Println("Error reading file entries from", record.BifFile)
-					return nil, err
-				}
-				if int(record.FileIndex) >= len(entries) {
-					log.Printf("File index %d out of range in BIF file %s", record.FileIndex, record.BifFile)
-					return nil, os.ErrNotExist
-				}
-
-				entry := entries[record.FileIndex]
-				if entry.Locator.FileIndex != record.FileIndex {
-					log.Printf(
-						"Warning: File index mismatch in BIF file %s: expected %d, got %d",
-						record.BifFile,
-						record.FileIndex,
-						entry.Locator.FileIndex,
-					)
-				}
-
-				record.FileLength = int64(entry.LenData)
-				record.FileOffset = int64(entry.OfsData)
-			} else {
-				entries, err := bif.TilesetEntries()
-				if err != nil {
-					log.Printf("Error reading BIF tileset entries %s", record.BifFile)
-					return nil, err
-				}
-				if int(record.TilesetIndex) >= len(entries) {
-					log.Printf("Tileset index %d out of range in BIF file %s", record.TilesetIndex, record.BifFile)
-					return nil, os.ErrNotExist
-				}
-
-				entry := entries[record.TilesetIndex]
-				if entry.Locator.TilesetIndex != record.TilesetIndex {
-					log.Printf("Warning: Tileset index mismatch in BIF file %s: expected %d, got %d", record.BifFile, record.TilesetIndex, entry.Locator.TilesetIndex)
-				}
-
-				record.FileLength = int64(entry.NumTiles * entry.LenTile)
-				record.FileOffset = int64(entry.OfsData)
-			}
-
 			bifStream.Seek(0, io.SeekStart) // Reset stream to start
 			return NewInfinityFile(fs, record, bifStream), nil
 		} else {
@@ -341,51 +311,18 @@ func (fs *InfinityFs) statFile(name string) (os.FileInfo, error) {
 	if record, ok := fs.catalog.byName[strings.ToLower(name)]; ok {
 		if record.FileLength != -1 && record.FileOffset != -1 {
 			return record, nil
-		}
-
-		if bifFileStream, err := fs.openBif(record.BifFile); err == nil {
-			defer fs.closeBif(record.BifFile)
-
-			bif := p.NewBif()
-			stream := kaitai.NewStream(bifFileStream)
-			err = bif.Read(stream, nil, bif)
+		} else {
+			_, err := fs.openBif(record.BifFile)
 			if err != nil {
-				log.Println("Error reading BIF file", record.BifFile)
 				return nil, err
 			}
+			defer fs.closeBif(record.BifFile)
 
-			if !record.IsTileset {
-				entries, err := bif.FileEntries()
-				if err != nil {
-					log.Println("Error reading file entries from", record.BifFile)
-					return nil, err
-				}
-				if int(record.FileIndex) >= len(entries) {
-					log.Printf("File index %d out of range in BIF file %s", record.FileIndex, record.BifFile)
-					return nil, os.ErrNotExist
-				}
-				entry := entries[record.FileIndex]
-				record.FileLength = int64(entry.LenData)
-				record.FileOffset = int64(entry.OfsData)
+			if record.FileLength != -1 && record.FileOffset != -1 {
 				return record, nil
 			} else {
-				entries, err := bif.TilesetEntries()
-				if err != nil {
-					log.Println("Error reading tileset entries from", record.BifFile)
-					return nil, err
-				}
-				if int(record.TilesetIndex) >= len(entries) {
-					log.Printf("Tileset index %d out of range in BIF file %s", record.TilesetIndex, record.BifFile)
-					return nil, os.ErrNotExist
-				}
-				entry := entries[record.TilesetIndex]
-				record.FileLength = int64(entry.NumTiles * entry.LenTile)
-				record.FileOffset = int64(entry.OfsData)
-				return record, nil
+				return nil, fmt.Errorf("file metadata not loaded correctly for %s", name)
 			}
-		} else {
-			log.Fatalln("Can't open BIF file", record.BifFile)
-			return nil, err
 		}
 	} else {
 		return nil, os.ErrNotExist
@@ -426,6 +363,61 @@ func (fs *InfinityFs) openBif(bifPath string) (*io.SectionReader, error) {
 	}
 
 	bifFileEntry.refCount++
+
+	if !bifFileEntry.parsed {
+		bif := p.NewBif()
+		stream := kaitai.NewStream(*bifFileEntry.file)
+		err := bif.Read(stream, nil, bif)
+		if err != nil {
+			log.Println("Error reading BIF file", bifPath)
+			return nil, err
+		}
+
+		fileEntries, err := bif.FileEntries()
+		if err != nil {
+			log.Println("Error reading file entries from", bifPath)
+			return nil, err
+		}
+
+		for i, entry := range fileEntries {
+			if record, ok := fs.catalog.filesByBif[bifPath][i]; ok {
+				if entry.Locator.FileIndex != record.FileIndex {
+					log.Printf(
+						"Warning: File index mismatch in BIF file %s: expected %d, got %d",
+						bifPath,
+						record.FileIndex,
+						entry.Locator.FileIndex,
+					)
+				}
+				record.FileLength = int64(entry.LenData)
+				record.FileOffset = int64(entry.OfsData)
+			}
+		}
+
+		tilesetEntries, err := bif.TilesetEntries()
+		if err != nil {
+			log.Println("Error reading tileset entries from", bifPath)
+			return nil, err
+		}
+
+		for i, entry := range tilesetEntries {
+			if record, ok := fs.catalog.tilesetsByBif[bifPath][i]; ok {
+				if entry.Locator.TilesetIndex != record.TilesetIndex {
+					log.Printf(
+						"Warning: Tileset index mismatch in BIF file %s: expected %d, got %d",
+						bifPath,
+						record.TilesetIndex,
+						entry.Locator.TilesetIndex,
+					)
+				}
+				record.FileLength = int64(entry.NumTiles * entry.LenTile)
+				record.FileOffset = int64(entry.OfsData)
+			}
+		}
+
+		bifFileEntry.parsed = true
+	}
+
 	stat, err := (*bifFileEntry.file).Stat()
 	if err != nil {
 		log.Println("Error stating BIF file", bifPath)

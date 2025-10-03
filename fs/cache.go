@@ -54,6 +54,7 @@ func (c *BifFileCache) Get(bifPath string) (*fileEntry, bool) {
 	entry := &fileEntry{
 		file:     &f,
 		refCount: 0,
+		parsed:   false,
 	}
 	c.cache.Add(bifPath, entry)
 	return entry, true
