@@ -7,7 +7,6 @@ package dialog
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
@@ -16,18 +15,26 @@ import (
 )
 
 type DialogBuilder struct {
-	dlgFsys        afero.Fs
+	infFsys        afero.Fs
 	tlkFsys        afero.Fs
 	loadedDlgFiles map[string]*p.DlgFile
 	tlkFile        *p.TlkFile
+	creatures      map[string]*Creature
+	verbose        bool
 }
 
-func NewDialogBuilder(dlgFsys afero.Fs, tlkFsys afero.Fs) *DialogBuilder {
+func NewDialogBuilder(infFsys afero.Fs, tlkFsys afero.Fs, withCreatures, verbose bool) *DialogBuilder {
+	var creatures map[string]*Creature = nil
+	if withCreatures {
+		creatures = make(map[string]*Creature)
+	}
 	return &DialogBuilder{
-		dlgFsys:        dlgFsys,
+		infFsys:        infFsys,
 		tlkFsys:        tlkFsys,
 		loadedDlgFiles: make(map[string]*p.DlgFile),
 		tlkFile:        nil,
+		creatures:      creatures,
+		verbose:        verbose,
 	}
 }
 
@@ -37,13 +44,13 @@ func (b *DialogBuilder) LoadAllRootStates(dlgNames ...string) (*DialogCollection
 	for _, dlgName := range dlgNames {
 		dlg, err := b.readDlgFile(dlgName)
 		if err != nil {
-			log.Printf("error loading DLG file %s: %v", dlgName, err)
+			b.Printf("error loading DLG file %s: %v", dlgName, err)
 			continue
 		}
 
 		states, err := dlg.States()
 		if err != nil {
-			log.Printf("error getting states from DLG file %s: %v", dlgName, err)
+			b.Printf("error getting states from DLG file %s: %v", dlgName, err)
 			continue
 		}
 
@@ -73,10 +80,14 @@ func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames ...string) (*Dia
 		b.tlkFile = tlkFile
 	}
 
+	if b.creatures != nil {
+		_ = b.loadCreatures()
+	}
+
 	for _, dlgName := range dlgNames {
 		dlg, err := b.readDlgFile(dlgName)
 		if err != nil {
-			log.Printf("Error loading DLG file %s: %v", dlgName, err)
+			b.Printf("error loading DLG file %s: %v", dlgName, err)
 			continue
 		}
 
@@ -91,24 +102,65 @@ func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames ...string) (*Dia
 	return collection, nil
 }
 
+func (b *DialogBuilder) loadCreatures() error {
+	if len(b.creatures) > 0 {
+		// already loaded
+		return nil
+	}
+
+	if b.tlkFile == nil {
+		return fmt.Errorf("TLK file must be loaded before loading creatures")
+	}
+
+	dir, err := b.infFsys.Open("CRE")
+	if err != nil {
+		return fmt.Errorf("unable to read CRE files: %v", err)
+	}
+	defer dir.Close()
+
+	creFiles, err := dir.Readdirnames(0)
+	if err != nil {
+		return fmt.Errorf("unable to read CRE file names: %v", err)
+	}
+
+	for _, creFileName := range creFiles {
+		creFile, err := b.infFsys.Open(creFileName)
+		if err != nil {
+			b.Printf("unable to open CRE file %s: %v", creFileName, err)
+			continue
+		}
+		defer creFile.Close()
+
+		cre := p.NewCre()
+		stream := kaitai.NewStream(creFile)
+		err = cre.Read(stream, nil, cre)
+		if err != nil {
+			b.Printf("unable to read CRE file %s: %v", creFileName, err)
+			continue
+		}
+
+		shortName := b.tlkFile.GetText(cre.ShortName)
+		longName := b.tlkFile.GetText(cre.LongName)
+
+		creature := &Creature{
+			ShortNameId: cre.ShortName,
+			ShortName:   shortName,
+			LongNameId:  cre.LongName,
+			LongName:    longName,
+			Portrait:    cre.Body.Header.SmallPortrait + ".BMP",
+			Dialog:      cre.Body.Header.Dialog,
+		}
+
+		b.Printf("Loading character: %s (dialog: %s)\n", longName, cre.Body.Header.Dialog)
+
+		b.creatures[strings.ToUpper(creature.Dialog)] = creature
+	}
+
+	return nil
+}
+
 func (b *DialogBuilder) readTlkFile(tlkFileName string) (*p.TlkFile, error) {
-	file, err := b.tlkFsys.Open(tlkFileName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open TLK file %s: %w", tlkFileName, err)
-	}
-
-	tlk := p.NewTlk()
-	stream := kaitai.NewStream(file)
-	err = tlk.Read(stream, nil, tlk)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read TLK file %s: %w", tlkFileName, err)
-	}
-
-	tlkFile := &p.TlkFile{
-		Tlk:  tlk,
-		File: file,
-	}
-	return tlkFile, nil
+	return p.ReadTlkFile(b.tlkFsys, tlkFileName)
 }
 
 func (b *DialogBuilder) readDlgFile(dlgFileName string) (*p.DlgFile, error) {
@@ -121,7 +173,7 @@ func (b *DialogBuilder) readDlgFile(dlgFileName string) (*p.DlgFile, error) {
 		fullName = fullName + ".DLG"
 	}
 
-	file, err := b.dlgFsys.Open(fullName)
+	file, err := b.infFsys.Open(fullName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open DLG file %s: %w", fullName, err)
 	}
@@ -144,7 +196,7 @@ func (b *DialogBuilder) readDlgFile(dlgFileName string) (*p.DlgFile, error) {
 func (b *DialogBuilder) loadDialogs(dlgName string, dlgFile *p.DlgFile, collection *DialogCollection) {
 	states, err := dlgFile.States()
 	if err != nil {
-		log.Printf("Error getting states from DLG file %s: %v", dlgName, err)
+		b.Printf("error getting states from DLG file %s: %v", dlgName, err)
 		return
 	}
 
@@ -152,7 +204,7 @@ func (b *DialogBuilder) loadDialogs(dlgName string, dlgFile *p.DlgFile, collecti
 		if _, isRoot := stateEntry.GetTriggerText(); isRoot {
 			d, err := b.loadDialog(NewNodeOrigin(dlgName, uint32(stateIndex)))
 			if err != nil {
-				log.Printf("Error loading dialog for state %d: %v", stateIndex, err)
+				b.Printf("error loading dialog for state %d: %v", stateIndex, err)
 				continue
 			}
 			collection.Dialogs = append(collection.Dialogs, d)
@@ -164,7 +216,7 @@ func (b *DialogBuilder) loadDialog(rootStateOrigin NodeOrigin) (*Dialog, error) 
 	dialog := NewDialog(rootStateOrigin)
 	rootState, err := b.loadTree(dialog, make([]NodeOrigin, 0), rootStateOrigin)
 	if err != nil {
-		log.Fatalln("Can't load root state:", err)
+		b.Printf("can't load root state: %v", err)
 		return nil, err
 	}
 
@@ -185,6 +237,10 @@ func (b *DialogBuilder) loadTree(dialog *Dialog, previousStates []NodeOrigin, st
 	}
 	dialog.AllStates[stateOrigin] = struct{}{}
 
+	if cre, ok := b.creatures[stateOrigin.DlgName]; ok {
+		dialog.AllCreatures[stateOrigin.DlgName] = cre
+	}
+
 	for _, child := range state.Children {
 		if child.Type == TransitionNodeType && !child.Transition.IsDialogEnd {
 			nextStateOrigin := child.Transition.NextStateOrigin
@@ -198,12 +254,12 @@ func (b *DialogBuilder) loadTree(dialog *Dialog, previousStates []NodeOrigin, st
 			} else {
 				nextState, err := b.loadTree(dialog, append(previousStates, stateOrigin), nextStateOrigin)
 				if err != nil {
-					log.Printf("Error loading state %s: %v", nextStateOrigin, err)
+					b.Printf("error loading state %s: %v", nextStateOrigin, err)
 					continue
 				}
 				nextState.Parent = child
 				if len(child.Children) != 1 {
-					log.Fatalln("Transition node should have exactly one child")
+					return nil, fmt.Errorf("transition node should have exactly one child")
 				}
 				child.Children[0] = nextState
 			}
@@ -244,7 +300,7 @@ func (b *DialogBuilder) loadStateWithTransitions(origin NodeOrigin) (*Node, erro
 
 	transitions, err := state.Transitions()
 	if err != nil {
-		log.Printf("Error getting transitions from state %s: %v", origin, err)
+		b.Printf("error getting transitions from state %s: %v", origin, err)
 		return nil, err
 	}
 
@@ -286,4 +342,10 @@ func (b *DialogBuilder) loadStateWithTransitions(origin NodeOrigin) (*Node, erro
 	}
 
 	return stateNode, nil
+}
+
+func (b *DialogBuilder) Printf(format string, args ...any) {
+	if b.verbose {
+		fmt.Printf(format, args...)
+	}
 }

@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-only
 
-package dialog
+package text
 
 import (
 	"github.com/sbtlocalization/sbt-infinity/config"
@@ -12,14 +12,15 @@ import (
 
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "dialog",
-		Short: "Dialog utilities",
-		Long:  `Utilities for working with Infinity Engine dialogs.`,
+		Use:   "text",
+		Short: "Work with TLK files",
+		Long:  `Utilities for working with TLK files.`,
 	}
 
+	cmd.PersistentFlags().StringP("tlk", "t", "", "Path to dialog.tlk file (default: <key_dir>/lang/en_US/dialog.tlk)")
 	config.AddGameFlag(cmd)
 
 	cmd.AddCommand(NewLsCommand())
-	cmd.AddCommand(NewExportCommand())
+
 	return cmd
 }

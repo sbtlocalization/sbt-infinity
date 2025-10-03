@@ -158,12 +158,12 @@ func (d *InfinityDir) Readdirnames(count int) ([]string, error) {
 			count = len(files)
 		}
 		i := 0
-		for name := range files {
+		for _, rec := range files {
 			i++
 			if i > count {
 				break
 			}
-			infos = append(infos, name)
+			infos = append(infos, rec.FullName)
 		}
 		slices.Sort(infos)
 		return infos, nil

@@ -142,96 +142,96 @@ types:
             type: s2
           - id: thac0
             type: u1
-            valid:
-              min: 1
-              max: 25
+            # valid:
+            #   min: 1
+            #   max: 25
           - id: num_attacks
             type: u1
-            valid:
-              min: 0
-              max: 10
+            # valid:
+            #   min: 0
+            #   max: 10
             doc: |
               Number of attacks per round
           - id: save_vs_death
             type: u1
-            valid:
-              min: 0
-              max: 20
+            # valid:
+            #   min: 0
+            #   max: 20
           - id: save_vs_wands
             type: u1
-            valid:
-              min: 0
-              max: 20
+            # valid:
+            #   min: 0
+            #   max: 20
           - id: save_vs_polymorph
             type: u1
-            valid:
-              min: 0
-              max: 20
+            # valid:
+            #   min: 0
+            #   max: 20
           - id: save_vs_breath_attacks
             type: u1
-            valid:
-              min: 0
-              max: 20
+            # valid:
+            #   min: 0
+            #   max: 20
           - id: save_vs_spells
             type: u1
-            valid:
-              min: 0
-              max: 20
+            # valid:
+            #   min: 0
+            #   max: 20
           - id: resist_fire
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: resist_cold
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: resist_electricity
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: resist_acid
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: resist_magic
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: resist_magic_fire
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: resist_magic_cold
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: resist_slashing
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: resist_crushing
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: resist_piercing
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: resist_missile
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: detect_illusion
             type: u1
             doc: Minimum value – 0
@@ -239,9 +239,9 @@ types:
             type: u1
           - id: lore
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
             doc: |
               Lore is calculated as ((level * rate) + int_bonus + wis_bonus). Intelligence and wisdom
               bonuses are from LOREBON.2DA and the rate is the lookup value in LORE.2DA, based on class.
@@ -261,14 +261,14 @@ types:
             doc: Minimum value – 0
           - id: fatigue
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: intoxication
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
           - id: luck
             type: u1
           - id: large_swords_proficiency
@@ -339,45 +339,45 @@ types:
               - 3 (Other), 4 (Niether) – `CHA_S*.WAV`
           - id: strength
             type: u1
-            valid:
-              min: 1
-              max: 25
+            # valid:
+            #   min: 1
+            #   max: 25
           - id: strength_bonus
             type: u1
-            valid:
-              min: 0
-              max: 100
+            # valid:
+            #   min: 0
+            #   max: 100
             doc: 0..100%
           - id: intelligence
             type: u1
-            valid:
-              min: 1
-              max: 25
+            # valid:
+            #   min: 1
+            #   max: 25
           - id: wisdom
             type: u1
-            valid:
-              min: 1
-              max: 25
+            # valid:
+            #   min: 1
+            #   max: 25
           - id: dexterity
             type: u1
-            valid:
-              min: 1
-              max: 25
+            # valid:
+            #   min: 1
+            #   max: 25
           - id: constitution
             type: u1
-            valid:
-              min: 1
-              max: 25
+            # valid:
+            #   min: 1
+            #   max: 25
           - id: charisma
             type: u1
-            valid:
-              min: 1
-              max: 25
+            # valid:
+            #   min: 1
+            #   max: 25
           - id: morale
             type: u1
-            valid:
-              min: 0
-              max: 20
+            # valid:
+            #   min: 0
+            #   max: 20
             doc: default – 10
           - id: morale_break
             type: u1

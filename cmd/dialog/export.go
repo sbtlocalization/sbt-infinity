@@ -7,6 +7,8 @@ package dialog
 
 import (
 	"fmt"
+	"image"
+	"image/png"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,6 +19,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/supersonicpineapple/go-jsoncanvas"
+	_ "golang.org/x/image/bmp"
 )
 
 // exportDialogsCmd represents the export-dialogs command
@@ -33,9 +36,9 @@ If no key file path is provided, uses the first game from .sbt-inf.toml config.`
 	}
 
 	cmd.Flags().StringP("output", "o", "", "Output directory")
-	cmd.Flags().StringP("tlk", "t", "", "Path to dialog.tlk file")
-	cmd.Flags().Bool("verbose", false, "Enable verbose output")
-	config.AddGameFlag(cmd)
+	cmd.Flags().StringP("tlk", "t", "", "Path to dialog.tlk file (default: <key_dir>/lang/en_US/dialog.tlk)")
+	cmd.Flags().BoolP("verbose", "v", false, "Enable verbose output")
+	cmd.Flags().BoolP("speakers", "s", true, "Load and export information about characters from CRE files")
 
 	return cmd
 }
@@ -45,6 +48,7 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 	tlkPath, _ := cmd.Flags().GetString("tlk")
 	outputDir, _ := cmd.Flags().GetString("output")
 	verbose, _ := cmd.Flags().GetBool("verbose")
+	withCreatures, _ := cmd.Flags().GetBool("speakers")
 
 	// Resolve the key path and parse other files using the common helper
 	keyPath, dialogFiles, err := config.ResolveKeyPathFromArgs(args, gameName)
@@ -62,9 +66,13 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 		tlkFs = osFs
 	}
 
-	dlgFs := fs.NewInfinityFs(keyPath, fs.FileType_DLG)
+	typesToLoad := []fs.FileType{fs.FileType_DLG}
+	if withCreatures {
+		typesToLoad = append(typesToLoad, fs.FileType_CRE, fs.FileType_BMP)
+	}
+	dlgFs := fs.NewInfinityFs(keyPath, typesToLoad...)
 
-	dc := dialog.NewDialogBuilder(dlgFs, tlkFs)
+	dc := dialog.NewDialogBuilder(dlgFs, tlkFs, withCreatures, verbose)
 
 	if len(dialogFiles) == 0 {
 		dir, err := dlgFs.Open("DLG")
@@ -110,6 +118,39 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 			err = jsoncanvas.Encode(canvas, file)
 			if err != nil {
 				return fmt.Errorf("error encoding canvas for dialog %s: %v", d.Id, err)
+			}
+
+			for _, creature := range d.AllCreatures {
+				if creature.Portrait != "" {
+					if picFile, err := dlgFs.Open(creature.Portrait); err == nil {
+						img, _, err := image.Decode(picFile)
+						picFile.Close()
+						if err != nil {
+							fmt.Printf("error converting portrait %s for %s: %v\n", creature.Portrait, creature.LongName, err)
+							continue
+						}
+
+						picName := strings.TrimSuffix(creature.Portrait, filepath.Ext(creature.Portrait)) + ".png"
+
+						err = os.MkdirAll(filepath.Join(outputDir, "portraits"), 0755)
+						if err != nil {
+							fmt.Printf("error creating portraits directory for %s: %v\n", creature.LongName, err)
+							continue
+						}
+
+						outFile, err := os.Create(filepath.Join(outputDir, "portraits", picName))
+						if err != nil {
+							fmt.Printf("error creating portrait file %s for %s: %v\n", picName, creature.LongName, err)
+							continue
+						}
+						defer outFile.Close()
+
+						if err := png.Encode(outFile, img); err != nil {
+							fmt.Printf("error writing portrait file %s for %s: %v\n", picName, creature.LongName, err)
+							continue
+						}
+					}
+				}
 			}
 		}
 	}
