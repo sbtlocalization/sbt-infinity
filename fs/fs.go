@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: © 2025 SBT Localization https://sbt.localization.com.ua
 // SPDX-FileContributor: Serhii Olendarenko <sergey.olendarenko@gmail.com>
+// SPDX-FileContributor: @definitelythehuman
 //
 // SPDX-License-Identifier: GPL-3.0-only
 
@@ -11,6 +12,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -449,4 +451,19 @@ func (fs *InfinityFs) GetBifFilePath(name string) (string, error) {
 		return record.BifFile, nil
 	}
 	return "", os.ErrNotExist
+}
+
+func (fs *InfinityFs) ListResourses(contentFilter *regexp.Regexp) (result []*fileRecord) {
+
+	for _, value := range fs.catalog.byName {
+		if contentFilter != nil {
+			if !(contentFilter.MatchString(value.FullName) ||
+				contentFilter.MatchString(value.BifFile)) {
+				continue
+			}
+		}
+		result = append(result, value)
+	}
+
+	return result
 }
