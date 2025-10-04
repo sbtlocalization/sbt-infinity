@@ -20,14 +20,12 @@ import (
 
 func NewLsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "list [path to chitin.key] [dialog files...]",
+		Use:     "list [DLG-file...]",
 		Aliases: []string{"ls"},
 		Short:   "List dialogs from the game",
 		Long: `List all dialogs or specific dialog files from the game.
-		Reads the game structure from chitin.key file and dialog.tlk file, and optionally lists
-		only specified dialog files (e.g., ABISHAB.DLG, DMORTE.DLG).
-		
-		If no key file path is provided, uses the first game from .sbt-inf.toml config.`,
+Reads the game structure from chitin.key file and dialog.tlk file, and optionally lists
+only specified dialog files (e.g., ABISHAB.DLG, DMORTE.DLG with or without extension).`,
 		Args: cobra.MinimumNArgs(0),
 		RunE: runLs,
 	}
@@ -38,14 +36,18 @@ func NewLsCommand() *cobra.Command {
 }
 
 func runLs(cmd *cobra.Command, args []string) error {
-	gameName, _ := cmd.Flags().GetString("game")
 	jsonOutput, _ := cmd.Flags().GetBool("json")
 	tlkPath, _ := cmd.Flags().GetString("tlk")
 
 	// Resolve the key path and parse other files using the common helper
-	keyPath, dialogFiles, err := config.ResolveKeyPathFromArgs(args, gameName)
+	keyPath, err := config.ResolveKeyPath(cmd)
 	if err != nil {
 		return err
+	}
+
+	var dialogFiles []string
+	if len(args) > 0 {
+		dialogFiles = args
 	}
 
 	osFs := afero.NewOsFs()

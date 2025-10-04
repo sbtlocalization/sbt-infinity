@@ -43,6 +43,12 @@ func init() {
 
 	rootCmd.PersistentFlags().BoolP("profile", "p", false, "Enable profiling")
 	rootCmd.PersistentFlags().MarkHidden("profile")
+
+	rootCmd.PersistentFlags().StringP("config", "c", ".sbt-inf.toml", "Path to config file")
+	rootCmd.PersistentFlags().StringP("game", "g", "", "Game name from config to use (default - first one in A-Z order)")
+	rootCmd.PersistentFlags().StringP("key", "k", "", "Path to chitin.key file")
+	rootCmd.MarkFlagsMutuallyExclusive("config", "key")
+	rootCmd.MarkFlagsMutuallyExclusive("key", "game")
 }
 
 func startProfiling(cmd *cobra.Command, args []string) error {

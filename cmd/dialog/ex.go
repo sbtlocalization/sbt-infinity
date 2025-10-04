@@ -25,18 +25,20 @@ import (
 // exportDialogsCmd represents the export-dialogs command
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "export [path to chitin.key] [dlg files...]",
-		Short: "Export dialogs as JSON Canvas files",
+		Use:     "export [DLG-file...]",
+		Aliases: []string{"ex"},
+		Short:   "Export dialogs as JSON Canvas files",
 		Long: `Export dialogs from DLG files (with texts from TLK file) as JSON Canvas files.
-Creates a visual representation of dialog structures.
-
-If no key file path is provided, uses the first game from .sbt-inf.toml config.`,
+Creates a visual representation of dialog structures.`,
 		Args: cobra.MinimumNArgs(0),
 		RunE: runExportDialogs,
 	}
 
+	cmd.Flags().StringP("lang", "l", "en_US", "Language code for TLK file")
+	cmd.Flags().StringP("tlk", "t", "<KEY_DIR>/lang/<LANG>/dialog.tlk", "Path to dialog.tlk file")
+	cmd.Flags().BoolP("feminine", "f", false, "Open dialogf.tlk instead of dialog.tlk")
+
 	cmd.Flags().StringP("output", "o", "", "Output directory")
-	cmd.Flags().StringP("tlk", "t", "<key_dir>/lang/en_US/dialog.tlk)", "Path to dialog.tlk file")
 	cmd.Flags().BoolP("verbose", "v", false, "Enable verbose output")
 	cmd.Flags().BoolP("speakers", "s", true, "Load and export information about characters from CRE files")
 
@@ -44,24 +46,34 @@ If no key file path is provided, uses the first game from .sbt-inf.toml config.`
 }
 
 func runExportDialogs(cmd *cobra.Command, args []string) error {
-	gameName, _ := cmd.Flags().GetString("game")
 	tlkPath, _ := cmd.Flags().GetString("tlk")
+	lang, _ := cmd.Flags().GetString("lang")
+	feminine, _ := cmd.Flags().GetBool("feminine")
 	outputDir, _ := cmd.Flags().GetString("output")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	withCreatures, _ := cmd.Flags().GetBool("speakers")
 
 	// Resolve the key path and parse other files using the common helper
-	keyPath, dialogFiles, err := config.ResolveKeyPathFromArgs(args, gameName)
+	keyPath, err := config.ResolveKeyPath(cmd)
 	if err != nil {
 		return err
+	}
+
+	var dialogFiles []string
+	if len(args) > 0 {
+		dialogFiles = args
 	}
 
 	osFs := afero.NewOsFs()
 
 	var tlkFs afero.Fs
-	if tlkPath == "" {
-		tlkFs = afero.NewBasePathFs(osFs, filepath.Join(filepath.Dir(keyPath)))
-		tlkPath = "lang/en_US/dialog.tlk"
+	if !cmd.Flags().Changed("tlk") {
+		tlkFs = afero.NewBasePathFs(osFs, filepath.Dir(keyPath))
+		if feminine {
+			tlkPath = filepath.Join("lang", lang, "dialogf.tlk")
+		} else {
+			tlkPath = filepath.Join("lang", lang, "dialog.tlk")
+		}
 	} else {
 		tlkFs = osFs
 	}

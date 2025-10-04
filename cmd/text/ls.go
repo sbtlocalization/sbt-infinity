@@ -20,14 +20,12 @@ import (
 
 func NewLsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "list [path to chitin.key] [ID...]",
+		Use:     "list [ID...]",
 		Aliases: []string{"ls"},
 		Short:   "List textual resources from the game",
 		Long: `List all textual resources or specific IDs from the game.
 Reads the texts from dialog.tlk file, and optionally lists only specified 
-text IDs (e.g., 1234, 5678).
-
-If no key file path is provided, uses the first game from .sbt-inf.toml config.`,
+text IDs (e.g., 1234, 5678).`,
 		Example: `  List all text entries:
 
       sbt-inf text list
@@ -52,15 +50,20 @@ If no key file path is provided, uses the first game from .sbt-inf.toml config.`
 }
 
 func runLs(cmd *cobra.Command, args []string) error {
-	gameName, _ := cmd.Flags().GetString("game")
 	tlkPath, _ := cmd.Flags().GetString("tlk")
 	lang, _ := cmd.Flags().GetString("lang")
 	feminine, _ := cmd.Flags().GetBool("feminine")
 
 	jsonOutput, _ := cmd.Flags().GetBool("json")
 
-	// Resolve the key path and parse other files using the common helper
-	keyPath, textIds, err := config.ResolveKeyPathFromArgs(args, gameName)
+	// Parse text IDs from args
+	var textIds []string
+	if len(args) > 0 {
+		textIds = args
+	}
+
+	// Resolve the key path using flags
+	keyPath, err := config.ResolveKeyPath(cmd)
 	if err != nil {
 		return err
 	}

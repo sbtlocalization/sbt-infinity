@@ -8,7 +8,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"sort"
 
 	"github.com/pelletier/go-toml/v2"
@@ -22,18 +21,9 @@ type KeyConfig struct {
 	Games map[string]string `toml:"Games"`
 }
 
-// LoadKeyConfig automatically loads the .sbt-inf.toml file from the current working directory
+// LoadKeyConfig loads the configuration file from the specified path
 // If the file doesn't exist, it returns a config with an empty Games map
-func LoadKeyConfig() (*KeyConfig, error) {
-	// Get current working directory
-	cwd, err := os.Getwd()
-	if err != nil {
-		return &KeyConfig{Games: make(map[string]string)}, nil
-	}
-
-	// Construct path to config file
-	configPath := filepath.Join(cwd, ConfigFileName)
-
+func LoadKeyConfig(configPath string) (*KeyConfig, error) {
 	// Check if file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		// File doesn't exist, return empty config
@@ -91,12 +81,22 @@ func (c *KeyConfig) GetFirstGame() (string, bool) {
 }
 
 // ResolveKeyPath resolves the key file path using the following priority:
-// 1. If gameName is provided, use that specific game from config
-// 2. If no gameName but config has games, use the first game
-// 3. If no config or no games, use the provided keyPath argument
+// 1. If keyPath is provided directly, use it
+// 2. If gameName is provided, use that specific game from config
+// 3. If no gameName but config has games, use the first game
 // Returns (resolvedPath, error)
-func ResolveKeyPath(keyPath string, gameName string) (string, error) {
-	config, err := LoadKeyConfig()
+func ResolveKeyPath(cmd *cobra.Command) (string, error) {
+	configPath, _ := cmd.Flags().GetString("config")
+	gameName, _ := cmd.Flags().GetString("game")
+	keyPath, _ := cmd.Flags().GetString("key")
+
+	// If key path is provided directly, use it
+	if keyPath != "" {
+		return keyPath, nil
+	}
+
+	// Load config file
+	config, err := LoadKeyConfig(configPath)
 	if err != nil {
 		// Config file exists but has errors - return the error
 		return "", fmt.Errorf("error loading config: %v", err)
@@ -115,45 +115,6 @@ func ResolveKeyPath(keyPath string, gameName string) (string, error) {
 		return path, nil
 	}
 
-	// No config or no games - require keyPath argument
-	if keyPath == "" {
-		return "", fmt.Errorf("no games configured and no key file path provided")
-	}
-
-	return keyPath, nil
-}
-
-// ParseArgsWithKeyPath parses command arguments to separate key file path from other files
-// Returns (keyPath, otherFiles) where keyPath is extracted if the first argument has .key extension
-func ParseArgsWithKeyPath(args []string) (string, []string) {
-	if len(args) == 0 {
-		return "", []string{}
-	}
-
-	// If first argument has .key extension, treat it as keyPath
-	if filepath.Ext(args[0]) == ".key" {
-		return args[0], args[1:]
-	}
-
-	// Otherwise, all arguments are other files
-	return "", args
-}
-
-// ResolveKeyPathFromArgs combines argument parsing and key path resolution
-// This is the main function that commands should use to handle key path resolution
-func ResolveKeyPathFromArgs(args []string, gameName string) (string, []string, error) {
-	keyPath, otherFiles := ParseArgsWithKeyPath(args)
-
-	resolvedKeyPath, err := ResolveKeyPath(keyPath, gameName)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return resolvedKeyPath, otherFiles, nil
-}
-
-// AddGameFlag adds the standard --game flag to a cobra command
-// This is a helper function to ensure consistent flag naming across commands
-func AddGameFlag(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringP("game", "g", "", "Game name from config to use")
+	// No key path, no games configured
+	return "", fmt.Errorf("no games configured and no key file path provided")
 }
