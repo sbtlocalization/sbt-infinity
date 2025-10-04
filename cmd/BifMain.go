@@ -10,13 +10,10 @@ import (
 	"log"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/sbtlocalization/sbt-infinity/fs"
 	"github.com/spf13/cobra"
 )
-
-var bif_log_level_verbose = false
 
 // mainBifCmd represents the bif command which has subcommands
 var mainBifCmd = &cobra.Command{
@@ -29,19 +26,21 @@ var mainBifCmd = &cobra.Command{
 }
 
 var listBifCmd = &cobra.Command{
-	Use:   "ls path-to-chitin.key [-j=json][-t resource-type][-f regex-filter]",
-	Short: "list all BIFF files and resources attached to KEY file",
-	Long: `list all BIFF files and resources attached to KEY file.
+	Use:     "list path-to-chitin.key [-j=json][-t resource-type][-f regex-filter]",
+	Aliases: []string{"ls"},
+	Short:   "List game engine resources contained in BIF files",
+	Long: `List game engine resources contained in BIF files.
 
-	Additional filter may be passed to unpack only specific resources
+	Additional filter may be passed to list only specific resources
 	`,
 	Run: runListBif,
 }
 
 var extractBifCmd = &cobra.Command{
-	Use:   "ex path-to-chitin.key [-o output-dir][-t resource-type][-f regex-filter]",
-	Short: "unpack(extracts) BIF files into resources",
-	Long: `unpack(extracts) BIF files into set of resources.
+	Use:     "extract path-to-chitin.key [-o output-dir][-t resource-type][-f regex-filter]",
+	Aliases: []string{"ex"},
+	Short:   "Extract game engine resources from BIF files",
+	Long: `Extract game engine resources from BIF files.
 	Structure of resources is read from chitin.key,
 	so all related .bif files picked automatically.
 
@@ -55,7 +54,7 @@ func init() {
 	mainBifCmd.AddCommand(listBifCmd)
 	mainBifCmd.AddCommand(extractBifCmd)
 
-	mainBifCmd.PersistentFlags().StringP("type", "t", "", "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Take type number from https://gibberlings3.github.io/iesdp/file_formats/general.htm")
+	mainBifCmd.PersistentFlags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Take type number from https://gibberlings3.github.io/iesdp/file_formats/general.htm")
 	mainBifCmd.PersistentFlags().StringP("filter", "f", "", "Regex for resourse name filtering")
 
 	listBifCmd.Flags().BoolP("json", "j", false, "Decorate output as JSON")
@@ -65,13 +64,7 @@ func init() {
 
 // Parses argument like `-t 1011,0x409,1022,DLG,bmp` into list of Key_ResType
 // TODO: remove duplicate types
-func getFileTypeFilter(rawInput string) (filter []fs.FileType) {
-	if len(rawInput) == 0 {
-		return filter
-	}
-
-	tokens := strings.Split(rawInput, ",")
-
+func getFileTypeFilter(tokens []string) (filter []fs.FileType) {
 	if len(tokens) == 0 {
 		return filter
 	}

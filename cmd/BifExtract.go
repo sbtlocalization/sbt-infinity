@@ -19,7 +19,7 @@ import (
 
 // runExtractBif handles the `bif ex` command execution
 func runExtractBif(cmd *cobra.Command, args []string) {
-	typeRawInput, _ := cmd.Flags().GetString("type")
+	typeRawInput, _ := cmd.Flags().GetStringSlice("type")
 	filterRawInput, _ := cmd.Flags().GetString("filter")
 	outputDir, _ := cmd.Flags().GetString("output")
 

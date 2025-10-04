@@ -12,13 +12,12 @@ import (
 
 	"github.com/sbtlocalization/sbt-infinity/config"
 	"github.com/sbtlocalization/sbt-infinity/fs"
-	"github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/spf13/cobra"
 )
 
 // runListBif handles the `bif ls` command execution
 func runListBif(cmd *cobra.Command, args []string) {
-	typeRawInput, _ := cmd.Flags().GetString("type")
+	typeRawInput, _ := cmd.Flags().GetStringSlice("type")
 	filterRawInput, _ := cmd.Flags().GetString("filter")
 	isJson, _ := cmd.Flags().GetBool("json")
 
@@ -32,24 +31,15 @@ func runListBif(cmd *cobra.Command, args []string) {
 	resFs := fs.NewInfinityFs(keyFilePath, getFileTypeFilter(typeRawInput)...)
 
 	for _, v := range resFs.ListResourses(contentFilter) {
-		var index int
-		if v.FileIndex != 0 {
-			index = int(v.FileIndex)
-		} else {
-			index = int(v.TilesetIndex)
-		}
-
 		if isJson {
 			output := struct {
-				Index   int                `json:"index"`
-				Name    string             `json:"name"`
-				Bif     string             `json:"bif"`
-				ResType parser.Key_ResType `json:"type"`
+				Name    string      `json:"name"`
+				Bif     string      `json:"bif"`
+				ResType fs.FileType `json:"type"`
 			}{
-				Index:   index,
 				Name:    v.FullName,
 				Bif:     v.BifFile,
-				ResType: v.Type.ToParserType(),
+				ResType: v.Type,
 			}
 			jsonData, err := json.Marshal(output)
 			if err != nil {
@@ -57,7 +47,7 @@ func runListBif(cmd *cobra.Command, args []string) {
 			}
 			fmt.Println(string(jsonData))
 		} else {
-			fmt.Printf("%d %s %s 0x%x\n", index, v.FullName, v.BifFile, v.Type.ToParserType())
+			fmt.Printf("%s %s 0x%x\n", v.FullName, v.BifFile, v.Type.ToParserType())
 		}
 	}
 
