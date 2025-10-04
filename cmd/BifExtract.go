@@ -11,23 +11,24 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/sbtlocalization/sbt-infinity/config"
 	"github.com/sbtlocalization/sbt-infinity/fs"
-	"github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/spf13/cobra"
 )
 
 // runExtractBif handles the `bif ex` command execution
 func runExtractBif(cmd *cobra.Command, args []string) {
+	typeRawInput, _ := cmd.Flags().GetString("type")
+	filterRawInput, _ := cmd.Flags().GetString("filter")
+	outputDir, _ := cmd.Flags().GetString("output")
+
 	keyFilePath, err := config.ResolveKeyPath(cmd)
 	if err != nil {
 		log.Fatalf("Error with .key path: %v\n", err)
 	}
 
 	// Get output directory flag, with fallback to config, then to default
-	outputDir, _ := cmd.Flags().GetString(Bif_Flag_Output_Dir)
 	if outputDir == "" {
 		outputDir = "." // Current directory as default
 	}
@@ -38,36 +39,26 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	filterBifContent(cmd, keyFilePath, func(index int, name string, bifPath string, resType parser.Key_ResType) {
-		resourseFound(outputDir, keyFilePath, index, name, bifPath, resType)
-	})
-}
+	contentFilter := getContentFilter(filterRawInput)
 
-func resourseFound(outputDir string, keyFilePath string, index int, name string, bifPath string, resType parser.Key_ResType) {
-	fType := fs.FileTypeFromParserType(resType)
-	resFs := fs.NewInfinityFs(keyFilePath, fType)
+	resFs := fs.NewInfinityFs(keyFilePath, getFileTypeFilter(typeRawInput)...)
 
-	fullName := name
-	suffix := "." + fType.String()
-	if !strings.HasSuffix(strings.ToUpper(fullName), suffix) {
-		fullName = fullName + suffix
+	for _, v := range resFs.ListResourses(contentFilter) {
+		fullName := v.FullName
+		file, err := resFs.Open(fullName)
+		if err != nil {
+			log.Fatalf("failed to extract file %s: %v", fullName, err)
+		}
+		defer file.Close()
+
+		outputPath := filepath.Join(outputDir, fullName)
+
+		err = saveFileToFile(file, outputPath)
+		if err != nil {
+			log.Fatalf("Error saving %s file: %v\n", outputPath, err)
+			return
+		}
 	}
-	printLogF("Extract %s which has index %d and located in %s\n", fullName, index, bifPath)
-
-	file, err := resFs.Open(fullName)
-	if err != nil {
-		log.Fatalf("failed to extract file %s: %v", fullName, err)
-	}
-	defer file.Close()
-
-	outputPath := filepath.Join(outputDir, fullName)
-
-	err = saveFileToFile(file, outputPath)
-	if err != nil {
-		log.Fatalf("Error saving %s file: %v\n", outputPath, err)
-		return
-	}
-	printLogF("Extracted %s\n", outputPath)
 }
 
 func saveFileToFile(src io.Reader, path string) error {
