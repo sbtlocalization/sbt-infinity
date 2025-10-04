@@ -10,13 +10,18 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/sbtlocalization/sbt-infinity/config"
 	"github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/spf13/cobra"
 )
 
 // runListBif handles the `bif ls` command execution
 func runListBif(cmd *cobra.Command, args []string) {
-	keyFilePath := args[0]
+	keyFilePath, err := config.ResolveKeyPath(cmd)
+	if err != nil {
+		log.Fatalf("Error with .key path: %v\n", err)
+	}
+
 	isJson, _ := cmd.Flags().GetBool(Bif_Flag_JSON)
 	filterBifContent(cmd, keyFilePath, func(index int, name string, bifPath string, resType parser.Key_ResType) {
 		outputFound(isJson, index, name, bifPath, resType)

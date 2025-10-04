@@ -47,8 +47,7 @@ var listBifCmd = &cobra.Command{
 
 	Additional filter may be passed to unpack only specific resources
 	`,
-	Args: cobra.ExactArgs(1),
-	Run:  runListBif,
+	Run: runListBif,
 }
 
 var extractBifCmd = &cobra.Command{
@@ -60,8 +59,7 @@ var extractBifCmd = &cobra.Command{
 
 	Additional filter may be passed to unpack only specific resources
 	`,
-	Args: cobra.ExactArgs(1),
-	Run:  runExtractBif,
+	Run: runExtractBif,
 }
 
 func init() {

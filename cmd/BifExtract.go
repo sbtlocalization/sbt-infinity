@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sbtlocalization/sbt-infinity/config"
 	"github.com/sbtlocalization/sbt-infinity/fs"
 	"github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/spf13/cobra"
@@ -20,6 +21,11 @@ import (
 
 // runExtractBif handles the `bif ex` command execution
 func runExtractBif(cmd *cobra.Command, args []string) {
+	keyFilePath, err := config.ResolveKeyPath(cmd)
+	if err != nil {
+		log.Fatalf("Error with .key path: %v\n", err)
+	}
+
 	// Get output directory flag, with fallback to config, then to default
 	outputDir, _ := cmd.Flags().GetString(Bif_Flag_Output_Dir)
 	if outputDir == "" {
@@ -31,8 +37,6 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 		log.Fatalf("Error creating output directory: %v\n", err)
 		return
 	}
-
-	keyFilePath := args[0]
 
 	filterBifContent(cmd, keyFilePath, func(index int, name string, bifPath string, resType parser.Key_ResType) {
 		resourseFound(outputDir, keyFilePath, index, name, bifPath, resType)
