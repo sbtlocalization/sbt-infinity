@@ -19,7 +19,7 @@ import (
 
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "extract path-to-chitin.key [-o output-dir][-t resource-type][-f regex-filter]",
+		Use:     "extract -k path-to-chitin.key [-o output-dir][-t resource-type][-f regex-filter]",
 		Aliases: []string{"ex"},
 		Short:   "Extract game engine resources from BIF files",
 		Long: `Extract game engine resources from BIF files.
@@ -29,7 +29,7 @@ func NewExportCommand() *cobra.Command {
 	Additional filter may be passed to unpack only specific resources
 	`,
 		Run:  runExtractBif,
-		Args: cobra.MinimumNArgs(0),
+		Args: cobra.MaximumNArgs(0),
 	}
 
 	cmd.Flags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Take type number from https://gibberlings3.github.io/iesdp/file_formats/general.htm")

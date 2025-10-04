@@ -17,7 +17,7 @@ import (
 
 func NewLsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "list path-to-chitin.key [-j=json][-t resource-type][-f regex-filter]",
+		Use:     "list -k path-to-chitin.key [-j=json][-t resource-type][-f regex-filter]",
 		Aliases: []string{"ls"},
 		Short:   "List game engine resources contained in BIF files",
 		Long: `List game engine resources contained in BIF files.
@@ -25,7 +25,7 @@ func NewLsCommand() *cobra.Command {
 	Additional filter may be passed to list only specific resources
 	`,
 		Run:  runListBif,
-		Args: cobra.MinimumNArgs(0),
+		Args: cobra.MaximumNArgs(0),
 	}
 
 	cmd.Flags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Take type number from https://gibberlings3.github.io/iesdp/file_formats/general.htm")
