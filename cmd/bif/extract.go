@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-only
 
-package cmd
+package bif
 
 import (
 	"io"
@@ -16,6 +16,29 @@ import (
 	"github.com/sbtlocalization/sbt-infinity/fs"
 	"github.com/spf13/cobra"
 )
+
+func NewExportCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "extract path-to-chitin.key [-o output-dir][-t resource-type][-f regex-filter]",
+		Aliases: []string{"ex"},
+		Short:   "Extract game engine resources from BIF files",
+		Long: `Extract game engine resources from BIF files.
+	Structure of resources is read from chitin.key,
+	so all related .bif files picked automatically.
+
+	Additional filter may be passed to unpack only specific resources
+	`,
+		Run:  runExtractBif,
+		Args: cobra.MinimumNArgs(0),
+	}
+
+	cmd.Flags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Take type number from https://gibberlings3.github.io/iesdp/file_formats/general.htm")
+	cmd.Flags().StringP("filter", "f", "", "Regex for resourse name filtering")
+
+	cmd.Flags().StringP("output", "o", "", "Output directory for resource files (default: current directory)")
+
+	return cmd
+}
 
 // runExtractBif handles the `bif ex` command execution
 func runExtractBif(cmd *cobra.Command, args []string) {

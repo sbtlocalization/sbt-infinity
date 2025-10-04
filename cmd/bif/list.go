@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-only
 
-package cmd
+package bif
 
 import (
 	"encoding/json"
@@ -14,6 +14,27 @@ import (
 	"github.com/sbtlocalization/sbt-infinity/fs"
 	"github.com/spf13/cobra"
 )
+
+func NewLsCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "list path-to-chitin.key [-j=json][-t resource-type][-f regex-filter]",
+		Aliases: []string{"ls"},
+		Short:   "List game engine resources contained in BIF files",
+		Long: `List game engine resources contained in BIF files.
+
+	Additional filter may be passed to list only specific resources
+	`,
+		Run:  runListBif,
+		Args: cobra.MinimumNArgs(0),
+	}
+
+	cmd.Flags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Take type number from https://gibberlings3.github.io/iesdp/file_formats/general.htm")
+	cmd.Flags().StringP("filter", "f", "", "Regex for resourse name filtering")
+
+	cmd.Flags().BoolP("json", "j", false, "Decorate output as JSON")
+
+	return cmd
+}
 
 // runListBif handles the `bif ls` command execution
 func runListBif(cmd *cobra.Command, args []string) {
