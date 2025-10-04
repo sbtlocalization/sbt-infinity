@@ -21,3 +21,6 @@ generate-mos: build
 
 run *params: build
 	./sbt-inf {{params}}
+
+pprof:
+	go tool pprof -http=:8080 cpu.pprof

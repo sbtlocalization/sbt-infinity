@@ -6,7 +6,6 @@
 package text
 
 import (
-	"github.com/sbtlocalization/sbt-infinity/config"
 	"github.com/spf13/cobra"
 )
 
@@ -17,8 +16,12 @@ func NewCommand() *cobra.Command {
 		Long:  `Utilities for working with TLK files.`,
 	}
 
-	cmd.PersistentFlags().StringP("tlk", "t", "", "Path to dialog.tlk file (default: <key_dir>/lang/en_US/dialog.tlk)")
-	config.AddGameFlag(cmd)
+	cmd.PersistentFlags().StringP("lang", "l", "en_US", "Language code for TLK file")
+	cmd.PersistentFlags().StringP("tlk", "t", "<KEY_DIR>/lang/<LANG>/dialog.tlk", "Path to dialog.tlk file")
+	cmd.PersistentFlags().BoolP("feminine", "f", false, "Open dialogf.tlk instead of dialog.tlk")
+
+	cmd.MarkFlagsMutuallyExclusive("tlk", "lang")
+	cmd.MarkFlagsMutuallyExclusive("tlk", "feminine")
 
 	cmd.AddCommand(NewLsCommand())
 

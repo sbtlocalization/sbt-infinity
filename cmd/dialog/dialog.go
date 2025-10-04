@@ -6,7 +6,6 @@
 package dialog
 
 import (
-	"github.com/sbtlocalization/sbt-infinity/config"
 	"github.com/spf13/cobra"
 )
 
@@ -16,8 +15,6 @@ func NewCommand() *cobra.Command {
 		Short: "Dialog utilities",
 		Long:  `Utilities for working with Infinity Engine dialogs.`,
 	}
-
-	config.AddGameFlag(cmd)
 
 	cmd.AddCommand(NewLsCommand())
 	cmd.AddCommand(NewExportCommand())
