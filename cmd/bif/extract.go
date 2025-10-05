@@ -19,23 +19,19 @@ import (
 
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "extract -k path-to-chitin.key [-o output-dir][-t resource-type][-f regex-filter]",
+		Use:     "extract [-o output-dir] [-t type]... [-f regex]",
 		Aliases: []string{"ex"},
 		Short:   "Extract game engine resources from BIF files",
 		Long: `Extract game engine resources from BIF files.
-	Structure of resources is read from chitin.key,
-	so all related .bif files picked automatically.
+Structure of resources is read from chitin.key,
+so all related .bif files picked automatically.
 
-	Additional filter may be passed to unpack only specific resources
-	`,
+Additional filter may be passed to unpack only specific resources.`,
 		Run:  runExtractBif,
 		Args: cobra.MaximumNArgs(0),
 	}
 
-	cmd.Flags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Take type number from https://gibberlings3.github.io/iesdp/file_formats/general.htm")
-	cmd.Flags().StringP("filter", "f", "", "Regex for resourse name filtering")
-
-	cmd.Flags().StringP("output", "o", "", "Output directory for resource files (default: current directory)")
+	cmd.Flags().StringP("output", "o", ".", "Output directory for resource files (default: current directory)")
 
 	return cmd
 }
@@ -49,11 +45,6 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 	keyFilePath, err := config.ResolveKeyPath(cmd)
 	if err != nil {
 		log.Fatalf("Error with .key path: %v\n", err)
-	}
-
-	// Get output directory flag, with fallback to config, then to default
-	if outputDir == "" {
-		outputDir = "." // Current directory as default
 	}
 
 	// Create output directory if it doesn't exist

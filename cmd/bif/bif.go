@@ -6,7 +6,6 @@
 package bif
 
 import (
-	"fmt"
 	"log"
 	"regexp"
 	"strconv"
@@ -17,13 +16,12 @@ import (
 
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "bif ls|ex path-to-chitin.key [-o output-dir][-t resource-type][-f regex-filter]",
-		Short: "unpack or list BIF files into resources",
-
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Error: must also specify list(ls) or extract(ex) command")
-		},
+		Use:   "bif",
+		Short: "Works with raw BIF files which bound to `chitin.key`",
 	}
+
+	cmd.PersistentFlags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Take type number from https://gibberlings3.github.io/iesdp/file_formats/general.htm")
+	cmd.PersistentFlags().StringP("filter", "f", "", "Regex for resourse name filtering")
 
 	cmd.AddCommand(NewLsCommand())
 	cmd.AddCommand(NewExportCommand())
@@ -31,19 +29,20 @@ func NewCommand() *cobra.Command {
 }
 
 // Parses argument like `-t 1011,0x409,1022,DLG,bmp` into list of Key_ResType
-// TODO: remove duplicate types
 func getFileTypeFilter(tokens []string) (filter []fs.FileType) {
 	if len(tokens) == 0 {
-		return filter
+		return
 	}
+
+	typeSet := make(map[fs.FileType]bool)
 
 	for _, value := range tokens {
 		if fType := fs.FileTypeFromExtension(value); fType.IsValid() {
-			filter = append(filter, fType)
+			typeSet[fType] = true
 		} else if parsed, err := strconv.ParseInt(value, 0, 32); err == nil {
 			resType := fs.FileType(parsed)
 			if resType.IsValid() {
-				filter = append(filter, resType)
+				typeSet[resType] = true
 			} else {
 				log.Fatalf("Value 0x%x (%d) does not match known type\n", parsed, parsed)
 			}
@@ -52,6 +51,9 @@ func getFileTypeFilter(tokens []string) (filter []fs.FileType) {
 		}
 	}
 
+	for key := range typeSet {
+		filter = append(filter, key)
+	}
 	return filter
 }
 
