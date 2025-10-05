@@ -23,6 +23,9 @@ func NewLsCommand() *cobra.Command {
 		Long: `List game engine resources contained in BIF files.
 
 Additional filter may be passed to list only specific resources.`,
+		Example: `List all resourses which have dialog type and have case insensitive 'arca' part in name:
+
+sbt-inf bif ls -k chitin.key -f "(?i)arca" -t dlg`,
 		Run:  runListBif,
 		Args: cobra.MaximumNArgs(0),
 	}

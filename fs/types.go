@@ -93,6 +93,10 @@ func FileTypeFromParserType(t parser.Key_ResType) FileType {
 	return FileType(t)
 }
 
+func GetAllTypes() *map[FileType]string {
+	return &typeToExtension
+}
+
 var typeToExtension = map[FileType]string{
 	FileType_BMP:  "BMP",
 	FileType_MVE:  "MVE",

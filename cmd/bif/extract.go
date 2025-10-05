@@ -27,6 +27,9 @@ Structure of resources is read from chitin.key,
 so all related .bif files picked automatically.
 
 Additional filter may be passed to unpack only specific resources.`,
+		Example: `Extract resourses with 'pdialog' in name into 'tmp' folder:
+
+sbt-inf bif ex -k 'D:\Games\Baldur''s Gate - Enhanced Edition\chitin.key' -f "(?i)pdialog" -o tmp`,
 		Run:  runExtractBif,
 		Args: cobra.MaximumNArgs(0),
 	}
