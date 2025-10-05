@@ -24,6 +24,7 @@ func NewCommand() *cobra.Command {
 	cmd.MarkFlagsMutuallyExclusive("tlk", "feminine")
 
 	cmd.AddCommand(NewLsCommand())
+	cmd.AddCommand(NewExCommand())
 
 	return cmd
 }

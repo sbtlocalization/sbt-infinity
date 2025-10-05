@@ -63,7 +63,11 @@ func (t *Dlg_TransitionEntry) GetText(tlkFile *TlkFile) (uint32, string, bool) {
 	if !t.Flags.WithText {
 		return 0xFFFFFFFF, "", false
 	} else {
-		return t.TextRef, tlkFile.GetText(t.TextRef), true
+		text := ""
+		if tlkFile != nil {
+			text = tlkFile.GetText(t.TextRef)
+		}
+		return t.TextRef, text, true
 	}
 }
 
@@ -71,7 +75,11 @@ func (t *Dlg_TransitionEntry) GetJournalText(tlkFile *TlkFile) (uint32, string, 
 	if !t.Flags.WithJournalEntry {
 		return 0xFFFFFFFF, "", false
 	} else {
-		return t.JournalTextRef, tlkFile.GetText(t.JournalTextRef), true
+		text := ""
+		if tlkFile != nil {
+			text = tlkFile.GetText(t.JournalTextRef)
+		}
+		return t.JournalTextRef, text, true
 	}
 }
 

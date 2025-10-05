@@ -56,13 +56,11 @@ func runLs(cmd *cobra.Command, args []string) error {
 
 	jsonOutput, _ := cmd.Flags().GetBool("json")
 
-	// Parse text IDs from args
 	var textIds []string
 	if len(args) > 0 {
 		textIds = args
 	}
 
-	// Resolve the key path using flags
 	keyPath, err := config.ResolveKeyPath(cmd)
 	if err != nil {
 		return err
