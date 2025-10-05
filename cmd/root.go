@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime/pprof"
 
+	"github.com/sbtlocalization/sbt-infinity/cmd/bif"
 	"github.com/sbtlocalization/sbt-infinity/cmd/dialog"
 	"github.com/sbtlocalization/sbt-infinity/cmd/text"
 	"github.com/spf13/cobra"
@@ -40,6 +41,7 @@ func Execute() {
 func init() {
 	rootCmd.AddCommand(dialog.NewCommand())
 	rootCmd.AddCommand(text.NewCommand())
+	rootCmd.AddCommand(bif.NewCommand())
 
 	rootCmd.PersistentFlags().BoolP("profile", "p", false, "Enable profiling")
 	rootCmd.PersistentFlags().MarkHidden("profile")

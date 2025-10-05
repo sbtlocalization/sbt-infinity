@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: © 2025 SBT Localization https://sbt.localization.com.ua
 // SPDX-FileContributor: Serhii Olendarenko <sergey.olendarenko@gmail.com>
+// SPDX-FileContributor: @definitelythehuman
 //
 // SPDX-License-Identifier: GPL-3.0-only
 
@@ -64,6 +65,11 @@ const (
 	FileType_ACM     FileType = 4095
 )
 
+func (t FileType) IsValid() bool {
+	_, ok := typeToExtension[t]
+	return ok
+}
+
 func (t FileType) String() string {
 	if ext, ok := typeToExtension[t]; ok {
 		return ext
@@ -85,6 +91,10 @@ func FileTypeFromExtension(ext string) FileType {
 
 func FileTypeFromParserType(t parser.Key_ResType) FileType {
 	return FileType(t)
+}
+
+func GetAllTypes() *map[FileType]string {
+	return &typeToExtension
 }
 
 var typeToExtension = map[FileType]string{
