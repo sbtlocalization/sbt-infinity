@@ -95,13 +95,15 @@ func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 			}
 
 			if dNode.Parent != nil {
-				cEdge := newEdge(dNode)
+				cEdge, loop := newEdge(dNode)
 				if cEdge == nil {
 					continue
 				}
 
 				edges[cEdge.ID] = cEdge
-				layoutEdges = append(layoutEdges, []string{cEdge.FromNode, cEdge.ToNode})
+				if !loop {
+					layoutEdges = append(layoutEdges, []string{cEdge.FromNode, cEdge.ToNode})
+				}
 				c.AddEdges(cEdge)
 			}
 		}
@@ -225,10 +227,12 @@ func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string) *canvas.No
 	return &cNode
 }
 
-func newEdge(node *Node) *canvas.Edge {
+func newEdge(node *Node) (*canvas.Edge, bool) {
 	if node.Parent == nil {
-		return nil
+		return nil, false
 	}
+
+	loop := node.Type == LoopNodeType
 
 	fromNode, toNode := node.Parent.String(), node.String()
 	fromSide, toSide, toEnd := "bottom", "top", "arrow"
@@ -262,5 +266,18 @@ func newEdge(node *Node) *canvas.Edge {
 		cEdge.Label = &triggerText
 	}
 
-	return cEdge
+	return cEdge, loop
+}
+
+func (n *Node) ToUrl(baseUrl string) string {
+	dialogName := strings.TrimSuffix(strings.ToLower(n.Dialog.Id.DlgName), ".dlg")
+	dialogId := fmt.Sprintf("%s-%d", dialogName, n.Dialog.Id.Index)
+	return fmt.Sprintf(
+		"%s/dialog/%s#%s-%s-%d-",
+		strings.TrimRight(baseUrl, "/"),
+		dialogId,
+		n.Type,
+		strings.ToLower(n.Origin.DlgName),
+		n.Origin.Index,
+	)
 }

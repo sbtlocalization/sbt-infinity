@@ -55,6 +55,7 @@ type Node struct {
 	Origin   NodeOrigin
 	Parent   *Node
 	Children []*Node
+	Dialog   *Dialog
 
 	State      *StateData
 	Transition *TransitionData

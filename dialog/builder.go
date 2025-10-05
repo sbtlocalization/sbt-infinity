@@ -25,6 +25,9 @@ type DialogBuilder struct {
 
 func NewDialogBuilder(infFsys afero.Fs, tlkFsys afero.Fs, withCreatures, verbose bool) *DialogBuilder {
 	var creatures map[string]*Creature = nil
+	if tlkFsys == nil {
+		withCreatures = false
+	}
 	if withCreatures {
 		creatures = make(map[string]*Creature)
 	}
@@ -72,7 +75,7 @@ func (b *DialogBuilder) LoadAllRootStates(dlgNames ...string) (*DialogCollection
 func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames ...string) (*DialogCollection, error) {
 	collection := NewDialogCollection()
 
-	if b.tlkFile == nil || b.tlkFile.FileName() != tlkName {
+	if b.tlkFsys != nil && (b.tlkFile == nil || b.tlkFile.FileName() != tlkName) {
 		tlkFile, err := b.readTlkFile(tlkName)
 		if err != nil {
 			return nil, fmt.Errorf("error loading TLK file %s: %v", tlkName, err)
@@ -226,13 +229,14 @@ func (b *DialogBuilder) loadDialog(rootStateOrigin NodeOrigin) (*Dialog, error) 
 }
 
 func (b *DialogBuilder) loadTree(dialog *Dialog, previousStates []NodeOrigin, stateOrigin NodeOrigin) (*Node, error) {
-	state, err := b.loadStateWithTransitions(stateOrigin)
+	state, err := b.loadStateWithTransitions(dialog, stateOrigin)
 	if err != nil {
 		return &Node{
 			Type:     ErrorNodeType,
 			Origin:   stateOrigin,
 			Parent:   nil,
 			Children: make([]*Node, 0),
+			Dialog:   dialog,
 		}, nil
 	}
 	dialog.AllStates[stateOrigin] = struct{}{}
@@ -250,6 +254,7 @@ func (b *DialogBuilder) loadTree(dialog *Dialog, previousStates []NodeOrigin, st
 					Origin:   nextStateOrigin,
 					Parent:   child,
 					Children: make([]*Node, 0),
+					Dialog:   dialog,
 				}
 			} else {
 				nextState, err := b.loadTree(dialog, append(previousStates, stateOrigin), nextStateOrigin)
@@ -269,7 +274,7 @@ func (b *DialogBuilder) loadTree(dialog *Dialog, previousStates []NodeOrigin, st
 	return state, nil
 }
 
-func (b *DialogBuilder) loadStateWithTransitions(origin NodeOrigin) (*Node, error) {
+func (b *DialogBuilder) loadStateWithTransitions(dialog *Dialog, origin NodeOrigin) (*Node, error) {
 	dlg, err := b.readDlgFile(origin.DlgName)
 	if err != nil {
 		return nil, fmt.Errorf("error loading DLG file %s: %v", origin.DlgName, err)
@@ -285,14 +290,19 @@ func (b *DialogBuilder) loadStateWithTransitions(origin NodeOrigin) (*Node, erro
 
 	state := states[origin.Index]
 	trigger, triggerExists := state.GetTriggerText()
+	text := ""
+	if b.tlkFile != nil {
+		text = b.tlkFile.GetText(state.TextRef)
+	}
 	stateNode := &Node{
 		Type:     StateNodeType,
 		Origin:   origin,
 		Parent:   nil,
 		Children: make([]*Node, state.NumTransitions),
+		Dialog:   dialog,
 		State: &StateData{
 			TextRef:    state.TextRef,
-			Text:       b.tlkFile.GetText(state.TextRef),
+			Text:       text,
 			HasTrigger: triggerExists,
 			Trigger:    trigger,
 		},
@@ -337,6 +347,7 @@ func (b *DialogBuilder) loadStateWithTransitions(origin NodeOrigin) (*Node, erro
 			},
 			Parent:   stateNode,
 			Children: make([]*Node, numChildren),
+			Dialog:   dialog,
 		}
 		stateNode.Children[index] = transitionNode
 	}
