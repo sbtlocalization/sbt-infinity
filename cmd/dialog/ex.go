@@ -41,6 +41,7 @@ Creates a visual representation of dialog structures.`,
 	cmd.Flags().StringP("output", "o", "", "Output directory")
 	cmd.Flags().BoolP("verbose", "v", false, "Enable verbose output")
 	cmd.Flags().BoolP("speakers", "s", true, "Load and export information about characters from CRE files")
+	cmd.Flags().StringSliceP("exclude", "x", []string{}, "Exclude specific dialog files (e.g., ABISHAB.DLG)")
 
 	return cmd
 }
@@ -52,6 +53,7 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 	outputDir, _ := cmd.Flags().GetString("output")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	withCreatures, _ := cmd.Flags().GetBool("speakers")
+	excludeFiles, _ := cmd.Flags().GetStringSlice("exclude")
 
 	// Resolve the key path and parse other files using the common helper
 	keyPath, err := config.ResolveKeyPath(cmd)
@@ -91,10 +93,20 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("unable to list existing DLG files: %v", err)
 		}
+		defer dir.Close()
 		dialogFiles, err = dir.Readdirnames(0)
 		if err != nil {
 			return fmt.Errorf("unable to read dialog directory names: %v", err)
 		}
+	}
+
+	excludeMap := make(map[string]bool)
+	for _, ef := range excludeFiles {
+		ef = strings.ToUpper(ef)
+		if !strings.HasSuffix(ef, ".DLG") {
+			ef = ef + ".DLG"
+		}
+		excludeMap[ef] = true
 	}
 
 	if outputDir != "" {
@@ -105,6 +117,13 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, df := range dialogFiles {
+		if excludeMap[df] {
+			if verbose {
+				fmt.Printf("Skipping excluded dialog file %s\n", df)
+			}
+			continue
+		}
+
 		dlg, err := dc.LoadAllDialogs(tlkPath, df)
 		if err != nil {
 			return fmt.Errorf("error loading dialogs: %v", err)
