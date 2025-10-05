@@ -17,10 +17,10 @@ import (
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "bif",
-		Short: "Works with raw BIF files which bound to `chitin.key`",
+		Short: "Works with raw BIF files which are bound to `chitin.key`",
 	}
 
-	cmd.PersistentFlags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Take type number from https://gibberlings3.github.io/iesdp/file_formats/general.htm")
+	cmd.PersistentFlags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Use `bif types` command to see all types.")
 	cmd.PersistentFlags().StringP("filter", "f", "", "Regex for resourse name filtering")
 
 	cmd.AddCommand(NewLsCommand())
@@ -52,9 +52,7 @@ func getFileTypeFilter(tokens []string) (filter []fs.FileType) {
 		}
 	}
 
-	for key := range typeSet {
-		filter = append(filter, key)
-	}
+	filter = maps.Keys(typeSet)
 	return filter
 }
 

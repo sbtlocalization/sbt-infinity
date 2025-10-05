@@ -15,7 +15,6 @@ import (
 func NewTypesCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "types",
-		Aliases: []string{"tp"},
 		Short:   "Lists all known resourse types",
 		Long: `Shows all types which can be passed to type filter.
 https://gibberlings3.github.io/iesdp/file_formats/general.htm can be visited
@@ -30,7 +29,6 @@ for types description.`,
 
 // `bif types` handler
 func runTypesBif(cmd *cobra.Command, args []string) {
-	fmt.Printf("Available types:\n")
 	for number, name := range *fs.GetAllTypes() {
 		fmt.Printf("%5s %6d\n", name, number)
 	}
