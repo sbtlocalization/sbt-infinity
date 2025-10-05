@@ -52,7 +52,9 @@ func getFileTypeFilter(tokens []string) (filter []fs.FileType) {
 		}
 	}
 
-	filter = maps.Keys(typeSet)
+	for key := range typeSet {
+		filter = append(filter, key)
+	}
 	return filter
 }
 
