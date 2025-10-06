@@ -403,7 +403,7 @@ func (fs *InfinityFs) openBif(bifPath string) (*io.SectionReader, error) {
 		}
 
 		for i, entry := range tilesetEntries {
-			if record, ok := fs.catalog.tilesetsByBif[bifPath][i]; ok {
+			if record, ok := fs.catalog.tilesetsByBif[bifPath][i+1]; ok {
 				if entry.Locator.TilesetIndex != record.TilesetIndex {
 					log.Printf(
 						"Warning: Tileset index mismatch in BIF file %s: expected %d, got %d",
