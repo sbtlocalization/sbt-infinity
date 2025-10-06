@@ -27,14 +27,23 @@ Structure of resources is read from chitin.key,
 so all related .bif files picked automatically.
 
 Additional filter may be passed to unpack only specific resources.`,
-		Example: `Extract resourses with 'pdialog' in name into 'tmp' folder:
+		Example: `  Extract resourses with 'pdialog' in name into 'tmp' folder:
 
-sbt-inf bif ex -k 'D:\Games\Baldur''s Gate - Enhanced Edition\chitin.key' -f "(?i)pdialog" -o tmp`,
+      sbt-inf bif ex -k 'D:\Games\Baldur''s Gate - Enhanced Edition\chitin.key' -f "(?i)pdialog" -o tmp
+
+  Extract only LUA and DLG files into 'tmp' folder (the path to chitin.key is taken from .sbt-inf.toml):
+  
+      sbt-inf bif ex -t LUA,DLG -o tmp
+
+  Extract files into 'out' folder, each type in its own subfolder:
+
+      sbt-inf bif ex -t WAV -t DLG -o out --folders`,
 		Run:  runExtractBif,
 		Args: cobra.MaximumNArgs(0),
 	}
 
 	cmd.Flags().StringP("output", "o", ".", "Output directory for resource files (default: current directory)")
+	cmd.Flags().Bool("folders", false, "Create a separate folder for each type")
 
 	return cmd
 }
@@ -44,16 +53,11 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 	typeRawInput, _ := cmd.Flags().GetStringSlice("type")
 	filterRawInput, _ := cmd.Flags().GetString("filter")
 	outputDir, _ := cmd.Flags().GetString("output")
+	createFolders, _ := cmd.Flags().GetBool("folders")
 
 	keyFilePath, err := config.ResolveKeyPath(cmd)
 	if err != nil {
 		log.Fatalf("Error with .key path: %v\n", err)
-	}
-
-	// Create output directory if it doesn't exist
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		log.Fatalf("Error creating output directory: %v\n", err)
-		return
 	}
 
 	contentFilter := getContentFilter(filterRawInput)
@@ -68,7 +72,17 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 		}
 		defer file.Close()
 
-		outputPath := filepath.Join(outputDir, fullName)
+		// Create output directory if it doesn't exist
+		currentOutputDir := outputDir
+		if createFolders {
+			currentOutputDir = filepath.Join(outputDir, v.Type.String())
+		}
+		if err := os.MkdirAll(currentOutputDir, 0755); err != nil {
+			log.Fatalf("Error creating output directory: %v\n", err)
+			return
+		}
+
+		outputPath := filepath.Join(currentOutputDir, fullName)
 
 		err = saveFileToFile(file, outputPath)
 		if err != nil {
