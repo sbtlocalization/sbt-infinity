@@ -33,12 +33,10 @@ func NewNodeOrigin(dlgName string, index uint32) NodeOrigin {
 
 func (t NodeType) String() string {
 	switch t {
-	case StateNodeType:
+	case StateNodeType, LoopNodeType:
 		return "state"
 	case TransitionNodeType:
 		return "transition"
-	case LoopNodeType:
-		return "state"
 	case ErrorNodeType:
 		return "error"
 	default:
