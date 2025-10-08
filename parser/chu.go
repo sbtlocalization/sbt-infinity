@@ -1062,7 +1062,7 @@ func (this *Chu_Window) Controls() (v []*Chu_Control, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this._parent.OfsControls + this.FirstControlIndex * 8), io.SeekStart)
+	_, err = this._io.Seek(int64(this._parent.OfsControls + uint32(this.FirstControlIndex) * 8), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}

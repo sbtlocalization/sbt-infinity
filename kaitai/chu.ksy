@@ -64,7 +64,7 @@ types:
         size: 2
     instances:
       controls:
-        pos: _parent.ofs_controls + first_control_index * 8 # size of control
+        pos: _parent.ofs_controls + first_control_index.as<u4> * 8 # size of control
         type: control
         repeat: expr
         repeat-expr: num_controls
