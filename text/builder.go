@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/sbtlocalization/sbt-infinity/dialog"
+	"github.com/sbtlocalization/sbt-infinity/parser"
 	p "github.com/sbtlocalization/sbt-infinity/parser"
 )
 
@@ -19,7 +20,7 @@ type TextEntry struct {
 	HasToken bool
 	Text     string
 	Sound    string
-	Labels   []string
+	Labels   map[string]struct{}
 	Context  map[ContextType][]string
 }
 
@@ -27,6 +28,8 @@ type ContextType int
 
 const (
 	ContextDialog ContextType = iota
+	ContextSound
+	ContextUI
 )
 
 type TextCollection struct {
@@ -51,20 +54,20 @@ func NewTextCollection(tlk *p.Tlk) *TextCollection {
 			HasToken: entry.Flags.TokenExists,
 			Text:     text,
 			Sound:    entry.AudioName,
-			Labels:   make([]string, 0),
+			Labels:   make(map[string]struct{}),
 			Context:  make(map[ContextType][]string),
 		}
 
 		if entry.Flags.SoundExists {
-			tEntry.Labels = append(tEntry.Labels, "with sound")
+			tEntry.Labels["with sound"] = struct{}{}
 		}
 
 		if entry.Flags.TokenExists {
-			tEntry.Labels = append(tEntry.Labels, "with token")
+			tEntry.Labels["with token"] = struct{}{}
 		}
 
 		if !entry.Flags.TextExists && text == "" {
-			tEntry.Labels = append(tEntry.Labels, "no text")
+			tEntry.Labels["no text"] = struct{}{}
 		}
 
 		collection.Entries[id] = tEntry
@@ -98,7 +101,7 @@ func (c *TextCollection) AddLabel(id int, label string) {
 	}
 
 	if entry, ok := c.Entries[id]; ok {
-		entry.Labels = append(entry.Labels, label)
+		entry.Labels[label] = struct{}{}
 	}
 }
 
@@ -139,4 +142,39 @@ func (c *TextCollection) LoadContextFromDialogs(baseUrl string, dlg *dialog.Dial
 			}
 		}
 	}
+}
+
+func (c *TextCollection) LoadContextFromUiScreens(uiFilename string, chu *parser.Chu) error {
+	windows, err := chu.Windows()
+	if err != nil {
+		return fmt.Errorf("unable to get windows from CHU: %v", err)
+	}
+
+	for _, window := range windows {
+		controls, err := window.Controls()
+		if err != nil {
+			return fmt.Errorf("unable to get controls from window: %v", err)
+		}
+
+		for _, control := range controls {
+			data, err := control.Data()
+			if err != nil {
+				return fmt.Errorf("unable to get control struct: %v", err)
+			}
+
+			switch data.Type {
+			case parser.Chu_Control_ControlStruct_StructType__Label:
+				label := data.Properties.(*parser.Chu_Control_ControlStruct_Label)
+				if label.InitialTextRef != 0 && label.InitialTextRef != 0xFFFFFFFF {
+					ref := int(label.InitialTextRef)
+					c.AddLabel(ref, "UI label")
+					c.AddContext(ref, ContextUI, fmt.Sprintf("%s → window %d → control %d", uiFilename, window.WinId, data.ControlId))
+				}
+			default:
+				continue
+			}
+		}
+	}
+
+	return nil
 }

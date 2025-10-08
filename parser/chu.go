@@ -188,13 +188,14 @@ func (v Chu_Control_ControlStruct_StructType) isDefined() bool {
 	return ok
 }
 type Chu_Control_ControlStruct struct {
-	ControlId uint32
+	ControlId uint16
+	_unnamed1 []byte
 	X uint16
 	Y uint16
 	Width uint16
 	Height uint16
 	Type Chu_Control_ControlStruct_StructType
-	_unnamed6 []byte
+	_unnamed7 []byte
 	Properties kaitai.Struct
 	_io *kaitai.Stream
 	_root *Chu
@@ -214,85 +215,91 @@ func (this *Chu_Control_ControlStruct) Read(io *kaitai.Stream, parent *Chu_Contr
 	this._parent = parent
 	this._root = root
 
-	tmp11, err := this._io.ReadU4le()
+	tmp11, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ControlId = uint32(tmp11)
-	tmp12, err := this._io.ReadU2le()
+	this.ControlId = uint16(tmp11)
+	tmp12, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	this.X = uint16(tmp12)
+	tmp12 = tmp12
+	this._unnamed1 = tmp12
 	tmp13, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Y = uint16(tmp13)
+	this.X = uint16(tmp13)
 	tmp14, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Width = uint16(tmp14)
+	this.Y = uint16(tmp14)
 	tmp15, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Height = uint16(tmp15)
-	tmp16, err := this._io.ReadU1()
+	this.Width = uint16(tmp15)
+	tmp16, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Type = Chu_Control_ControlStruct_StructType(tmp16)
-	tmp17, err := this._io.ReadBytes(int(1))
+	this.Height = uint16(tmp16)
+	tmp17, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	tmp17 = tmp17
-	this._unnamed6 = tmp17
+	this.Type = Chu_Control_ControlStruct_StructType(tmp17)
+	tmp18, err := this._io.ReadBytes(int(1))
+	if err != nil {
+		return err
+	}
+	tmp18 = tmp18
+	this._unnamed7 = tmp18
 	switch (this.Type) {
 	case Chu_Control_ControlStruct_StructType__Button:
-		tmp18 := NewChu_Control_ControlStruct_Button()
-		err = tmp18.Read(this._io, this, this._root)
-		if err != nil {
-			return err
-		}
-		this.Properties = tmp18
-	case Chu_Control_ControlStruct_StructType__Label:
-		tmp19 := NewChu_Control_ControlStruct_Label()
+		tmp19 := NewChu_Control_ControlStruct_Button()
 		err = tmp19.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
 		this.Properties = tmp19
-	case Chu_Control_ControlStruct_StructType__Scrollbar:
-		tmp20 := NewChu_Control_ControlStruct_Scrollbar()
+	case Chu_Control_ControlStruct_StructType__Label:
+		tmp20 := NewChu_Control_ControlStruct_Label()
 		err = tmp20.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
 		this.Properties = tmp20
-	case Chu_Control_ControlStruct_StructType__Slider:
-		tmp21 := NewChu_Control_ControlStruct_Slider()
+	case Chu_Control_ControlStruct_StructType__Scrollbar:
+		tmp21 := NewChu_Control_ControlStruct_Scrollbar()
 		err = tmp21.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
 		this.Properties = tmp21
-	case Chu_Control_ControlStruct_StructType__TextArea:
-		tmp22 := NewChu_Control_ControlStruct_TextArea()
+	case Chu_Control_ControlStruct_StructType__Slider:
+		tmp22 := NewChu_Control_ControlStruct_Slider()
 		err = tmp22.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
 		this.Properties = tmp22
-	case Chu_Control_ControlStruct_StructType__TextEdit:
-		tmp23 := NewChu_Control_ControlStruct_TextEdit()
+	case Chu_Control_ControlStruct_StructType__TextArea:
+		tmp23 := NewChu_Control_ControlStruct_TextArea()
 		err = tmp23.Read(this._io, this, this._root)
 		if err != nil {
 			return err
 		}
 		this.Properties = tmp23
+	case Chu_Control_ControlStruct_StructType__TextEdit:
+		tmp24 := NewChu_Control_ControlStruct_TextEdit()
+		err = tmp24.Read(this._io, this, this._root)
+		if err != nil {
+			return err
+		}
+		this.Properties = tmp24
 	}
 	return err
 }
@@ -327,70 +334,70 @@ func (this *Chu_Control_ControlStruct_Button) Read(io *kaitai.Stream, parent *Ch
 	this._parent = parent
 	this._root = root
 
-	tmp24, err := this._io.ReadBytes(int(8))
+	tmp25, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp24 = kaitai.BytesTerminate(tmp24, 0, false)
-	this.ImageBam = string(tmp24)
-	tmp25, err := this._io.ReadU1()
+	tmp25 = kaitai.BytesTerminate(tmp25, 0, false)
+	this.ImageBam = string(tmp25)
+	tmp26, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.AnimationCycle = tmp25
-	tmp26, err := this._io.ReadBytes(int(1))
+	this.AnimationCycle = tmp26
+	tmp27, err := this._io.ReadBytes(int(1))
 	if err != nil {
 		return err
 	}
-	tmp26 = tmp26
-	this._raw_Flags = tmp26
+	tmp27 = tmp27
+	this._raw_Flags = tmp27
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp27 := NewChu_Control_ControlStruct_Button_Flags()
-	err = tmp27.Read(_io__raw_Flags, this, this._root)
+	tmp28 := NewChu_Control_ControlStruct_Button_Flags()
+	err = tmp28.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp27
-	tmp28, err := this._io.ReadU1()
-	if err != nil {
-		return err
-	}
-	this.NormalFrameIndex = tmp28
+	this.Flags = tmp28
 	tmp29, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.AnchorX1 = tmp29
+	this.NormalFrameIndex = tmp29
 	tmp30, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.PressedFrameIndex = tmp30
+	this.AnchorX1 = tmp30
 	tmp31, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.AnchorX2 = tmp31
+	this.PressedFrameIndex = tmp31
 	tmp32, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.SelectedFrameIndex = tmp32
+	this.AnchorX2 = tmp32
 	tmp33, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.AnchorY1 = tmp33
+	this.SelectedFrameIndex = tmp33
 	tmp34, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.DisabledFrameIndex = tmp34
+	this.AnchorY1 = tmp34
 	tmp35, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.AnchorY2 = tmp35
+	this.DisabledFrameIndex = tmp35
+	tmp36, err := this._io.ReadU1()
+	if err != nil {
+		return err
+	}
+	this.AnchorY2 = tmp36
 	return err
 }
 
@@ -422,36 +429,36 @@ func (this *Chu_Control_ControlStruct_Button_Flags) Read(io *kaitai.Stream, pare
 	this._parent = parent
 	this._root = root
 
-	tmp36, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.AlignLeft = tmp36 != 0
 	tmp37, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AlignRight = tmp37 != 0
+	this.AlignLeft = tmp37 != 0
 	tmp38, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AlignTop = tmp38 != 0
+	this.AlignRight = tmp38 != 0
 	tmp39, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AlignBottom = tmp39 != 0
+	this.AlignTop = tmp39 != 0
 	tmp40, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AnchorToZero = tmp40 != 0
+	this.AlignBottom = tmp40 != 0
 	tmp41, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ReduceTextSize = tmp41 != 0
+	this.AnchorToZero = tmp41 != 0
+	tmp42, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.ReduceTextSize = tmp42 != 0
 	return err
 }
 type Chu_Control_ControlStruct_Label struct {
@@ -479,40 +486,40 @@ func (this *Chu_Control_ControlStruct_Label) Read(io *kaitai.Stream, parent *Chu
 	this._parent = parent
 	this._root = root
 
-	tmp42, err := this._io.ReadU4le()
+	tmp43, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.InitialTextRef = uint32(tmp42)
-	tmp43, err := this._io.ReadBytes(int(8))
+	this.InitialTextRef = uint32(tmp43)
+	tmp44, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp43 = kaitai.BytesTerminate(tmp43, 0, false)
-	this.Font = string(tmp43)
-	tmp44, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.TextColor = uint32(tmp44)
+	tmp44 = kaitai.BytesTerminate(tmp44, 0, false)
+	this.Font = string(tmp44)
 	tmp45, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OutlineColor = uint32(tmp45)
-	tmp46, err := this._io.ReadBytes(int(2))
+	this.TextColor = uint32(tmp45)
+	tmp46, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp46 = tmp46
-	this._raw_Flags = tmp46
+	this.OutlineColor = uint32(tmp46)
+	tmp47, err := this._io.ReadBytes(int(2))
+	if err != nil {
+		return err
+	}
+	tmp47 = tmp47
+	this._raw_Flags = tmp47
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp47 := NewChu_Control_ControlStruct_Label_Flags()
-	err = tmp47.Read(_io__raw_Flags, this, this._root)
+	tmp48 := NewChu_Control_ControlStruct_Label_Flags()
+	err = tmp48.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp47
+	this.Flags = tmp48
 	return err
 }
 type Chu_Control_ControlStruct_Label_Flags struct {
@@ -542,46 +549,46 @@ func (this *Chu_Control_ControlStruct_Label_Flags) Read(io *kaitai.Stream, paren
 	this._parent = parent
 	this._root = root
 
-	tmp48, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.UseRgbColors = tmp48 != 0
 	tmp49, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.TrueColor = tmp49 != 0
+	this.UseRgbColors = tmp49 != 0
 	tmp50, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AlignHcenter = tmp50 != 0
+	this.TrueColor = tmp50 != 0
 	tmp51, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AlignLeft = tmp51 != 0
+	this.AlignHcenter = tmp51 != 0
 	tmp52, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AlightRight = tmp52 != 0
+	this.AlignLeft = tmp52 != 0
 	tmp53, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AlignTop = tmp53 != 0
+	this.AlightRight = tmp53 != 0
 	tmp54, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AlignVcenter = tmp54 != 0
+	this.AlignTop = tmp54 != 0
 	tmp55, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AlignBottom = tmp55 != 0
+	this.AlignVcenter = tmp55 != 0
+	tmp56, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.AlignBottom = tmp56 != 0
 	return err
 }
 type Chu_Control_ControlStruct_Scrollbar struct {
@@ -593,7 +600,8 @@ type Chu_Control_ControlStruct_Scrollbar struct {
 	PressedDownArrowFrameIndex uint16
 	ThroughFrameIndex uint16
 	SliderFrameIndex uint16
-	AttachedTextAreaId uint32
+	AttachedTextAreaId uint16
+	_unnamed9 []byte
 	_io *kaitai.Stream
 	_root *Chu
 	_parent *Chu_Control_ControlStruct
@@ -612,52 +620,58 @@ func (this *Chu_Control_ControlStruct_Scrollbar) Read(io *kaitai.Stream, parent 
 	this._parent = parent
 	this._root = root
 
-	tmp56, err := this._io.ReadBytes(int(8))
+	tmp57, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp56 = kaitai.BytesTerminate(tmp56, 0, false)
-	this.ImageBam = string(tmp56)
-	tmp57, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.AnimationCycle = uint16(tmp57)
+	tmp57 = kaitai.BytesTerminate(tmp57, 0, false)
+	this.ImageBam = string(tmp57)
 	tmp58, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NormalUpArrowFrameIndex = uint16(tmp58)
+	this.AnimationCycle = uint16(tmp58)
 	tmp59, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.PressedUpArrowFrameIndex = uint16(tmp59)
+	this.NormalUpArrowFrameIndex = uint16(tmp59)
 	tmp60, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NormalDownArrowFrameIndex = uint16(tmp60)
+	this.PressedUpArrowFrameIndex = uint16(tmp60)
 	tmp61, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.PressedDownArrowFrameIndex = uint16(tmp61)
+	this.NormalDownArrowFrameIndex = uint16(tmp61)
 	tmp62, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ThroughFrameIndex = uint16(tmp62)
+	this.PressedDownArrowFrameIndex = uint16(tmp62)
 	tmp63, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.SliderFrameIndex = uint16(tmp63)
-	tmp64, err := this._io.ReadU4le()
+	this.ThroughFrameIndex = uint16(tmp63)
+	tmp64, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.AttachedTextAreaId = uint32(tmp64)
+	this.SliderFrameIndex = uint16(tmp64)
+	tmp65, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.AttachedTextAreaId = uint16(tmp65)
+	tmp66, err := this._io.ReadBytes(int(2))
+	if err != nil {
+		return err
+	}
+	tmp66 = tmp66
+	this._unnamed9 = tmp66
 	return err
 }
 type Chu_Control_ControlStruct_Slider struct {
@@ -692,73 +706,73 @@ func (this *Chu_Control_ControlStruct_Slider) Read(io *kaitai.Stream, parent *Ch
 	this._parent = parent
 	this._root = root
 
-	tmp65, err := this._io.ReadBytes(int(8))
+	tmp67, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp65 = kaitai.BytesTerminate(tmp65, 0, false)
-	this.BackgroundImageMos = string(tmp65)
-	tmp66, err := this._io.ReadBytes(int(8))
+	tmp67 = kaitai.BytesTerminate(tmp67, 0, false)
+	this.BackgroundImageMos = string(tmp67)
+	tmp68, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp66 = kaitai.BytesTerminate(tmp66, 0, false)
-	this.KnobImageBam = string(tmp66)
-	tmp67, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.AnimationCycle = uint16(tmp67)
-	tmp68, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.NormalSliderFrameIndex = uint16(tmp68)
+	tmp68 = kaitai.BytesTerminate(tmp68, 0, false)
+	this.KnobImageBam = string(tmp68)
 	tmp69, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.GrabbedSliderFrameIndex = uint16(tmp69)
+	this.AnimationCycle = uint16(tmp69)
 	tmp70, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.KnobX = uint16(tmp70)
+	this.NormalSliderFrameIndex = uint16(tmp70)
 	tmp71, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.KnobY = uint16(tmp71)
+	this.GrabbedSliderFrameIndex = uint16(tmp71)
 	tmp72, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.StepWidth = uint16(tmp72)
+	this.KnobX = uint16(tmp72)
 	tmp73, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.StepCount = uint16(tmp73)
+	this.KnobY = uint16(tmp73)
 	tmp74, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.RegionTop = uint16(tmp74)
+	this.StepWidth = uint16(tmp74)
 	tmp75, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.RegionBottom = uint16(tmp75)
+	this.StepCount = uint16(tmp75)
 	tmp76, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.RegionLeft = uint16(tmp76)
+	this.RegionTop = uint16(tmp76)
 	tmp77, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.RegionRight = uint16(tmp77)
+	this.RegionBottom = uint16(tmp77)
+	tmp78, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.RegionLeft = uint16(tmp78)
+	tmp79, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.RegionRight = uint16(tmp79)
 	return err
 }
 type Chu_Control_ControlStruct_TextArea struct {
@@ -767,7 +781,8 @@ type Chu_Control_ControlStruct_TextArea struct {
 	TextColor uint32
 	InitialsColor uint32
 	OutlineColor uint32
-	AttachedScrollbarId uint32
+	AttachedScrollbarId uint16
+	_unnamed6 []byte
 	_io *kaitai.Stream
 	_root *Chu
 	_parent *Chu_Control_ControlStruct
@@ -786,38 +801,44 @@ func (this *Chu_Control_ControlStruct_TextArea) Read(io *kaitai.Stream, parent *
 	this._parent = parent
 	this._root = root
 
-	tmp78, err := this._io.ReadBytes(int(8))
+	tmp80, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp78 = kaitai.BytesTerminate(tmp78, 0, false)
-	this.InitialsFont = string(tmp78)
-	tmp79, err := this._io.ReadBytes(int(8))
+	tmp80 = kaitai.BytesTerminate(tmp80, 0, false)
+	this.InitialsFont = string(tmp80)
+	tmp81, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp79 = kaitai.BytesTerminate(tmp79, 0, false)
-	this.MainTextFont = string(tmp79)
-	tmp80, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.TextColor = uint32(tmp80)
-	tmp81, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.InitialsColor = uint32(tmp81)
+	tmp81 = kaitai.BytesTerminate(tmp81, 0, false)
+	this.MainTextFont = string(tmp81)
 	tmp82, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OutlineColor = uint32(tmp82)
+	this.TextColor = uint32(tmp82)
 	tmp83, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.AttachedScrollbarId = uint32(tmp83)
+	this.InitialsColor = uint32(tmp83)
+	tmp84, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.OutlineColor = uint32(tmp84)
+	tmp85, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.AttachedScrollbarId = uint16(tmp85)
+	tmp86, err := this._io.ReadBytes(int(2))
+	if err != nil {
+		return err
+	}
+	tmp86 = tmp86
+	this._unnamed6 = tmp86
 	return err
 }
 
@@ -841,9 +862,10 @@ type Chu_Control_ControlStruct_TextEdit struct {
 	CursorFrameIndex uint16
 	X uint16
 	Y uint16
-	AttachedScrollbarId uint32
+	AttachedScrollbarId uint16
+	_unnamed9 []byte
 	Font string
-	_unnamed10 []byte
+	_unnamed11 []byte
 	InitialText string
 	MaxLength uint16
 	TextCase Chu_Control_ControlStruct_TextEdit_TextCase
@@ -865,83 +887,89 @@ func (this *Chu_Control_ControlStruct_TextEdit) Read(io *kaitai.Stream, parent *
 	this._parent = parent
 	this._root = root
 
-	tmp84, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp84 = kaitai.BytesTerminate(tmp84, 0, false)
-	this.BackgroundImage1Mos = string(tmp84)
-	tmp85, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp85 = kaitai.BytesTerminate(tmp85, 0, false)
-	this.BackgroundImage2Mos = string(tmp85)
-	tmp86, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp86 = kaitai.BytesTerminate(tmp86, 0, false)
-	this.BackgroundImage3Mos = string(tmp86)
 	tmp87, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
 	tmp87 = kaitai.BytesTerminate(tmp87, 0, false)
-	this.CursorBam = string(tmp87)
-	tmp88, err := this._io.ReadU2le()
+	this.BackgroundImage1Mos = string(tmp87)
+	tmp88, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.CursorAnimationCycle = uint16(tmp88)
-	tmp89, err := this._io.ReadU2le()
+	tmp88 = kaitai.BytesTerminate(tmp88, 0, false)
+	this.BackgroundImage2Mos = string(tmp88)
+	tmp89, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.CursorFrameIndex = uint16(tmp89)
-	tmp90, err := this._io.ReadU2le()
+	tmp89 = kaitai.BytesTerminate(tmp89, 0, false)
+	this.BackgroundImage3Mos = string(tmp89)
+	tmp90, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.X = uint16(tmp90)
+	tmp90 = kaitai.BytesTerminate(tmp90, 0, false)
+	this.CursorBam = string(tmp90)
 	tmp91, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Y = uint16(tmp91)
-	tmp92, err := this._io.ReadU4le()
+	this.CursorAnimationCycle = uint16(tmp91)
+	tmp92, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.AttachedScrollbarId = uint32(tmp92)
-	tmp93, err := this._io.ReadBytes(int(8))
+	this.CursorFrameIndex = uint16(tmp92)
+	tmp93, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	tmp93 = kaitai.BytesTerminate(tmp93, 0, false)
-	this.Font = string(tmp93)
-	tmp94, err := this._io.ReadBytes(int(2))
+	this.X = uint16(tmp93)
+	tmp94, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	tmp94 = tmp94
-	this._unnamed10 = tmp94
-	tmp95, err := this._io.ReadBytes(int(32))
+	this.Y = uint16(tmp94)
+	tmp95, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	tmp95 = kaitai.BytesTerminate(tmp95, 0, false)
-	this.InitialText = string(tmp95)
-	tmp96, err := this._io.ReadU2le()
+	this.AttachedScrollbarId = uint16(tmp95)
+	tmp96, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	this.MaxLength = uint16(tmp96)
-	tmp97, err := this._io.ReadU4le()
+	tmp96 = tmp96
+	this._unnamed9 = tmp96
+	tmp97, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.TextCase = Chu_Control_ControlStruct_TextEdit_TextCase(tmp97)
+	tmp97 = kaitai.BytesTerminate(tmp97, 0, false)
+	this.Font = string(tmp97)
+	tmp98, err := this._io.ReadBytes(int(2))
+	if err != nil {
+		return err
+	}
+	tmp98 = tmp98
+	this._unnamed11 = tmp98
+	tmp99, err := this._io.ReadBytes(int(32))
+	if err != nil {
+		return err
+	}
+	tmp99 = kaitai.BytesTerminate(tmp99, 0, false)
+	this.InitialText = string(tmp99)
+	tmp100, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.MaxLength = uint16(tmp100)
+	tmp101, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.TextCase = Chu_Control_ControlStruct_TextEdit_TextCase(tmp101)
 	return err
 }
 type Chu_Window struct {
@@ -978,79 +1006,79 @@ func (this *Chu_Window) Read(io *kaitai.Stream, parent *Chu, root *Chu) (err err
 	this._parent = parent
 	this._root = root
 
-	tmp98, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.WinId = uint16(tmp98)
-	tmp99, err := this._io.ReadBytes(int(2))
-	if err != nil {
-		return err
-	}
-	tmp99 = tmp99
-	this._unnamed1 = tmp99
-	tmp100, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.X = uint16(tmp100)
-	tmp101, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.Y = uint16(tmp101)
 	tmp102, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Width = uint16(tmp102)
-	tmp103, err := this._io.ReadU2le()
+	this.WinId = uint16(tmp102)
+	tmp103, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	this.Height = uint16(tmp103)
-	tmp104, err := this._io.ReadBytes(int(2))
+	tmp103 = tmp103
+	this._unnamed1 = tmp103
+	tmp104, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	tmp104 = tmp104
-	this._raw_Flags = tmp104
-	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp105 := NewChu_Window_Flags()
-	err = tmp105.Read(_io__raw_Flags, this, this._root)
+	this.X = uint16(tmp104)
+	tmp105, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp105
+	this.Y = uint16(tmp105)
 	tmp106, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumControls = uint16(tmp106)
-	tmp107, err := this._io.ReadBytes(int(8))
+	this.Width = uint16(tmp106)
+	tmp107, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	tmp107 = kaitai.BytesTerminate(tmp107, 0, false)
-	this.BackgroundMos = string(tmp107)
-	tmp108, err := this._io.ReadU2le()
+	this.Height = uint16(tmp107)
+	tmp108, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	this.FirstControlIndex = uint16(tmp108)
-	tmp109, err := this._io.ReadBytes(int(2))
+	tmp108 = tmp108
+	this._raw_Flags = tmp108
+	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
+	tmp109 := NewChu_Window_Flags()
+	err = tmp109.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	tmp109 = tmp109
-	this._raw_Options = tmp109
+	this.Flags = tmp109
+	tmp110, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.NumControls = uint16(tmp110)
+	tmp111, err := this._io.ReadBytes(int(8))
+	if err != nil {
+		return err
+	}
+	tmp111 = kaitai.BytesTerminate(tmp111, 0, false)
+	this.BackgroundMos = string(tmp111)
+	tmp112, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.FirstControlIndex = uint16(tmp112)
+	tmp113, err := this._io.ReadBytes(int(2))
+	if err != nil {
+		return err
+	}
+	tmp113 = tmp113
+	this._raw_Options = tmp113
 	_io__raw_Options := kaitai.NewStream(bytes.NewReader(this._raw_Options))
-	tmp110 := NewChu_Window_Options()
-	err = tmp110.Read(_io__raw_Options, this, this._root)
+	tmp114 := NewChu_Window_Options()
+	err = tmp114.Read(_io__raw_Options, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Options = tmp110
+	this.Options = tmp114
 	return err
 }
 func (this *Chu_Window) Controls() (v []*Chu_Control, err error) {
@@ -1068,12 +1096,12 @@ func (this *Chu_Window) Controls() (v []*Chu_Control, err error) {
 	}
 	for i := 0; i < int(this.NumControls); i++ {
 		_ = i
-		tmp111 := NewChu_Control()
-		err = tmp111.Read(this._io, this, this._root)
+		tmp115 := NewChu_Control()
+		err = tmp115.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.controls = append(this.controls, tmp111)
+		this.controls = append(this.controls, tmp115)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -1101,11 +1129,11 @@ func (this *Chu_Window_Flags) Read(io *kaitai.Stream, parent *Chu_Window, root *
 	this._parent = parent
 	this._root = root
 
-	tmp112, err := this._io.ReadBitsIntLe(1)
+	tmp116, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.HasBackground = tmp112 != 0
+	this.HasBackground = tmp116 != 0
 	return err
 }
 type Chu_Window_Options struct {
@@ -1128,10 +1156,10 @@ func (this *Chu_Window_Options) Read(io *kaitai.Stream, parent *Chu_Window, root
 	this._parent = parent
 	this._root = root
 
-	tmp113, err := this._io.ReadBitsIntLe(1)
+	tmp117, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DoNotDimBackground = tmp113 != 0
+	this.DoNotDimBackground = tmp117 != 0
 	return err
 }

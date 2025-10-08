@@ -8,13 +8,18 @@ package text
 import (
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
+	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
+	"github.com/samber/lo"
 	"github.com/sbtlocalization/sbt-infinity/config"
 	"github.com/sbtlocalization/sbt-infinity/dialog"
 	"github.com/sbtlocalization/sbt-infinity/fs"
+	"github.com/sbtlocalization/sbt-infinity/parser"
 	p "github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/sbtlocalization/sbt-infinity/text"
+	"github.com/sbtlocalization/sbt-infinity/utils"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
@@ -31,9 +36,10 @@ text IDs (e.g., 1234, 5678).`,
 		RunE: runEx,
 	}
 
-	cmd.Flags().StringP("output", "o", "dialog.xlsx", "Output xlsx file path")
-	cmd.Flags().BoolP("verbose", "v", false, "Enable verbose output")
-	cmd.Flags().String("dlg-base-url", "", "Base URL for dialog references (overrides config)")
+	cmd.Flags().StringP("output", "o", "dialog.xlsx", "output xlsx file `path`")
+	cmd.Flags().BoolP("verbose", "v", false, "enable verbose output")
+	cmd.Flags().String("dlg-base-url", "", "base `URL` for dialog references (overrides config)")
+	cmd.Flags().StringSlice("context-from", []string{}, "load context from types of files. Use 'all' to include all types.\nUse 'bif `types`' command to see all types.")
 
 	return cmd
 }
@@ -44,6 +50,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 	feminine, _ := cmd.Flags().GetBool("feminine")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	baseUrl, _ := config.ResolveDialogBaseUrl(cmd)
+	contextFrom, _ := cmd.Flags().GetStringSlice("context-from")
 
 	outputPath, _ := cmd.Flags().GetString("output")
 	if cmd.Flags().Changed("output") && !strings.HasSuffix(strings.ToLower(outputPath), ".xlsx") {
@@ -69,19 +76,41 @@ func runEx(cmd *cobra.Command, args []string) error {
 		tlkFs = osFs
 	}
 
+	if verbose {
+		fmt.Print("Loading TLK file... ")
+	}
 	tlkFile, err := p.ReadTlkFile(tlkFs, tlkPath)
 	if err != nil {
 		return err
 	}
 	collection := text.NewTextCollection(tlkFile.Tlk)
 	tlkFile.Close()
+	if verbose {
+		fmt.Println("done.")
+	}
 
-	infFs := fs.NewInfinityFs(keyPath, fs.FileType_DLG, fs.FileType_CRE)
+	contextTypes := []fs.FileType{}
+	if !slices.Contains(contextFrom, "all") {
+		contextTypes = lo.UniqMap(contextFrom, utils.Iteratee(fs.FileTypeFromExtension))
+	}
 
-	// process dialogs
-	err = processDialogs(collection, infFs, baseUrl, verbose)
-	if err != nil {
-		fmt.Println("warning: unable to process dialogs:", err)
+	infFs := fs.NewInfinityFs(keyPath, contextTypes...)
+
+	for _, t := range contextTypes {
+		switch t {
+		case fs.FileType_CHU:
+			err = processUiScreens(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process UI screens:", err)
+			}
+		case fs.FileType_DLG:
+			err = processDialogs(collection, infFs, baseUrl, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process dialogs:", err)
+			}
+		default:
+			continue
+		}
 	}
 
 	err = collection.ExportToXlsx(outputPath)
@@ -93,6 +122,9 @@ func runEx(cmd *cobra.Command, args []string) error {
 }
 
 func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl string, verbose bool) error {
+	if verbose {
+		fmt.Print("loading dialogs to extract context... ")
+	}
 	dlgBuilder := dialog.NewDialogBuilder(infFs, nil, false, verbose)
 	dir, err := infFs.Open("DLG")
 	if err != nil {
@@ -111,6 +143,50 @@ func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl str
 		}
 
 		collection.LoadContextFromDialogs(baseUrl, dc)
+	}
+
+	if verbose {
+		fmt.Println("done.")
+	}
+
+	return nil
+}
+
+func processUiScreens(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	if verbose {
+		fmt.Print("loading UI screens to extract context... ")
+	}
+
+	dir, err := infFs.Open("CHU")
+	if err != nil {
+		return fmt.Errorf("unable to list existing CHU files: %v", err)
+	}
+	defer dir.Close()
+
+	uiFiles, err := dir.Readdirnames(0)
+	if err != nil {
+		return fmt.Errorf("unable to read CHU directory names: %v", err)
+	}
+
+	for _, uf := range uiFiles {
+		uiFile, err := infFs.Open(uf)
+		if err != nil {
+			return fmt.Errorf("unable to open CHU file %q: %v", uf, err)
+		}
+		defer uiFile.Close()
+
+		chu := parser.NewChu()
+		stream := kaitai.NewStream(uiFile)
+		err = chu.Read(stream, nil, chu)
+		if err != nil {
+			return fmt.Errorf("unable to parse CHU file %q: %v", uf, err)
+		}
+
+		collection.LoadContextFromUiScreens(uf, chu)
+	}
+
+	if verbose {
+		fmt.Println("done.")
 	}
 
 	return nil

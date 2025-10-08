@@ -12,6 +12,38 @@ import (
 	"github.com/sbtlocalization/sbt-infinity/parser"
 )
 
+func (t FileType) IsValid() bool {
+	_, ok := typeToExtension[t]
+	return ok
+}
+
+func (t FileType) String() string {
+	if ext, ok := typeToExtension[t]; ok {
+		return ext
+	}
+	return "unknown"
+}
+
+func (t FileType) ToParserType() parser.Key_ResType {
+	return parser.Key_ResType(t)
+}
+
+func FileTypeFromExtension(ext string) FileType {
+	ext = strings.ToUpper(ext)
+	if t, ok := extensionToType[ext]; ok {
+		return t
+	}
+	return FileType_Invalid
+}
+
+func FileTypeFromParserType(t parser.Key_ResType) FileType {
+	return FileType(t)
+}
+
+func GetAllTypes() *map[FileType]string {
+	return &typeToExtension
+}
+
 type FileType int
 
 const (
@@ -64,38 +96,6 @@ const (
 	FileType_MUS     FileType = 4094
 	FileType_ACM     FileType = 4095
 )
-
-func (t FileType) IsValid() bool {
-	_, ok := typeToExtension[t]
-	return ok
-}
-
-func (t FileType) String() string {
-	if ext, ok := typeToExtension[t]; ok {
-		return ext
-	}
-	return "unknown"
-}
-
-func (t FileType) ToParserType() parser.Key_ResType {
-	return parser.Key_ResType(t)
-}
-
-func FileTypeFromExtension(ext string) FileType {
-	ext = strings.ToUpper(ext)
-	if t, ok := extensionToType[ext]; ok {
-		return t
-	}
-	return FileType_Invalid
-}
-
-func FileTypeFromParserType(t parser.Key_ResType) FileType {
-	return FileType(t)
-}
-
-func GetAllTypes() *map[FileType]string {
-	return &typeToExtension
-}
 
 var typeToExtension = map[FileType]string{
 	FileType_BMP:  "BMP",

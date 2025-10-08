@@ -92,7 +92,8 @@ types:
       control_struct:
         seq:
           - id: control_id
-            type: u4
+            type: u2
+          - size: 2
           - id: x
             type: u2
           - id: y
@@ -219,7 +220,8 @@ types:
               - id: y
                 type: u2
               - id: attached_scrollbar_id
-                type: u4
+                type: u2
+              - size: 2
               - id: font
                 type: strz
                 size: 8
@@ -256,7 +258,8 @@ types:
               - id: outline_color
                 type: u4
               - id: attached_scrollbar_id
-                type: u4
+                type: u2
+              - size: 2
           label:
             seq:
               - id: initial_text_ref
@@ -312,7 +315,8 @@ types:
               - id: slider_frame_index
                 type: u2
               - id: attached_text_area_id
-                type: u4
+                type: u2
+              - size: 2
         enums:
           struct_type:
             0: button

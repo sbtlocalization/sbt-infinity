@@ -194,8 +194,8 @@ func splitIds(input []string) ([]int, int, error) {
 			width = max(width, len(id))
 		}
 	}
-	ids = unique(ids)
 	slices.Sort(ids)
+	ids = slices.Compact(ids)
 	return ids, width, nil
 }
 
@@ -205,16 +205,4 @@ func makeRange(min, max int) []int {
 		result[i] = min + i
 	}
 	return result
-}
-
-func unique[T comparable](in []T) []T {
-	seen := make(map[T]struct{}, len(in))
-	out := make([]T, 0, len(in))
-	for _, v := range in {
-		if _, exists := seen[v]; !exists {
-			seen[v] = struct{}{}
-			out = append(out, v)
-		}
-	}
-	return out
 }

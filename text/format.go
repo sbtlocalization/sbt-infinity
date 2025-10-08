@@ -44,16 +44,16 @@ func (c *TextCollection) ExportToXlsx(outputPath string) error {
 		idCell.SetInt(id)
 
 		textCell := row.AddCell()
-		textCell.Value = entry.Text
+		textCell.SetString(entry.Text)
 
 		soundCell := row.AddCell()
-		soundCell.Value = entry.Sound
+		soundCell.SetString(entry.Sound)
 
 		labelsCell := row.AddCell()
-		labelsCell.Value = strings.Join(entry.Labels, ",")
+		labelsCell.SetString(strings.Join(slices.Sorted(maps.Keys(entry.Labels)), ","))
 
 		contextCell := row.AddCell()
-		contextCell.Value = strings.Join(entry.Context[ContextDialog], "\n\n")
+		contextCell.SetString(joinContext(entry.Context))
 
 		hasTextCell := row.AddCell()
 		hasTextCell.SetBool(entry.HasText)
@@ -77,4 +77,18 @@ func (c *TextCollection) ExportToXlsx(outputPath string) error {
 	}
 
 	return nil
+}
+
+func joinContext(contexts map[ContextType][]string) string {
+	var parts []string
+	if sndContexts, exists := contexts[ContextSound]; exists && len(sndContexts) > 0 {
+		parts = append(parts, "Sound: "+strings.Join(sndContexts, "\n"))
+	}
+	if dlgContexts, exists := contexts[ContextDialog]; exists && len(dlgContexts) > 0 {
+		parts = append(parts, "Dialogs:\n"+strings.Join(dlgContexts, "\n"))
+	}
+	if uiContexts, exists := contexts[ContextUI]; exists && len(uiContexts) > 0 {
+		parts = append(parts, "UI:\n"+strings.Join(uiContexts, "\n"))
+	}
+	return strings.Join(parts, "\n\n")
 }
