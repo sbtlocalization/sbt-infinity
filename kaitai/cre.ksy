@@ -22,9 +22,9 @@ seq:
     type: str
     encoding: ASCII
     size: 4
-  - id: long_name
+  - id: long_name_ref
     type: u4
-  - id: short_name
+  - id: short_name_ref
     type: u4
   - id: body
     type:
