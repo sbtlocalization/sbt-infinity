@@ -1,0 +1,62 @@
+# SPDX-FileCopyrightText: © 2025 SBT Localization https://sbt.localization.com.ua
+# SPDX-FileContributor: Serhii Olendarenko <sergey.olendarenko@gmail.com>
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+
+version: 2
+
+project_name: sbt-infinity
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - binary: sbt-inf
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- if eq .Os "darwin" }}macOS_
+      {{- else }}{{ title .Os }}_{{ end}}
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+    wrap_in_directory: true
+
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+universal_binaries:
+  - replace: true
+    name_template: "sbt-inf"
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+release:
+  draft: true
