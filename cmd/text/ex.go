@@ -88,7 +88,12 @@ func runEx(cmd *cobra.Command, args []string) error {
 		fmt.Println("done.")
 	}
 
-	contextTypes := []fs.FileType{fs.FileType_DLG, fs.FileType_CHU, fs.FileType_CRE}
+	contextTypes := []fs.FileType{
+		fs.FileType_DLG,
+		fs.FileType_CRE,
+		fs.FileType_CHU,
+		fs.FileType_WMP,
+	}
 	if !slices.Contains(contextFrom, "all") {
 		contextTypes = lo.UniqMap(contextFrom, utils.Iteratee(fs.FileTypeFromExtension))
 	}
@@ -111,6 +116,11 @@ func runEx(cmd *cobra.Command, args []string) error {
 			err = processDialogs(collection, infFs, baseUrl, verbose)
 			if err != nil {
 				fmt.Println("warning: unable to process dialogs:", err)
+			}
+		case fs.FileType_WMP:
+			err = processWorldMaps(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process world maps:", err)
 			}
 		default:
 			continue
@@ -240,6 +250,46 @@ func processUiScreens(collection *text.TextCollection, infFs afero.Fs, verbose b
 		}
 
 		collection.LoadContextFromUiScreens(uf, chu)
+	}
+
+	if verbose {
+		fmt.Println("done.")
+	}
+
+	return nil
+}
+
+func processWorldMaps(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	if verbose {
+		fmt.Print("extracting context from world maps... ")
+	}
+
+	dir, err := infFs.Open("WMP")
+	if err != nil {
+		return fmt.Errorf("unable to list existing WMP files: %v", err)
+	}
+	defer dir.Close()
+
+	wmpFiles, err := dir.Readdirnames(0)
+	if err != nil {
+		return fmt.Errorf("unable to read WMP directory names: %v", err)
+	}
+
+	for _, wf := range wmpFiles {
+		wmpFile, err := infFs.Open(wf)
+		if err != nil {
+			return fmt.Errorf("unable to open WMP file %q: %v", wf, err)
+		}
+		defer wmpFile.Close()
+
+		wmp := p.NewWmp()
+		stream := kaitai.NewStream(wmpFile)
+		err = wmp.Read(stream, nil, wmp)
+		if err != nil {
+			return fmt.Errorf("unable to parse WMP file %q: %v", wf, err)
+		}
+
+		collection.LoadContextFromWorldMaps(wf, wmp)
 	}
 
 	if verbose {

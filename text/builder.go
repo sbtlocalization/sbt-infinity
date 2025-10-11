@@ -34,6 +34,7 @@ const (
 	ContextUI
 	ContextCreature
 	ContextCreatureSound
+	ContextWorldMap
 )
 
 type TextCollection struct {
@@ -122,7 +123,7 @@ func (c *TextCollection) LoadContextFromDialogs(baseUrl string, dlg *dialog.Dial
 				c.AddLabel(ref, "dialog")
 				c.AddLabel(ref, "question")
 				c.AddLabel(ref, d.Id.DlgName)
-				c.AddLabel(ref, fmt.Sprintf("dialog %s", d.Id))
+				c.AddLabel(ref, fmt.Sprintf("dialog %d @ %s", d.Id.Index, d.Id.DlgName))
 			case dialog.TransitionNodeType:
 				url := node.ToUrl(baseUrl)
 
@@ -132,7 +133,7 @@ func (c *TextCollection) LoadContextFromDialogs(baseUrl string, dlg *dialog.Dial
 					c.AddLabel(ref, "dialog")
 					c.AddLabel(ref, "answer")
 					c.AddLabel(ref, d.Id.DlgName)
-					c.AddLabel(ref, fmt.Sprintf("dialog %s", d.Id))
+					c.AddLabel(ref, fmt.Sprintf("dialog %d @ %s", d.Id.Index, d.Id.DlgName))
 				}
 
 				if node.Transition.HasJournalText {
@@ -141,7 +142,7 @@ func (c *TextCollection) LoadContextFromDialogs(baseUrl string, dlg *dialog.Dial
 					c.AddLabel(ref, "dialog")
 					c.AddLabel(ref, "journal")
 					c.AddLabel(ref, d.Id.DlgName)
-					c.AddLabel(ref, fmt.Sprintf("dialog %s", d.Id))
+					c.AddLabel(ref, fmt.Sprintf("dialog %d @ %s", d.Id.Index, d.Id.DlgName))
 				}
 			default:
 				// ignore errors and loops
@@ -214,6 +215,41 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 			c.AddLabel(ref, strings.ToUpper(dialog))
 		}
 		c.AddCreatureSoundContext(ref, identifier, strings.ToLower(creFilename))
+	}
+
+	return nil
+}
+
+func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp) error {
+	wmEntries, err := wmp.WorldmapEntries()
+	if err != nil {
+		return fmt.Errorf("unable to get world map entries: %v", err)
+	}
+
+	for _, wmEntry := range wmEntries {
+		nameRef := int(wmEntry.AreaNameRef)
+
+		if nameRef != 0 && nameRef != 0xFFFFFFFF {
+			c.AddLabel(nameRef, "world map")
+			c.AddLabel(nameRef, fmt.Sprintf("map %s[%d]", wmpFilename, wmEntry.MapId))
+			c.AddContext(nameRef, ContextWorldMap, "World map name", fmt.Sprintf("%s → map %d", wmpFilename, wmEntry.MapId))
+		}
+
+		areas, err := wmEntry.AreaEntries()
+		if err != nil {
+			return fmt.Errorf("unable to get area entries for world map entry %d: %v", wmEntry.MapId, err)
+		}
+
+		for i, area := range areas {
+			if captionRef := int(area.CaptionRef); captionRef != 0 && captionRef != 0xFFFFFFFF {
+				c.AddLabel(captionRef, fmt.Sprintf("area %d @ %s[%d]", i, wmpFilename, wmEntry.MapId))
+				c.AddContext(captionRef, ContextWorldMap, "Area caption", fmt.Sprintf("%s → map %d → area %d", wmpFilename, wmEntry.MapId, i))
+			}
+			if tooltipRef := int(area.TooltipRef); tooltipRef != 0 && tooltipRef != 0xFFFFFFFF {
+				c.AddLabel(tooltipRef, fmt.Sprintf("area %d @ %s[%d]", i, wmpFilename, wmEntry.MapId))
+				c.AddContext(tooltipRef, ContextWorldMap, "Area tooltip", fmt.Sprintf("%s → map %d → area %d", wmpFilename, wmEntry.MapId, i))
+			}
+		}
 	}
 
 	return nil

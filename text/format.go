@@ -116,20 +116,24 @@ func toAutoList(key string, values []string) string {
 func joinContext(entry *TextEntry) string {
 	contexts := entry.Context
 	var parts []string
+
 	if sndContexts, ok := contexts[ContextSound]; ok && len(sndContexts) > 0 {
 		files := lo.MapToSlice(sndContexts, func(file string, _ []string) string { return file })
 		parts = append(parts, "Sound: "+strings.Join(files, "\n"))
 	}
+
 	if dlgContexts, ok := contexts[ContextDialog]; ok && len(dlgContexts) > 0 {
 		dialogs := lo.MapToSlice(dlgContexts, toList)
 		slices.Sort(dialogs)
 		parts = append(parts, "Dialogs:\n"+strings.Join(dialogs, "\n"))
 	}
+
 	if uiContexts, ok := contexts[ContextUI]; ok && len(uiContexts) > 0 {
 		screens := lo.MapToSlice(uiContexts, toList)
 		slices.Sort(screens)
 		parts = append(parts, "UI:\n"+strings.Join(screens, "\n"))
 	}
+
 	if creContexts, ok := contexts[ContextCreature]; ok && len(creContexts) > 0 {
 		creatures := lo.MapToSlice(creContexts, toAutoList)
 		slices.Sort(creatures)
@@ -143,5 +147,12 @@ func joinContext(entry *TextEntry) string {
 		slices.Sort(groups)
 		parts = append(parts, "Used for:\n"+strings.Join(groups, "\n"))
 	}
+
+	if wmContexts, ok := contexts[ContextWorldMap]; ok && len(wmContexts) > 0 {
+		maps := lo.MapToSlice(wmContexts, toAutoList)
+		slices.Sort(maps)
+		parts = append(parts, "World maps:\n"+strings.Join(maps, "\n"))
+	}
+
 	return strings.Join(parts, "\n\n")
 }

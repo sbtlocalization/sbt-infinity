@@ -532,7 +532,7 @@ type Wmp_WorldmapEntry struct {
 	BackgroundImageMos string
 	Width uint32
 	Height uint32
-	MapNumber uint32
+	MapId uint32
 	AreaNameRef uint32
 	CenterX uint32
 	CenterY uint32
@@ -584,7 +584,7 @@ func (this *Wmp_WorldmapEntry) Read(io *kaitai.Stream, parent *Wmp, root *Wmp) (
 	if err != nil {
 		return err
 	}
-	this.MapNumber = uint32(tmp48)
+	this.MapId = uint32(tmp48)
 	tmp49, err := this._io.ReadU4le()
 	if err != nil {
 		return err
