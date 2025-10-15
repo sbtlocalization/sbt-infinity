@@ -32,17 +32,16 @@ seq:
     type: u4
   - id: depreciation_rate
     type: u4
-  - id: steal_failure
+  - id: steal_failure_chance
     type: u2
   - id: capacity
     type: u2
-  - id: unknown_1
-    size: 8
-  - id: offset_purchased_items
+  - size: 8
+  - id: ofs_purchased_items
     type: u4
   - id: num_purchased_items
     type: u4
-  - id: offset_items_for_sale
+  - id: ofs_items_for_sale
     type: u4
   - id: num_items_for_sale
     type: u4
@@ -54,7 +53,7 @@ seq:
     type: strz
     encoding: ASCII
     size: 8
-  - id: offset_drinks
+  - id: ofs_drinks
     type: u4
   - id: num_drinks
     type: u4
@@ -65,39 +64,39 @@ seq:
   - id: room_bits
     type: room_flags
     size: 4
-  - id: room_price_peasant
+  - id: peasant_room_price
     type: u4
-  - id: room_price_merchant
+  - id: merchant_room_price
     type: u4
-  - id: room_price_noble
+  - id: noble_room_price
     type: u4
-  - id: room_price_royal
+  - id: royal_room_price
     type: u4
-  - id: offset_cures
+  - id: ofs_cures
     type: u4
   - id: num_cures
     type: u4
-  - id: unknown_2
-    size: 36
+  - size: 36
 instances:
   items_for_sale:
     type: item_for_sale_entry
-    pos: offset_items_for_sale
+    pos: ofs_items_for_sale
     repeat: expr
     repeat-expr: num_items_for_sale
   drinks:
     type: drink_entry
-    pos: offset_drinks
+    pos: ofs_drinks
     repeat: expr
     repeat-expr: num_drinks
   cures:
     type: cure_entry
-    pos: offset_cures
+    pos: ofs_cures
     repeat: expr
     repeat-expr: num_cures
   purchased_items:
-    type: purchase_entry
-    pos: offset_purchased_items
+    type: u4
+    enum: purchased_item_type
+    pos: ofs_purchased_items
     repeat: expr
     repeat-expr: num_purchased_items
 
@@ -119,16 +118,13 @@ types:
       type: b1
     - id: user_allowed_purchase_drinks
       type: b1
-    - id: unknown_1
-      type: b1
-    - id: unknown_2
-      type: b1
+    - type: b1
+    - type: b1
     - id: qualuty_1
       type: b1
     - id: quality_2
       type: b1
-    - id: unknown_3
-      type: b1
+    - type: b1
     - id: buy_fenced_goods
       type: b1
     - id: reputation_not_affect_price
@@ -162,7 +158,7 @@ types:
 
   item_for_sale_entry:
     seq:
-    - id: item_file
+    - id: item_itm
       type: strz
       encoding: ASCII
       size: 8
@@ -198,31 +194,25 @@ types:
 
   cure_entry:
     seq:
-    - id: spell_file
+    - id: spell_spl
       type: strz
       encoding: ASCII
       size: 8
     - id: price
       type: u4
 
-  purchase_entry:
-    seq:
-    - id: item_type
-      type: u4
-      enum: purchased_item_type
-
 
 enums:
   store_type:
-    0x000: store
-    0x001: tavern
-    0x002: inn
-    0x003: temple
-    0x005: container
+    0: store
+    1: tavern
+    2: inn
+    3: temple
+    5: container
 
   supply_type:
-    0x000: limited
-    0x001: infinite
+    0: limited
+    1: infinite
 
   purchased_item_type:
     0x00: books_misc

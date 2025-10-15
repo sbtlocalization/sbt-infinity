@@ -131,27 +131,27 @@ type Sto struct {
 	SellMarkup uint32
 	BuyMarkup uint32
 	DepreciationRate uint32
-	StealFailure uint16
+	StealFailureChance uint16
 	Capacity uint16
-	Unknown1 []byte
-	OffsetPurchasedItems uint32
+	_unnamed10 []byte
+	OfsPurchasedItems uint32
 	NumPurchasedItems uint32
-	OffsetItemsForSale uint32
+	OfsItemsForSale uint32
 	NumItemsForSale uint32
 	Lore uint32
 	IdPrice uint32
 	RumoursTavern string
-	OffsetDrinks uint32
+	OfsDrinks uint32
 	NumDrinks uint32
 	RumoursTemple string
 	RoomBits *Sto_RoomFlags
-	RoomPricePeasant uint32
-	RoomPriceMerchant uint32
-	RoomPriceNoble uint32
-	RoomPriceRoyal uint32
-	OffsetCures uint32
+	PeasantRoomPrice uint32
+	MerchantRoomPrice uint32
+	NobleRoomPrice uint32
+	RoyalRoomPrice uint32
+	OfsCures uint32
 	NumCures uint32
-	Unknown2 []byte
+	_unnamed28 []byte
 	_io *kaitai.Stream
 	_root *Sto
 	_parent kaitai.Struct
@@ -164,7 +164,7 @@ type Sto struct {
 	_f_itemsForSale bool
 	itemsForSale []*Sto_ItemForSaleEntry
 	_f_purchasedItems bool
-	purchasedItems []*Sto_PurchaseEntry
+	purchasedItems []Sto_PurchasedItemType
 }
 func NewSto() *Sto {
 	return &Sto{
@@ -240,7 +240,7 @@ func (this *Sto) Read(io *kaitai.Stream, parent kaitai.Struct, root *Sto) (err e
 	if err != nil {
 		return err
 	}
-	this.StealFailure = uint16(tmp10)
+	this.StealFailureChance = uint16(tmp10)
 	tmp11, err := this._io.ReadU2le()
 	if err != nil {
 		return err
@@ -251,12 +251,12 @@ func (this *Sto) Read(io *kaitai.Stream, parent kaitai.Struct, root *Sto) (err e
 		return err
 	}
 	tmp12 = tmp12
-	this.Unknown1 = tmp12
+	this._unnamed10 = tmp12
 	tmp13, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OffsetPurchasedItems = uint32(tmp13)
+	this.OfsPurchasedItems = uint32(tmp13)
 	tmp14, err := this._io.ReadU4le()
 	if err != nil {
 		return err
@@ -266,7 +266,7 @@ func (this *Sto) Read(io *kaitai.Stream, parent kaitai.Struct, root *Sto) (err e
 	if err != nil {
 		return err
 	}
-	this.OffsetItemsForSale = uint32(tmp15)
+	this.OfsItemsForSale = uint32(tmp15)
 	tmp16, err := this._io.ReadU4le()
 	if err != nil {
 		return err
@@ -292,7 +292,7 @@ func (this *Sto) Read(io *kaitai.Stream, parent kaitai.Struct, root *Sto) (err e
 	if err != nil {
 		return err
 	}
-	this.OffsetDrinks = uint32(tmp20)
+	this.OfsDrinks = uint32(tmp20)
 	tmp21, err := this._io.ReadU4le()
 	if err != nil {
 		return err
@@ -321,27 +321,27 @@ func (this *Sto) Read(io *kaitai.Stream, parent kaitai.Struct, root *Sto) (err e
 	if err != nil {
 		return err
 	}
-	this.RoomPricePeasant = uint32(tmp25)
+	this.PeasantRoomPrice = uint32(tmp25)
 	tmp26, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.RoomPriceMerchant = uint32(tmp26)
+	this.MerchantRoomPrice = uint32(tmp26)
 	tmp27, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.RoomPriceNoble = uint32(tmp27)
+	this.NobleRoomPrice = uint32(tmp27)
 	tmp28, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.RoomPriceRoyal = uint32(tmp28)
+	this.RoyalRoomPrice = uint32(tmp28)
 	tmp29, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OffsetCures = uint32(tmp29)
+	this.OfsCures = uint32(tmp29)
 	tmp30, err := this._io.ReadU4le()
 	if err != nil {
 		return err
@@ -352,7 +352,7 @@ func (this *Sto) Read(io *kaitai.Stream, parent kaitai.Struct, root *Sto) (err e
 		return err
 	}
 	tmp31 = tmp31
-	this.Unknown2 = tmp31
+	this._unnamed28 = tmp31
 	return err
 }
 func (this *Sto) Cures() (v []*Sto_CureEntry, err error) {
@@ -364,7 +364,7 @@ func (this *Sto) Cures() (v []*Sto_CureEntry, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this.OffsetCures), io.SeekStart)
+	_, err = this._io.Seek(int64(this.OfsCures), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
@@ -392,7 +392,7 @@ func (this *Sto) Drinks() (v []*Sto_DrinkEntry, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this.OffsetDrinks), io.SeekStart)
+	_, err = this._io.Seek(int64(this.OfsDrinks), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
@@ -420,7 +420,7 @@ func (this *Sto) ItemsForSale() (v []*Sto_ItemForSaleEntry, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this.OffsetItemsForSale), io.SeekStart)
+	_, err = this._io.Seek(int64(this.OfsItemsForSale), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
@@ -439,7 +439,7 @@ func (this *Sto) ItemsForSale() (v []*Sto_ItemForSaleEntry, err error) {
 	}
 	return this.itemsForSale, nil
 }
-func (this *Sto) PurchasedItems() (v []*Sto_PurchaseEntry, err error) {
+func (this *Sto) PurchasedItems() (v []Sto_PurchasedItemType, err error) {
 	if (this._f_purchasedItems) {
 		return this.purchasedItems, nil
 	}
@@ -448,18 +448,17 @@ func (this *Sto) PurchasedItems() (v []*Sto_PurchaseEntry, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this.OffsetPurchasedItems), io.SeekStart)
+	_, err = this._io.Seek(int64(this.OfsPurchasedItems), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
 	for i := 0; i < int(this.NumPurchasedItems); i++ {
 		_ = i
-		tmp35 := NewSto_PurchaseEntry()
-		err = tmp35.Read(this._io, this, this._root)
+		tmp35, err := this._io.ReadU4le()
 		if err != nil {
 			return nil, err
 		}
-		this.purchasedItems = append(this.purchasedItems, tmp35)
+		this.purchasedItems = append(this.purchasedItems, Sto_PurchasedItemType(tmp35))
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -468,7 +467,7 @@ func (this *Sto) PurchasedItems() (v []*Sto_PurchaseEntry, err error) {
 	return this.purchasedItems, nil
 }
 type Sto_CureEntry struct {
-	SpellFile string
+	SpellSpl string
 	Price uint32
 	_io *kaitai.Stream
 	_root *Sto
@@ -493,7 +492,7 @@ func (this *Sto_CureEntry) Read(io *kaitai.Stream, parent *Sto, root *Sto) (err 
 		return err
 	}
 	tmp36 = kaitai.BytesTerminate(tmp36, 0, false)
-	this.SpellFile = string(tmp36)
+	this.SpellSpl = string(tmp36)
 	tmp37, err := this._io.ReadU4le()
 	if err != nil {
 		return err
@@ -555,11 +554,11 @@ type Sto_Flags struct {
 	UserAllowedDonateMoney bool
 	UserAllowedPurchaseCures bool
 	UserAllowedPurchaseDrinks bool
-	Unknown1 bool
-	Unknown2 bool
+	_unnamed7 bool
+	_unnamed8 bool
 	Qualuty1 bool
 	Quality2 bool
-	Unknown3 bool
+	_unnamed11 bool
 	BuyFencedGoods bool
 	ReputationNotAffectPrice bool
 	ToggleItemRecharge bool
@@ -621,12 +620,12 @@ func (this *Sto_Flags) Read(io *kaitai.Stream, parent *Sto, root *Sto) (err erro
 	if err != nil {
 		return err
 	}
-	this.Unknown1 = tmp49 != 0
+	this._unnamed7 = tmp49 != 0
 	tmp50, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Unknown2 = tmp50 != 0
+	this._unnamed8 = tmp50 != 0
 	tmp51, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
@@ -641,7 +640,7 @@ func (this *Sto_Flags) Read(io *kaitai.Stream, parent *Sto, root *Sto) (err erro
 	if err != nil {
 		return err
 	}
-	this.Unknown3 = tmp53 != 0
+	this._unnamed11 = tmp53 != 0
 	tmp54, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
@@ -710,7 +709,7 @@ func (this *Sto_ItemFlags) Read(io *kaitai.Stream, parent *Sto_ItemForSaleEntry,
 	return err
 }
 type Sto_ItemForSaleEntry struct {
-	ItemFile string
+	ItemItm string
 	ExpirationTime uint16
 	QuantityCharges1 uint16
 	QuantityCharges2 uint16
@@ -742,7 +741,7 @@ func (this *Sto_ItemForSaleEntry) Read(io *kaitai.Stream, parent *Sto, root *Sto
 		return err
 	}
 	tmp62 = kaitai.BytesTerminate(tmp62, 0, false)
-	this.ItemFile = string(tmp62)
+	this.ItemItm = string(tmp62)
 	tmp63, err := this._io.ReadU2le()
 	if err != nil {
 		return err
@@ -788,33 +787,6 @@ func (this *Sto_ItemForSaleEntry) Read(io *kaitai.Stream, parent *Sto, root *Sto
 	this.Supply = Sto_SupplyType(tmp70)
 	return err
 }
-type Sto_PurchaseEntry struct {
-	ItemType Sto_PurchasedItemType
-	_io *kaitai.Stream
-	_root *Sto
-	_parent *Sto
-}
-func NewSto_PurchaseEntry() *Sto_PurchaseEntry {
-	return &Sto_PurchaseEntry{
-	}
-}
-
-func (this Sto_PurchaseEntry) IO_() *kaitai.Stream {
-	return this._io
-}
-
-func (this *Sto_PurchaseEntry) Read(io *kaitai.Stream, parent *Sto, root *Sto) (err error) {
-	this._io = io
-	this._parent = parent
-	this._root = root
-
-	tmp71, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.ItemType = Sto_PurchasedItemType(tmp71)
-	return err
-}
 type Sto_RoomFlags struct {
 	Peasant bool
 	Merchant bool
@@ -838,25 +810,25 @@ func (this *Sto_RoomFlags) Read(io *kaitai.Stream, parent *Sto, root *Sto) (err 
 	this._parent = parent
 	this._root = root
 
+	tmp71, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Peasant = tmp71 != 0
 	tmp72, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Peasant = tmp72 != 0
+	this.Merchant = tmp72 != 0
 	tmp73, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Merchant = tmp73 != 0
+	this.Noble = tmp73 != 0
 	tmp74, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Noble = tmp74 != 0
-	tmp75, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Royal = tmp75 != 0
+	this.Royal = tmp74 != 0
 	return err
 }
