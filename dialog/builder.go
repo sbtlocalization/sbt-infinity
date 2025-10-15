@@ -142,13 +142,13 @@ func (b *DialogBuilder) loadCreatures() error {
 			continue
 		}
 
-		shortName := b.tlkFile.GetText(cre.ShortName)
-		longName := b.tlkFile.GetText(cre.LongName)
+		shortName := b.tlkFile.GetText(cre.ShortNameRef)
+		longName := b.tlkFile.GetText(cre.LongNameRef)
 
 		creature := &Creature{
-			ShortNameId: cre.ShortName,
+			ShortNameId: cre.ShortNameRef,
 			ShortName:   shortName,
-			LongNameId:  cre.LongName,
+			LongNameId:  cre.LongNameRef,
 			LongName:    longName,
 			Portrait:    cre.Body.Header.SmallPortrait + ".BMP",
 			Dialog:      cre.Body.Header.Dialog,

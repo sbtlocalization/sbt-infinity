@@ -50,7 +50,7 @@ types:
         type: u4
       - id: height
         type: u4
-      - id: map_number
+      - id: map_id
         type: u4
       - id: area_name_ref
         type: u4

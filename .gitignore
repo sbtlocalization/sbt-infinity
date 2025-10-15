@@ -7,8 +7,9 @@ sbt-inf
 sbt-infinity
 .sbt-inf.toml
 override
-release
+dist/
 
 .DS_Store
 
-output
+out*/
+example/

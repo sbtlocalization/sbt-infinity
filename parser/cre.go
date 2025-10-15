@@ -29,8 +29,8 @@ func (v Cre_SpellType) isDefined() bool {
 type Cre struct {
 	Magic []byte
 	Version string
-	LongName uint32
-	ShortName uint32
+	LongNameRef uint32
+	ShortNameRef uint32
 	Body *Cre_BodyV1
 	_io *kaitai.Stream
 	_root *Cre
@@ -69,12 +69,12 @@ func (this *Cre) Read(io *kaitai.Stream, parent kaitai.Struct, root *Cre) (err e
 	if err != nil {
 		return err
 	}
-	this.LongName = uint32(tmp3)
+	this.LongNameRef = uint32(tmp3)
 	tmp4, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.ShortName = uint32(tmp4)
+	this.ShortNameRef = uint32(tmp4)
 	switch (this.Version) {
 	case "V1.0":
 		tmp5 := NewCre_BodyV1()

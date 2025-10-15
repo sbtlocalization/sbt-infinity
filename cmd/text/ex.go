@@ -16,7 +16,6 @@ import (
 	"github.com/sbtlocalization/sbt-infinity/config"
 	"github.com/sbtlocalization/sbt-infinity/dialog"
 	"github.com/sbtlocalization/sbt-infinity/fs"
-	"github.com/sbtlocalization/sbt-infinity/parser"
 	p "github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/sbtlocalization/sbt-infinity/text"
 	"github.com/sbtlocalization/sbt-infinity/utils"
@@ -77,7 +76,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 	}
 
 	if verbose {
-		fmt.Print("Loading TLK file... ")
+		fmt.Print("loading TLK file... ")
 	}
 	tlkFile, err := p.ReadTlkFile(tlkFs, tlkPath)
 	if err != nil {
@@ -89,12 +88,17 @@ func runEx(cmd *cobra.Command, args []string) error {
 		fmt.Println("done.")
 	}
 
-	contextTypes := []fs.FileType{}
+	contextTypes := []fs.FileType{
+		fs.FileType_DLG,
+		fs.FileType_CRE,
+		fs.FileType_CHU,
+		fs.FileType_WMP,
+	}
 	if !slices.Contains(contextFrom, "all") {
 		contextTypes = lo.UniqMap(contextFrom, utils.Iteratee(fs.FileTypeFromExtension))
 	}
 
-	infFs := fs.NewInfinityFs(keyPath, contextTypes...)
+	infFs := fs.NewInfinityFs(keyPath)
 
 	for _, t := range contextTypes {
 		switch t {
@@ -103,10 +107,20 @@ func runEx(cmd *cobra.Command, args []string) error {
 			if err != nil {
 				fmt.Println("warning: unable to process UI screens:", err)
 			}
+		case fs.FileType_CRE:
+			err = processCreatures(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process creatures:", err)
+			}
 		case fs.FileType_DLG:
 			err = processDialogs(collection, infFs, baseUrl, verbose)
 			if err != nil {
 				fmt.Println("warning: unable to process dialogs:", err)
+			}
+		case fs.FileType_WMP:
+			err = processWorldMaps(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process world maps:", err)
 			}
 		default:
 			continue
@@ -123,7 +137,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 
 func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl string, verbose bool) error {
 	if verbose {
-		fmt.Print("loading dialogs to extract context... ")
+		fmt.Print("extracting context from dialogs... ")
 	}
 	dlgBuilder := dialog.NewDialogBuilder(infFs, nil, false, verbose)
 	dir, err := infFs.Open("DLG")
@@ -152,9 +166,62 @@ func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl str
 	return nil
 }
 
+func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	if verbose {
+		fmt.Print("extracting context from creatures... ")
+	}
+
+	dir, err := infFs.Open("CRE")
+	if err != nil {
+		return fmt.Errorf("unable to list existing CRE files: %v", err)
+	}
+	defer dir.Close()
+
+	creFiles, err := dir.Readdirnames(0)
+	if err != nil {
+		return fmt.Errorf("unable to read CRE directory names: %v", err)
+	}
+
+	var ids *p.Ids
+
+	sndslot, err := infFs.Open("SNDSLOT.IDS")
+	if err != nil {
+		fmt.Println("warning: unable to open SNDSLOT.IDS:", err)
+	} else {
+		ids, err = p.ParseIds(sndslot)
+		sndslot.Close()
+		if err != nil {
+			fmt.Println("warning: unable to parse SNDSLOT.IDS:", err)
+		}
+	}
+
+	for _, cf := range creFiles {
+		creFile, err := infFs.Open(cf)
+		if err != nil {
+			return fmt.Errorf("unable to open CRE file %q: %v", cf, err)
+		}
+		defer creFile.Close()
+
+		cre := p.NewCre()
+		stream := kaitai.NewStream(creFile)
+		err = cre.Read(stream, nil, cre)
+		if err != nil {
+			return fmt.Errorf("unable to parse CRE file %q: %v", cf, err)
+		}
+
+		collection.LoadContextFromCreature(cf, cre, ids)
+	}
+
+	if verbose {
+		fmt.Println("done.")
+	}
+
+	return nil
+}
+
 func processUiScreens(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
 	if verbose {
-		fmt.Print("loading UI screens to extract context... ")
+		fmt.Print("extracting context from UI screens... ")
 	}
 
 	dir, err := infFs.Open("CHU")
@@ -175,7 +242,7 @@ func processUiScreens(collection *text.TextCollection, infFs afero.Fs, verbose b
 		}
 		defer uiFile.Close()
 
-		chu := parser.NewChu()
+		chu := p.NewChu()
 		stream := kaitai.NewStream(uiFile)
 		err = chu.Read(stream, nil, chu)
 		if err != nil {
@@ -183,6 +250,46 @@ func processUiScreens(collection *text.TextCollection, infFs afero.Fs, verbose b
 		}
 
 		collection.LoadContextFromUiScreens(uf, chu)
+	}
+
+	if verbose {
+		fmt.Println("done.")
+	}
+
+	return nil
+}
+
+func processWorldMaps(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	if verbose {
+		fmt.Print("extracting context from world maps... ")
+	}
+
+	dir, err := infFs.Open("WMP")
+	if err != nil {
+		return fmt.Errorf("unable to list existing WMP files: %v", err)
+	}
+	defer dir.Close()
+
+	wmpFiles, err := dir.Readdirnames(0)
+	if err != nil {
+		return fmt.Errorf("unable to read WMP directory names: %v", err)
+	}
+
+	for _, wf := range wmpFiles {
+		wmpFile, err := infFs.Open(wf)
+		if err != nil {
+			return fmt.Errorf("unable to open WMP file %q: %v", wf, err)
+		}
+		defer wmpFile.Close()
+
+		wmp := p.NewWmp()
+		stream := kaitai.NewStream(wmpFile)
+		err = wmp.Read(stream, nil, wmp)
+		if err != nil {
+			return fmt.Errorf("unable to parse WMP file %q: %v", wf, err)
+		}
+
+		collection.LoadContextFromWorldMaps(wf, wmp)
 	}
 
 	if verbose {
