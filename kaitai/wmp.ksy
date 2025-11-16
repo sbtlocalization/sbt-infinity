@@ -182,26 +182,12 @@ types:
       - id: default_entrance
         type: u4
         enum: entrance
-      - id: random_encounter_area_1
+      - id: random_encounter_area
         type: strz
         size: 8
         encoding: ASCII
-      - id: random_encounter_area_2
-        type: strz
-        size: 8
-        encoding: ASCII
-      - id: random_encounter_area_3
-        type: strz
-        size: 8
-        encoding: ASCII
-      - id: random_encounter_area_4
-        type: strz
-        size: 8
-        encoding: ASCII
-      - id: random_encounter_area_5
-        type: strz
-        size: 8
-        encoding: ASCII
+        repeat: expr
+        repeat-expr: 5
       - id: random_encounter_probability
         type: u4
       - id: reserved

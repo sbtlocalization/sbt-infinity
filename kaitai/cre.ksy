@@ -287,16 +287,10 @@ types:
             type: u1
           - id: missile_proficiency
             type: u1
-          - id: reserved_proficiency1
+          - id: reserved_proficiency
             type: u1
-          - id: reserved_proficiency2
-            type: u1
-          - id: reserved_proficiency3
-            type: u1
-          - id: reserved_proficiency4
-            type: u1
-          - id: reserved_proficiency5
-            type: u1
+            repeat: expr
+            repeat-expr: 5
           - id: unspent_proficiencies
             type: u1
           - id: num_available_inventory_slots
@@ -658,12 +652,10 @@ types:
             doc: Resource name of the ITM file.
           - id: duration
             type: u2
-          - id: quantity_charges1
+          - id: quantity_charges
             type: u2
-          - id: quantity_charges2
-            type: u2
-          - id: quantity_charges3
-            type: u2
+            repeat: expr
+            repeat-expr: 3
           - id: flags
             size: 4
             type: item_flags

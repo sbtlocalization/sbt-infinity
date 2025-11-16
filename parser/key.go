@@ -282,12 +282,7 @@ func (this *Key_BiffEntry) FilePath() (v string, err error) {
 type Key_BiffEntry_Location struct {
 	InData bool
 	InCache bool
-	Cd1 bool
-	Cd2 bool
-	Cd3 bool
-	Cd4 bool
-	Cd5 bool
-	Cd6 bool
+	Cd []bool
 	_io *kaitai.Stream
 	_root *Key
 	_parent *Key_BiffEntry
@@ -316,36 +311,14 @@ func (this *Key_BiffEntry_Location) Read(io *kaitai.Stream, parent *Key_BiffEntr
 		return err
 	}
 	this.InCache = tmp16 != 0
-	tmp17, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
+	for i := 0; i < int(6); i++ {
+		_ = i
+		tmp17, err := this._io.ReadBitsIntLe(1)
+		if err != nil {
+			return err
+		}
+		this.Cd = append(this.Cd, tmp17 != 0)
 	}
-	this.Cd1 = tmp17 != 0
-	tmp18, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Cd2 = tmp18 != 0
-	tmp19, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Cd3 = tmp19 != 0
-	tmp20, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Cd4 = tmp20 != 0
-	tmp21, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Cd5 = tmp21 != 0
-	tmp22, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Cd6 = tmp22 != 0
 	return err
 }
 type Key_ResEntry struct {
@@ -370,23 +343,23 @@ func (this *Key_ResEntry) Read(io *kaitai.Stream, parent *Key, root *Key) (err e
 	this._parent = parent
 	this._root = root
 
-	tmp23, err := this._io.ReadBytes(int(8))
+	tmp18, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp23 = kaitai.BytesTerminate(tmp23, 0, false)
-	this.Name = string(tmp23)
-	tmp24, err := this._io.ReadU2le()
+	tmp18 = kaitai.BytesTerminate(tmp18, 0, false)
+	this.Name = string(tmp18)
+	tmp19, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Type = Key_ResType(tmp24)
-	tmp25 := NewKey_ResEntry_Locator(false)
-	err = tmp25.Read(this._io, this, this._root)
+	this.Type = Key_ResType(tmp19)
+	tmp20 := NewKey_ResEntry_Locator(false)
+	err = tmp20.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Locator = tmp25
+	this.Locator = tmp20
 	return err
 }
 type Key_ResEntry_Locator struct {
@@ -415,21 +388,21 @@ func (this *Key_ResEntry_Locator) Read(io *kaitai.Stream, parent *Key_ResEntry, 
 	this._parent = parent
 	this._root = root
 
-	tmp26, err := this._io.ReadBitsIntLe(14)
+	tmp21, err := this._io.ReadBitsIntLe(14)
 	if err != nil {
 		return err
 	}
-	this.FileIndex = tmp26
-	tmp27, err := this._io.ReadBitsIntLe(6)
+	this.FileIndex = tmp21
+	tmp22, err := this._io.ReadBitsIntLe(6)
 	if err != nil {
 		return err
 	}
-	this.TilesetIndex = tmp27
-	tmp28, err := this._io.ReadBitsIntLe(12)
+	this.TilesetIndex = tmp22
+	tmp23, err := this._io.ReadBitsIntLe(12)
 	if err != nil {
 		return err
 	}
-	this.BiffFileIndex = tmp28
+	this.BiffFileIndex = tmp23
 	return err
 }
 func (this *Key_ResEntry_Locator) BiffFile() (v *Key_BiffEntry, err error) {
@@ -447,12 +420,12 @@ func (this *Key_ResEntry_Locator) BiffFile() (v *Key_BiffEntry, err error) {
 		if err != nil {
 			return nil, err
 		}
-		tmp29 := NewKey_BiffEntry()
-		err = tmp29.Read(thisIo, this, this._root)
+		tmp24 := NewKey_BiffEntry()
+		err = tmp24.Read(thisIo, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.biffFile = tmp29
+		this.biffFile = tmp24
 		_, err = thisIo.Seek(_pos, io.SeekStart)
 		if err != nil {
 			return nil, err

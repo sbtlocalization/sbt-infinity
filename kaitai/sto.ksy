@@ -120,10 +120,10 @@ types:
       type: b1
     - type: b1
     - type: b1
-    - id: qualuty_1
+    - id: quality
       type: b1
-    - id: quality_2
-      type: b1
+      repeat: expr
+      repeat-expr: 2
     - type: b1
     - id: buy_fenced_goods
       type: b1
@@ -164,12 +164,10 @@ types:
       size: 8
     - id: expiration_time
       type: u2
-    - id: quantity_charges_1
+    - id: quantity_charges
       type: u2
-    - id: quantity_charges_2
-      type: u2
-    - id: quantity_charges_3
-      type: u2
+      repeat: expr
+      repeat-expr: 3
     - id: flags
       type: item_flags
       size: 4

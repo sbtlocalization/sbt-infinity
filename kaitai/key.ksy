@@ -66,18 +66,10 @@ types:
             type: b1
           - id: in_cache
             type: b1
-          - id: cd1
+          - id: cd
             type: b1
-          - id: cd2
-            type: b1
-          - id: cd3
-            type: b1
-          - id: cd4
-            type: b1
-          - id: cd5
-            type: b1
-          - id: cd6
-            type: b1
+            repeat: expr
+            repeat-expr: 6
   res_entry:
     seq:
       - id: name
