@@ -130,10 +130,102 @@ seq:
     type: u2
   - id: num_tiled_object_flags
     type: u2
-  - id: area_script
+  - id: area_script_bcs
     type: strz
     size: 8
     encoding: ASCII
+  - id: len_explored_bitmask
+    type: u4
+  - id: ofs_explored_bitmask
+    type: u4
+  - id: num_doors
+    type: u4
+  - id: ofs_doors
+    type: u4
+  - id: num_animations
+    type: u4
+  - id: ofs_animations
+    type: u4
+  - id: num_tiled_objects
+    type: u4
+  - id: ofs_tiled_objects
+    type: u4
+  - id: ofs_song_entries
+    type: u4
+  - id: ofs_rest_interruptions
+    type: u4
+  - id: other_offsets
+    type: other_offsets
+  - id: num_projectile_traps
+    type: u4
+  - id: bg_rest_movie_day
+    type: strz
+    size: 8
+    encoding: ASCII
+  - id: bg_rest_movie_night
+    type: strz
+    size: 8
+    encoding: ASCII
+  - size: 56
+instances:
+  actors:
+    pos: ofs_actors
+    size: 0x110
+    type: actor
+    repeat: expr
+    repeat-expr: num_actors
+  regions:
+    pos: ofs_regions
+    size: 0xc4
+    type: region
+    repeat: expr
+    repeat-expr: num_regions
+  spawn_points:
+    pos: ofs_spawn_points
+    size: 0xc8
+    type: spawn_point
+    repeat: expr
+    repeat-expr: num_spawn_points
+  entrances:
+    pos: ofs_entrances
+    size: 0x68
+    type: entrance
+    repeat: expr
+    repeat-expr: num_entrances
+  containers:
+    pos: ofs_containers
+    size: 0xc0
+    type: container
+    repeat: expr
+    repeat-expr: num_containers
+  vertices:
+    pos: ofs_vertices
+    size: 4
+    type: point
+    repeat: expr
+    repeat-expr: num_vertices
+  items:
+    pos: ofs_items
+    size: 20
+    type: item
+    repeat: expr
+    repeat-expr: num_items
+  ambients:
+    pos: ofs_ambients
+    size: 0xd4
+    type: ambient
+    repeat: expr
+    repeat-expr: num_ambients
+  variables:
+    pos: ofs_variables
+    size: 0x50
+    type: variable
+    repeat: expr
+    repeat-expr: num_variables
+  explored_bitmask:
+    pos: ofs_explored_bitmask
+    size: len_explored_bitmask
+    type: explored_bitmask
 types:
   flags:
     seq:
@@ -147,62 +239,632 @@ types:
         type: b1
   area_type_flags:
     seq:
-      - id: bit0
+      - id: bit
         type: b1
-      - id: bit1
-        type: b1
-      - id: bit2
-        type: b1
-      - id: bit3
-        type: b1
-      - id: bit4
-        type: b1
-      - id: bit5
-        type: b1
-      - id: bit6
-        type: b1
-      - id: bit7
-        type: b1
-      - id: bit8
-        type: b1
-      - id: bit9
-        type: b1
-      - id: bit10
-        type: b1
+        repeat: expr
+        repeat-expr: 11
     instances:
       bg_outdoor:
-        value: bit0
+        value: bit[0]
       bg_day_night:
-        value: bit1
+        value: bit[1]
       bg_weather:
-        value: bit2
+        value: bit[2]
       bg_city:
-        value: bit3
+        value: bit[3]
       bg_forest:
-        value: bit4
+        value: bit[4]
       bg_dungeon:
-        value: bit5
+        value: bit[5]
       bg_extended_night:
-        value: bit6
+        value: bit[6]
       bg_can_rest_indoors:
-        value: bit7
+        value: bit[7]
       pst_hive:
-        value: bit0
+        value: bit[0]
       pst_clerks_ward:
-        value: bit2
+        value: bit[2]
       pst_lower_ward:
-        value: bit3
+        value: bit[3]
       pst_ravels_maze:
-        value: bit4
+        value: bit[4]
       pst_baator:
-        value: bit5
+        value: bit[5]
       pst_rubikon:
-        value: bit6
+        value: bit[6]
       pst_fortress_of_regrets:
-        value: bit7
+        value: bit[7]
       pst_curst:
-        value: bit8
+        value: bit[8]
       pst_carceri:
-        value: bit9
+        value: bit[9]
       pst_outdoors:
-        value: bit10
+        value: bit[10]
+  other_offsets:
+    seq:
+      - id: first
+        type: u4
+      - id: second
+        type: u4
+      - id: third
+        type: u4
+    instances:
+      ofs_bg_automap_note:
+        value: first
+      num_bg_automap_note:
+        value: second
+      ofs_bg_projectile_traps:
+        value: third
+      ofs_pst_automap_note:
+        value: second
+      num_pst_automap_note:
+        value: third
+  actor:
+    seq:
+      - id: name
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: current_x
+        type: u2
+      - id: current_y
+        type: u2
+      - id: destination_x
+        type: u2
+      - id: destination_y
+        type: u2
+      - id: flags
+        type: flags
+        size: 4
+      - id: spawnable
+        type: bool2
+      - id: first_cre_letter
+        type: u1
+      - size: 1
+      - id: actor_animation
+        type: u4
+      - id: actor_orientation
+        type: u2
+        enum: orientation
+      - size: 2
+      - id: expiry_time
+        type: u4
+      - id: wander_distance
+        type: u2
+      - id: follow_distance
+        type: u2
+      - id: appearence_schedule
+        type: schedule
+      - id: num_times_talked_to
+        type: u4
+      - id: dialog_dlg
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: override_script_bcs
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: general_script_bcs
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: class_script_bcs
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: race_script_bcs
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: default_script_bcs
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: specific_script_bcs
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: cre
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: ofs_cre_structure
+        type: u4
+      - id: len_cre_structure
+        type: u4
+      - size: 128
+    types:
+      flags:
+        seq:
+          - id: cre_attached
+            type: b1
+          - id: has_seen_party
+            type: b1
+          - id: invulnerable
+            type: b1
+          - id: override_script_name
+            type: b1
+      spawn_flags:
+        seq:
+          - id: is_random_monster
+            type: b1
+  region:
+    seq:
+      - id: name
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: region_type
+        enum: region_type
+        type: u2
+      - id: bounding_box
+        type: bounding_box
+      - id: num_vertices
+        type: u2
+      - id: first_vertex_index
+        type: u4
+      - id: trigger_value
+        type: u4
+      - id: cursor_index
+        doc: cursors.bam
+        type: u4
+      - id: destination_area
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: entrance_name
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: flags
+        type: flags
+        size: 4
+      - id: info_ref
+        type: u4
+      - id: trap_detection_difficulty
+        type: u2
+      - id: trap_removal_difficulty
+        type: u2
+      - id: is_trapped
+        type: bool2
+      - id: is_trap_detected
+        type: bool2
+      - id: trap_launch_location
+        type: point
+      - id: key_itm
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: script_bcs
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: alternative_point
+        type: point
+      - size: 4
+      - size: 32
+      - id: pst_sound
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: pst_talk_location
+        type: point
+      - id: pst_speaker_name_ref
+        type: u4
+      - id: pst_dialog_dlg
+        type: strz
+        size: 8
+        encoding: ASCII
+    instances:
+      vertices:
+        pos: _root.ofs_vertices + first_vertex_index * 4
+        io: _root._io
+        type: point
+        size: 4
+        repeat: expr
+        repeat-expr: num_vertices
+    types:
+      flags:
+        seq:
+          - id: key_required
+            type: b1
+          - id: reset_trap
+            type: b1
+          - id: party_required
+            type: b1
+          - id: detectable
+            type: b1
+          - id: npc_activates
+            type: b1
+          - id: active_in_tutorial_area_only
+            type: b1
+          - id: anyone_activates
+            type: b1
+          - id: silent
+            type: b1
+          - id: deactivated
+            type: b1
+          - id: party_only
+            type: b1
+          - id: use_alternative_point
+            type: b1
+          - id: connected_to_door
+            type: b1
+    enums:
+      region_type:
+        0: proximity_trigger
+        1: info_point
+        2: travel_region
+  spawn_point:
+    seq:
+      - id: name
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: coord
+        type: point
+      - id: creature_cre
+        type: strz
+        size: 8
+        encoding: ASCII
+        repeat: expr
+        repeat-expr: 10
+      - id: num_creatures
+        type: u2
+      - id: encounter_difficulty
+        type: u2
+      - id: spawn_rate
+        type: u2
+      - id: spawn_method
+        type: spawn_method
+        size: 2
+      - id: expiry_time
+        type: u4
+      - id: wander_distance
+        type: u2
+      - id: follow_distance
+        type: u2
+      - id: maximum_num_creatures
+        type: u2
+      - id: enabled
+        type: bool2
+      - id: appearence_schedule
+        type: schedule
+      - id: probability_day
+        type: u2
+      - id: probability_night
+        type: u2
+      - id: spawn_frequency
+        type: u4
+      - id: countdown
+        type: u4
+      - id: spawn_weight
+        type: u1
+        repeat: expr
+        repeat-expr: 10
+      - size: 38
+    types:
+      spawn_method:
+        seq:
+          - id: spawn_until_paused
+            type: b1
+          - id: single_shot
+            type: b1
+          - id: spawn_paused
+            type: b1
+  entrance:
+    seq:
+      - id: name
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: coord
+        type: point
+      - id: orientation
+        type: u2
+        enum: orientation
+      - size: 66
+  container:
+    seq:
+      - id: name
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: coord
+        type: point
+      - id: container_type
+        type: u2
+        enum: container_type
+      - id: lock_difficulty
+        type: u2
+      - id: flags
+        type: flags
+        size: 4
+      - id: trap_detection_difficulty
+        type: u2
+      - id: trap_removal_difficulty
+        type: u2
+      - id: is_trapped
+        type: bool2
+      - id: is_trap_detected
+        type: bool2
+      - id: trap_launch_coord
+        type: point
+      - id: bounding_box
+        type: bounding_box
+      - id: first_item_index
+        type: u4
+      - id: num_items
+        type: u4
+      - id: trap_script_bcs
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: first_vertex_index
+        type: u4
+      - id: num_vertices
+        type: u2
+      - id: trigger_range
+        type: u2
+      - id: owner
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: key_itm
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: break_difficulty
+        type: u4
+      - id: lockpick_ref
+        type: u4
+      - size: 56
+    instances:
+      vertices:
+        pos: _root.ofs_vertices + first_vertex_index * 4
+        io: _root._io
+        type: point
+        size: 4
+        repeat: expr
+        repeat-expr: num_vertices
+      items:
+        pos: _root.ofs_items + first_item_index * 20
+        io: _root._io
+        type: item
+        size: 20
+        repeat: expr
+        repeat-expr: num_items
+    types:
+      flags:
+        seq:
+          - id: locked
+            type: b1
+          - id: disable_if_no_owner
+            type: b1
+          - id: magically_locked
+            type: b1
+          - id: trap_resets
+            type: b1
+          - id: remove_only
+            type: b1
+          - id: disabled
+            type: b1
+          - id: dont_clear
+            type: b1
+    enums:
+      container_type:
+        0x00: n_a
+        0x01: bag
+        0x02: chest
+        0x03: drawer
+        0x04: pile
+        0x05: table
+        0x06: shelf
+        0x07: altar
+        0x08: non_visible
+        0x09: spellbook
+        0x0a: body
+        0x0b: barrel
+        0x0c: crate
+  item:
+    seq:
+      - id: item_itm
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: expiry_time
+        type: u2
+      - id: quantity_charges
+        type: u2
+        repeat: expr
+        repeat-expr: 3
+      - id: flags
+        type: flags
+        size: 4
+    types:
+      flags:
+        seq:
+          - id: identified
+            type: b1
+          - id: unstealable
+            type: b1
+          - id: stolen
+            type: b1
+          - id: undroppable
+            type: b1
+  ambient:
+    seq:
+      - id: name
+        type: strz
+        size: 32
+        encoding: ASCII
+      - id: coord
+        type: point
+      - id: radius
+        type: u2
+      - id: height
+        type: u2
+      - id: pitch_variance
+        type: u4
+      - id: volume_variance
+        type: u2
+      - id: volume
+        type: u2
+      - id: sound_wav
+        type: strz
+        size: 8
+        encoding: ASCII
+        repeat: expr
+        repeat-expr: 10
+      - id: num_sounds
+        type: u2
+      - size: 2
+      - id: base_interval
+        type: u4
+      - id: interval_variation
+        type: u4
+      - id: play_schedule
+        type: schedule
+      - id: flags
+        type: flags
+        size: 4
+      - id: reserved
+        size: 64
+    types:
+      flags:
+        seq:
+          - id: enabled
+            type: b1
+          - id: loop
+            type: b1
+          - id: ignore_radius
+            type: b1
+          - id: random_order
+            type: b1
+          - id: high_memory_ambient
+            type: b1
+  bounding_box:
+    seq:
+      - id: left
+        type: u2
+      - id: top
+        type: u2
+      - id: right
+        type: u2
+      - id: bottom
+        type: u2
+  point:
+    seq:
+      - id: x
+        type: u2
+      - id: y
+        type: u2
+  bool2:
+    seq:
+      - id: value
+        type: b1
+      - type: b15
+  schedule:
+    seq:
+      - id: from_0030_till_0129
+        type: b1
+      - id: from_0130_till_0229
+        type: b1
+      - id: from_0230_till_0329
+        type: b1
+      - id: from_0330_till_0429
+        type: b1
+      - id: from_0430_till_0529
+        type: b1
+      - id: from_0530_till_0629
+        type: b1
+      - id: from_0630_till_0729
+        type: b1
+      - id: from_0730_till_0829
+        type: b1
+      - id: from_0830_till_0929
+        type: b1
+      - id: from_0930_till_1029
+        type: b1
+      - id: from_1030_till_1129
+        type: b1
+      - id: from_1130_till_1229
+        type: b1
+      - id: from_1230_till_1329
+        type: b1
+      - id: from_1330_till_1429
+        type: b1
+      - id: from_1430_till_1529
+        type: b1
+      - id: from_1530_till_1629
+        type: b1
+      - id: from_1630_till_1729
+        type: b1
+      - id: from_1730_till_1829
+        type: b1
+      - id: from_1830_till_1929
+        type: b1
+      - id: from_1930_till_2029
+        type: b1
+      - id: from_2030_till_2129
+        type: b1
+      - id: from_2130_till_2229
+        type: b1
+      - id: from_2230_till_2329
+        type: b1
+      - id: from_2330_till_0029
+        type: b1
+      - size: 1
+  variable:
+    seq:
+      - id: name
+        type: strz
+        size: 32
+        encoding: ASCII
+      - id: var_type
+        type: u2
+      - id: ref_value
+        type: u2
+      - id: dword_value
+        type: u4
+      - id: int_value
+        type: s4
+      - id: double_value
+        type: f8
+      - id: script_name_value
+        type: strz
+        size: 32
+        encoding: UTF-8
+    enums:
+      var_type:
+        0: integer
+        1: float
+        2: script_name
+        3: res_ref
+        4: str_ref
+        5: dword
+  explored_bitmask:
+    seq:
+      - id: bit
+        type: b1
+        # repeat: expr
+        # repeat-expr: _root.len_explored_bitmask * 8
+enums:
+  orientation:
+    0: south
+    1: south_south_west
+    2: south_west
+    3: west_south_west
+    4: west
+    5: west_north_west
+    6: north_west
+    7: north_north_west
+    8: north
+    9: north_north_east
+    10: north_east
+    11: east_north_east
+    12: east
+    13: east_south_east
+    14: south_east
+    15: south_south_east
