@@ -23,20 +23,15 @@ seq:
     type: u4
   - id: selected_formation
     type: u2
-  - id: formation_button_1
+  - id: formation_button
     type: u2
-  - id: formation_button_2
-    type: u2
-  - id: formation_button_3
-    type: u2
-  - id: formation_button_4
-    type: u2
-  - id: formation_button_5
-    type: u2
+    repeat: expr
+    repeat-expr: 5
   - id: party_gold
     type: u4
   - id: use_active_area
     type: s2
+    enum: party_member
   - id: weather_bitfield
     type: weather_flags
     size: 2
@@ -72,12 +67,12 @@ seq:
     type: strz
     encoding: ASCII
     size: 8
-  - id: gui_bifield
+  - id: gui_flags
     type: gui_flags
     size: 4
   - id: loading_progress
     type: u4
-    enum: loading_enum
+    enum: loading_progress
   - id: ofs_familiar_info
     type: u4
   - id: ofs_stored_locations
@@ -102,10 +97,11 @@ seq:
     size: 8
   - id: current_campagin
     type: strz
-    encoding: ASCII
+    encoding: UTF-8
     size: 8
   - id: familiar_owner
     type: u4
+    enum: party_member
   - id: random_encounter_entry
     type: strz
     encoding: ASCII
@@ -144,7 +140,7 @@ instances:
     pos: ofs_journal_entries
     repeat: expr
     repeat-expr: num_journal_entries
-  familiar_info_val:
+  familiar_info:
     type: familiar_info
     if: ofs_familiar_info != 0xFFFFFFFF
     pos: ofs_familiar_info
@@ -187,6 +183,7 @@ types:
       type: b1
     - id: text_window_size
       type: b2
+      enum: text_window_size
     - type: b1
     - id: hide_gui
       type: b1
@@ -201,7 +198,7 @@ types:
     seq:
     - id: character_selection
       type: u2
-      enum: character_selc
+      enum: character_selection
     - id: party_order
       type: u2
     - id: ofs_cre_data
@@ -210,10 +207,11 @@ types:
       type: u4
     - id: character_name
       type: strz
-      encoding: ASCII
+      encoding: UTF-8
       size: 8
     - id: character_orientation
       type: u4
+      # [TODO] @GooRoo: use orientation enum from ARE parser
     - id: character_cur_area
       type: strz
       encoding: ASCII
@@ -230,97 +228,37 @@ types:
       type: u2
     - id: happiness
       type: u2
-    - id: count_interacted_npc_0
+    - id: count_interacted_npc
       type: u4
-    - id: count_interacted_npc_1
-      type: u4
-    - id: count_interacted_npc_2
-      type: u4
-    - id: count_interacted_npc_3
-      type: u4
-    - id: count_interacted_npc_4
-      type: u4
-    - id: count_interacted_npc_5
-      type: u4
-    - id: count_interacted_npc_6
-      type: u4
-    - id: count_interacted_npc_7
-      type: u4
-    - id: count_interacted_npc_8
-      type: u4
-    - id: count_interacted_npc_9
-      type: u4
-    - id: count_interacted_npc_10
-      type: u4
-    - id: count_interacted_npc_11
-      type: u4
-    - id: count_interacted_npc_12
-      type: u4
-    - id: count_interacted_npc_13
-      type: u4
-    - id: count_interacted_npc_14
-      type: u4
-    - id: count_interacted_npc_15
-      type: u4
-    - id: count_interacted_npc_16
-      type: u4
-    - id: count_interacted_npc_17
-      type: u4
-    - id: count_interacted_npc_18
-      type: u4
-    - id: count_interacted_npc_19
-      type: u4
-    - id: count_interacted_npc_20
-      type: u4
-    - id: count_interacted_npc_21
-      type: u4
-    - id: count_interacted_npc_22
-      type: u4
-    - id: count_interacted_npc_23
-      type: u4
-    - id: idx_quick_weapon_1
+      repeat: expr
+      repeat-expr: 24
+    - id: quick_weapon_slot
+      doc: See `slots.ids`
       type: u2
-    - id: idx_quick_weapon_2
+      repeat: expr
+      repeat-expr: 4
+    - id: quick_weapon_ability
       type: u2
-    - id: idx_quick_weapon_3
-      type: u2
-    - id: idx_quick_weapon_4
-      type: u2
-    - id: quick_weapon_ability_1
-      type: s2
-    - id: quick_weapon_ability_2
-      type: s2
-    - id: quick_weapon_ability_3
-      type: s2
-    - id: quick_weapon_ability_4
-      type: s2
-    - id: res_quick_spell_1
+      repeat: expr
+      repeat-expr: 4
+    - id: quick_spell_spl
       type: strz
       encoding: ASCII
       size: 8
-    - id: res_quick_spell_2
-      type: strz
-      encoding: ASCII
-      size: 8
-    - id: res_quick_spell_3
-      type: strz
-      encoding: ASCII
-      size: 8
-    - id: idx_quick_item_1
+      repeat: expr
+      repeat-expr: 3
+    - id: quick_item_slot
+      doc: See `slots.ids`
       type: u2
-    - id: idx_quick_item_2
+      repeat: expr
+      repeat-expr: 3
+    - id: quick_item_ability
       type: u2
-    - id: idx_quick_item_3
-      type: u2
-    - id: quick_item_ability_1
-      type: s2
-    - id: quick_item_ability_2
-      type: s2
-    - id: quick_item_ability_3
-      type: s2
+      repeat: expr
+      repeat-expr: 3
     - id: name
       type: strz
-      encoding: ASCII
+      encoding: UTF-8
       size: 32
     - id: talkcount
       type: u4
@@ -341,66 +279,39 @@ types:
       type: u4
     - id: is_party_member
       type: u1
-    - type: u2
+    - size: 2
     - id: first_letter_cre
       type: u1
-    - id: kills_xp_chpt
+    - id: kills_xp_chapter
       type: u4
-    - id: kills_count_chpt
+    - id: kills_count_chapter
       type: u4
     - id: kills_xp
       type: u4
     - id: kills_count
       type: u4
-    - id: fav_spell_1
+    - id: favorite_spell_spl
       type: strz
       encoding: ASCII
       size: 8
-    - id: fav_spell_2
+      repeat: expr
+      repeat-expr: 4
+    - id: favorite_spell_count
+      type: u2
+      repeat: expr
+      repeat-expr: 4
+    - id: favorite_weapon_itm
       type: strz
       encoding: ASCII
       size: 8
-    - id: fav_spell_3
-      type: strz
-      encoding: ASCII
-      size: 8
-    - id: fav_spell_4
-      type: strz
-      encoding: ASCII
-      size: 8
-    - id: fav_spell_cnt_1
+      repeat: expr
+      repeat-expr: 4
+    - id: favorite_weapon_time
       type: u2
-    - id: fav_spell_cnt_2
-      type: u2
-    - id: fav_spell_cnt_3
-      type: u2
-    - id: fav_spell_cnt_4
-      type: u2
-    - id: fav_weapon_1
-      type: strz
-      encoding: ASCII
-      size: 8
-    - id: fav_weapon_2
-      type: strz
-      encoding: ASCII
-      size: 8
-    - id: fav_weapon_3
-      type: strz
-      encoding: ASCII
-      size: 8
-    - id: fav_weapon_4
-      type: strz
-      encoding: ASCII
-      size: 8
-    - id: fav_weapon_time_1
-      type: u2
-    - id: fav_weapon_time_2
-      type: u2
-    - id: fav_weapon_time_3
-      type: u2
-    - id: fav_weapon_time_4
-      type: u2
+      repeat: expr
+      repeat-expr: 4
 
+  # [TODO] @GooRoo: use variable type from ARE parser
   global_var:
     seq:
     - id: var_name
@@ -428,221 +339,96 @@ types:
       type: u4
     - id: time_seconds
       type: u4
-    - id: cur_chapter_num
+    - id: current_chapter_num
       type: u1
     - id: read_by_char_x
       type: u1
     - id: journal_section
-      type: u1
+      type: u1 #bitfield with weird state when no bits set
     - id: location
       type: u1
+      enum: location
 
   familiar_info:
     seq:
-    - id: lawful_good_familiar
+    - id: lawful_good_familiar_cre
       type: strz
       encoding: ASCII
       size: 8
-    - id: lawful_neutral_familiar
+    - id: lawful_neutral_familiar_cre
       type: strz
       encoding: ASCII
       size: 8
-    - id: lawful_evil_familiar
+    - id: lawful_evil_familiar_cre
       type: strz
       encoding: ASCII
       size: 8
-    - id: neutral_good_familiar
+    - id: neutral_good_familiar_cre
       type: strz
       encoding: ASCII
       size: 8
-    - id: neutral_familiar
+    - id: neutral_familiar_cre
       type: strz
       encoding: ASCII
       size: 8
-    - id: neutral_evil_familiar
+    - id: neutral_evil_familiar_cre
       type: strz
       encoding: ASCII
       size: 8
-    - id: chaotic_good_familiar
+    - id: chaotic_good_familiar_cre
       type: strz
       encoding: ASCII
       size: 8
-    - id: chaotic_neutral_familiar
+    - id: chaotic_neutral_familiar_cre
       type: strz
       encoding: ASCII
       size: 8
-    - id: chaotic_evil_familiar
+    - id: chaotic_evil_familiar_cre
       type: strz
       encoding: ASCII
       size: 8
     - id: ofs_familiar_res #not reversed
       type: u4
-    - id: num_familiar_lg_level_1
+    - id: num_familiar_lg_level
       type: u4
-    - id: num_familiar_lg_level_2
+      repeat: expr
+      repeat-expr: 9
+    - id: num_familiar_ln_level
       type: u4
-    - id: num_familiar_lg_level_3
+      repeat: expr
+      repeat-expr: 9
+    - id: num_familiar_cg_level
       type: u4
-    - id: num_familiar_lg_level_4
+      repeat: expr
+      repeat-expr: 9
+    - id: num_familiar_ng_level
       type: u4
-    - id: num_familiar_lg_level_5
+      repeat: expr
+      repeat-expr: 9
+    - id: num_familiar_tn_level
       type: u4
-    - id: num_familiar_lg_level_6
+      repeat: expr
+      repeat-expr: 9
+    - id: num_familiar_ne_level
       type: u4
-    - id: num_familiar_lg_level_7
+      repeat: expr
+      repeat-expr: 9
+    - id: num_familiar_le_level
       type: u4
-    - id: num_familiar_lg_level_8
+      repeat: expr
+      repeat-expr: 9
+    - id: num_familiar_cn_level
       type: u4
-    - id: num_familiar_lg_level_9
+      repeat: expr
+      repeat-expr: 9
+    - id: num_familiar_ce_level
       type: u4
-    - id: num_familiar_ln_level_1
-      type: u4
-    - id: num_familiar_ln_level_2
-      type: u4
-    - id: num_familiar_ln_level_3
-      type: u4
-    - id: num_familiar_ln_level_4
-      type: u4
-    - id: num_familiar_ln_level_5
-      type: u4
-    - id: num_familiar_ln_level_6
-      type: u4
-    - id: num_familiar_ln_level_7
-      type: u4
-    - id: num_familiar_ln_level_8
-      type: u4
-    - id: num_familiar_ln_level_9
-      type: u4
-    - id: num_familiar_cg_level_1
-      type: u4
-    - id: num_familiar_cg_level_2
-      type: u4
-    - id: num_familiar_cg_level_3
-      type: u4
-    - id: num_familiar_cg_level_4
-      type: u4
-    - id: num_familiar_cg_level_5
-      type: u4
-    - id: num_familiar_cg_level_6
-      type: u4
-    - id: num_familiar_cg_level_7
-      type: u4
-    - id: num_familiar_cg_level_8
-      type: u4
-    - id: num_familiar_cg_level_9
-      type: u4
-    - id: num_familiar_ng_level_1
-      type: u4
-    - id: num_familiar_ng_level_2
-      type: u4
-    - id: num_familiar_ng_level_3
-      type: u4
-    - id: num_familiar_ng_level_4
-      type: u4
-    - id: num_familiar_ng_level_5
-      type: u4
-    - id: num_familiar_ng_level_6
-      type: u4
-    - id: num_familiar_ng_level_7
-      type: u4
-    - id: num_familiar_ng_level_8
-      type: u4
-    - id: num_familiar_ng_level_9
-      type: u4
-    - id: num_familiar_tn_level_1
-      type: u4
-    - id: num_familiar_tn_level_2
-      type: u4
-    - id: num_familiar_tn_level_3
-      type: u4
-    - id: num_familiar_tn_level_4
-      type: u4
-    - id: num_familiar_tn_level_5
-      type: u4
-    - id: num_familiar_tn_level_6
-      type: u4
-    - id: num_familiar_tn_level_7
-      type: u4
-    - id: num_familiar_tn_level_8
-      type: u4
-    - id: num_familiar_tn_level_9
-      type: u4
-    - id: num_familiar_ne_level_1
-      type: u4
-    - id: num_familiar_ne_level_2
-      type: u4
-    - id: num_familiar_ne_level_3
-      type: u4
-    - id: num_familiar_ne_level_4
-      type: u4
-    - id: num_familiar_ne_level_5
-      type: u4
-    - id: num_familiar_ne_level_6
-      type: u4
-    - id: num_familiar_ne_level_7
-      type: u4
-    - id: num_familiar_ne_level_8
-      type: u4
-    - id: num_familiar_ne_level_9
-      type: u4
-    - id: num_familiar_le_level_1
-      type: u4
-    - id: num_familiar_le_level_2
-      type: u4
-    - id: num_familiar_le_level_3
-      type: u4
-    - id: num_familiar_le_level_4
-      type: u4
-    - id: num_familiar_le_level_5
-      type: u4
-    - id: num_familiar_le_level_6
-      type: u4
-    - id: num_familiar_le_level_7
-      type: u4
-    - id: num_familiar_le_level_8
-      type: u4
-    - id: num_familiar_le_level_9
-      type: u4
-    - id: num_familiar_cn_level_1
-      type: u4
-    - id: num_familiar_cn_level_2
-      type: u4
-    - id: num_familiar_cn_level_3
-      type: u4
-    - id: num_familiar_cn_level_4
-      type: u4
-    - id: num_familiar_cn_level_5
-      type: u4
-    - id: num_familiar_cn_level_6
-      type: u4
-    - id: num_familiar_cn_level_7
-      type: u4
-    - id: num_familiar_cn_level_8
-      type: u4
-    - id: num_familiar_cn_level_9
-      type: u4
-    - id: num_familiar_ce_level_1
-      type: u4
-    - id: num_familiar_ce_level_2
-      type: u4
-    - id: num_familiar_ce_level_3
-      type: u4
-    - id: num_familiar_ce_level_4
-      type: u4
-    - id: num_familiar_ce_level_5
-      type: u4
-    - id: num_familiar_ce_level_6
-      type: u4
-    - id: num_familiar_ce_level_7
-      type: u4
-    - id: num_familiar_ce_level_8
-      type: u4
-    - id: num_familiar_ce_level_9
-      type: u4
+      repeat: expr
+      repeat-expr: 9
 
   stored_locations_info:
     seq:
-    - id: area
+    - id: area_are
       type: strz
       encoding: ASCII
       size: 8
@@ -653,7 +439,7 @@ types:
 
   pocket_plane_info:
     seq:
-    - id: area
+    - id: area_are
       type: strz
       encoding: ASCII
       size: 8
@@ -663,15 +449,34 @@ types:
       type: u2
 
 enums:
-  loading_enum:
-    0: restrict_bg1
-    1: restrict_totsc
-    2: restrict_soa
-    3: processing_2da
-    4: complete_2da
+  party_member:
+    0: player_1
+    1: player_2
+    2: player_3
+    3: player_4
+    4: player_5
+    5: player_6
+    0xffff: not_in_party
+
+  loading_progress:
+    0: restrict_xp_bg1
+    1: restrict_xp_totsc
+    2: restrict_xp_soa
+    3: processing_xnewarea_2da
+    4: complete_xnewarea_2da
     5: tob_active
 
-  character_selc:
+  character_selection:
     0x0: not_selected
     0x1: selected
     0x8000: dead
+
+  text_window_size:
+    0: small
+    1: medium
+    2: unused
+    3: large
+
+  location:
+    0x1F: external_tot_toh
+    0xFF: internal_tlk

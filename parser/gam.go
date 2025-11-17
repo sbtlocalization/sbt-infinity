@@ -16,30 +16,70 @@ import (
  * ">Source</a>
  */
 
-type Gam_CharacterSelc int
+type Gam_CharacterSelection int
 const (
-	Gam_CharacterSelc__NotSelected Gam_CharacterSelc = 0
-	Gam_CharacterSelc__Selected Gam_CharacterSelc = 1
-	Gam_CharacterSelc__Dead Gam_CharacterSelc = 32768
+	Gam_CharacterSelection__NotSelected Gam_CharacterSelection = 0
+	Gam_CharacterSelection__Selected Gam_CharacterSelection = 1
+	Gam_CharacterSelection__Dead Gam_CharacterSelection = 32768
 )
-var values_Gam_CharacterSelc = map[Gam_CharacterSelc]struct{}{0: {}, 1: {}, 32768: {}}
-func (v Gam_CharacterSelc) isDefined() bool {
-	_, ok := values_Gam_CharacterSelc[v]
+var values_Gam_CharacterSelection = map[Gam_CharacterSelection]struct{}{0: {}, 1: {}, 32768: {}}
+func (v Gam_CharacterSelection) isDefined() bool {
+	_, ok := values_Gam_CharacterSelection[v]
 	return ok
 }
 
-type Gam_LoadingEnum int
+type Gam_LoadingProgress int
 const (
-	Gam_LoadingEnum__RestrictBg1 Gam_LoadingEnum = 0
-	Gam_LoadingEnum__RestrictTotsc Gam_LoadingEnum = 1
-	Gam_LoadingEnum__RestrictSoa Gam_LoadingEnum = 2
-	Gam_LoadingEnum__Processing2da Gam_LoadingEnum = 3
-	Gam_LoadingEnum__Complete2da Gam_LoadingEnum = 4
-	Gam_LoadingEnum__TobActive Gam_LoadingEnum = 5
+	Gam_LoadingProgress__RestrictXpBg1 Gam_LoadingProgress = 0
+	Gam_LoadingProgress__RestrictXpTotsc Gam_LoadingProgress = 1
+	Gam_LoadingProgress__RestrictXpSoa Gam_LoadingProgress = 2
+	Gam_LoadingProgress__ProcessingXnewarea2da Gam_LoadingProgress = 3
+	Gam_LoadingProgress__CompleteXnewarea2da Gam_LoadingProgress = 4
+	Gam_LoadingProgress__TobActive Gam_LoadingProgress = 5
 )
-var values_Gam_LoadingEnum = map[Gam_LoadingEnum]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}}
-func (v Gam_LoadingEnum) isDefined() bool {
-	_, ok := values_Gam_LoadingEnum[v]
+var values_Gam_LoadingProgress = map[Gam_LoadingProgress]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}}
+func (v Gam_LoadingProgress) isDefined() bool {
+	_, ok := values_Gam_LoadingProgress[v]
+	return ok
+}
+
+type Gam_Location int
+const (
+	Gam_Location__ExternalTotToh Gam_Location = 31
+	Gam_Location__InternalTlk Gam_Location = 255
+)
+var values_Gam_Location = map[Gam_Location]struct{}{31: {}, 255: {}}
+func (v Gam_Location) isDefined() bool {
+	_, ok := values_Gam_Location[v]
+	return ok
+}
+
+type Gam_PartyMember int
+const (
+	Gam_PartyMember__Player1 Gam_PartyMember = 0
+	Gam_PartyMember__Player2 Gam_PartyMember = 1
+	Gam_PartyMember__Player3 Gam_PartyMember = 2
+	Gam_PartyMember__Player4 Gam_PartyMember = 3
+	Gam_PartyMember__Player5 Gam_PartyMember = 4
+	Gam_PartyMember__Player6 Gam_PartyMember = 5
+	Gam_PartyMember__NotInParty Gam_PartyMember = 65535
+)
+var values_Gam_PartyMember = map[Gam_PartyMember]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 65535: {}}
+func (v Gam_PartyMember) isDefined() bool {
+	_, ok := values_Gam_PartyMember[v]
+	return ok
+}
+
+type Gam_TextWindowSize int
+const (
+	Gam_TextWindowSize__Small Gam_TextWindowSize = 0
+	Gam_TextWindowSize__Medium Gam_TextWindowSize = 1
+	Gam_TextWindowSize__Unused Gam_TextWindowSize = 2
+	Gam_TextWindowSize__Large Gam_TextWindowSize = 3
+)
+var values_Gam_TextWindowSize = map[Gam_TextWindowSize]struct{}{0: {}, 1: {}, 2: {}, 3: {}}
+func (v Gam_TextWindowSize) isDefined() bool {
+	_, ok := values_Gam_TextWindowSize[v]
 	return ok
 }
 type Gam struct {
@@ -47,13 +87,9 @@ type Gam struct {
 	Version []byte
 	GameTime uint32
 	SelectedFormation uint16
-	FormationButton1 uint16
-	FormationButton2 uint16
-	FormationButton3 uint16
-	FormationButton4 uint16
-	FormationButton5 uint16
+	FormationButton []uint16
 	PartyGold uint32
-	UseActiveArea int16
+	UseActiveArea Gam_PartyMember
 	WeatherBitfield *Gam_WeatherFlags
 	OfsPartyMembers uint32
 	NumPartyMembers uint32
@@ -69,8 +105,8 @@ type Gam struct {
 	OfsJournalEntries uint32
 	PartyReputation uint32
 	CurrentArea string
-	GuiBifield *Gam_GuiFlags
-	LoadingProgress Gam_LoadingEnum
+	GuiFlags *Gam_GuiFlags
+	LoadingProgress Gam_LoadingProgress
 	OfsFamiliarInfo uint32
 	OfsStoredLocations uint32
 	NumStoredLocations uint32
@@ -81,17 +117,17 @@ type Gam struct {
 	RandomEncounterArea string
 	CurrentWorldmap string
 	CurrentCampagin string
-	FamiliarOwner uint32
+	FamiliarOwner Gam_PartyMember
 	RandomEncounterEntry string
 	_io *kaitai.Stream
 	_root *Gam
 	_parent kaitai.Struct
 	_raw_WeatherBitfield []byte
-	_raw_GuiBifield []byte
+	_raw_GuiFlags []byte
 	_f_familiarExtra bool
 	familiarExtra string
-	_f_familiarInfoVal bool
-	familiarInfoVal *Gam_FamiliarInfo
+	_f_familiarInfo bool
+	familiarInfo *Gam_FamiliarInfo
 	_f_globalVariables bool
 	globalVariables []*Gam_GlobalVar
 	_f_journalEntries bool
@@ -147,208 +183,191 @@ func (this *Gam) Read(io *kaitai.Stream, parent kaitai.Struct, root *Gam) (err e
 		return err
 	}
 	this.SelectedFormation = uint16(tmp4)
-	tmp5, err := this._io.ReadU2le()
+	for i := 0; i < int(5); i++ {
+		_ = i
+		tmp5, err := this._io.ReadU2le()
+		if err != nil {
+			return err
+		}
+		this.FormationButton = append(this.FormationButton, tmp5)
+	}
+	tmp6, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.FormationButton1 = uint16(tmp5)
-	tmp6, err := this._io.ReadU2le()
+	this.PartyGold = uint32(tmp6)
+	tmp7, err := this._io.ReadS2le()
 	if err != nil {
 		return err
 	}
-	this.FormationButton2 = uint16(tmp6)
-	tmp7, err := this._io.ReadU2le()
+	this.UseActiveArea = Gam_PartyMember(tmp7)
+	tmp8, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	this.FormationButton3 = uint16(tmp7)
-	tmp8, err := this._io.ReadU2le()
+	tmp8 = tmp8
+	this._raw_WeatherBitfield = tmp8
+	_io__raw_WeatherBitfield := kaitai.NewStream(bytes.NewReader(this._raw_WeatherBitfield))
+	tmp9 := NewGam_WeatherFlags()
+	err = tmp9.Read(_io__raw_WeatherBitfield, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.FormationButton4 = uint16(tmp8)
-	tmp9, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.FormationButton5 = uint16(tmp9)
+	this.WeatherBitfield = tmp9
 	tmp10, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.PartyGold = uint32(tmp10)
-	tmp11, err := this._io.ReadS2le()
+	this.OfsPartyMembers = uint32(tmp10)
+	tmp11, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.UseActiveArea = int16(tmp11)
-	tmp12, err := this._io.ReadBytes(int(2))
+	this.NumPartyMembers = uint32(tmp11)
+	tmp12, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp12 = tmp12
-	this._raw_WeatherBitfield = tmp12
-	_io__raw_WeatherBitfield := kaitai.NewStream(bytes.NewReader(this._raw_WeatherBitfield))
-	tmp13 := NewGam_WeatherFlags()
-	err = tmp13.Read(_io__raw_WeatherBitfield, this, this._root)
+	this.OfsPartyInventory = uint32(tmp12)
+	tmp13, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.WeatherBitfield = tmp13
+	this.NumPartyInventory = uint32(tmp13)
 	tmp14, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsPartyMembers = uint32(tmp14)
+	this.OfsNonPartyMembers = uint32(tmp14)
 	tmp15, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumPartyMembers = uint32(tmp15)
+	this.NumNonPartyMembers = uint32(tmp15)
 	tmp16, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsPartyInventory = uint32(tmp16)
+	this.OfsGlobalVariables = uint32(tmp16)
 	tmp17, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumPartyInventory = uint32(tmp17)
-	tmp18, err := this._io.ReadU4le()
+	this.NumGlobalVariables = uint32(tmp17)
+	tmp18, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.OfsNonPartyMembers = uint32(tmp18)
+	tmp18 = kaitai.BytesTerminate(tmp18, 0, false)
+	this.MainArea = string(tmp18)
 	tmp19, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumNonPartyMembers = uint32(tmp19)
+	this.OfsFamiliarExtra = uint32(tmp19)
 	tmp20, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsGlobalVariables = uint32(tmp20)
+	this.NumJournalEntries = uint32(tmp20)
 	tmp21, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumGlobalVariables = uint32(tmp21)
-	tmp22, err := this._io.ReadBytes(int(8))
+	this.OfsJournalEntries = uint32(tmp21)
+	tmp22, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp22 = kaitai.BytesTerminate(tmp22, 0, false)
-	this.MainArea = string(tmp22)
-	tmp23, err := this._io.ReadU4le()
+	this.PartyReputation = uint32(tmp22)
+	tmp23, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.OfsFamiliarExtra = uint32(tmp23)
-	tmp24, err := this._io.ReadU4le()
+	tmp23 = kaitai.BytesTerminate(tmp23, 0, false)
+	this.CurrentArea = string(tmp23)
+	tmp24, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	this.NumJournalEntries = uint32(tmp24)
-	tmp25, err := this._io.ReadU4le()
+	tmp24 = tmp24
+	this._raw_GuiFlags = tmp24
+	_io__raw_GuiFlags := kaitai.NewStream(bytes.NewReader(this._raw_GuiFlags))
+	tmp25 := NewGam_GuiFlags()
+	err = tmp25.Read(_io__raw_GuiFlags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.OfsJournalEntries = uint32(tmp25)
+	this.GuiFlags = tmp25
 	tmp26, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.PartyReputation = uint32(tmp26)
-	tmp27, err := this._io.ReadBytes(int(8))
+	this.LoadingProgress = Gam_LoadingProgress(tmp26)
+	tmp27, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp27 = kaitai.BytesTerminate(tmp27, 0, false)
-	this.CurrentArea = string(tmp27)
-	tmp28, err := this._io.ReadBytes(int(4))
+	this.OfsFamiliarInfo = uint32(tmp27)
+	tmp28, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp28 = tmp28
-	this._raw_GuiBifield = tmp28
-	_io__raw_GuiBifield := kaitai.NewStream(bytes.NewReader(this._raw_GuiBifield))
-	tmp29 := NewGam_GuiFlags()
-	err = tmp29.Read(_io__raw_GuiBifield, this, this._root)
+	this.OfsStoredLocations = uint32(tmp28)
+	tmp29, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.GuiBifield = tmp29
+	this.NumStoredLocations = uint32(tmp29)
 	tmp30, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.LoadingProgress = Gam_LoadingEnum(tmp30)
+	this.GameTimeSeconds = uint32(tmp30)
 	tmp31, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsFamiliarInfo = uint32(tmp31)
+	this.OfsPocketPlaneLocations = uint32(tmp31)
 	tmp32, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsStoredLocations = uint32(tmp32)
+	this.NumPocketPlaneLocations = uint32(tmp32)
 	tmp33, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumStoredLocations = uint32(tmp33)
-	tmp34, err := this._io.ReadU4le()
+	this.ZoomLevel = uint32(tmp33)
+	tmp34, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.GameTimeSeconds = uint32(tmp34)
-	tmp35, err := this._io.ReadU4le()
+	tmp34 = kaitai.BytesTerminate(tmp34, 0, false)
+	this.RandomEncounterArea = string(tmp34)
+	tmp35, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.OfsPocketPlaneLocations = uint32(tmp35)
-	tmp36, err := this._io.ReadU4le()
+	tmp35 = kaitai.BytesTerminate(tmp35, 0, false)
+	this.CurrentWorldmap = string(tmp35)
+	tmp36, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.NumPocketPlaneLocations = uint32(tmp36)
+	tmp36 = kaitai.BytesTerminate(tmp36, 0, false)
+	this.CurrentCampagin = string(tmp36)
 	tmp37, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.ZoomLevel = uint32(tmp37)
-	tmp38, err := this._io.ReadBytes(int(8))
+	this.FamiliarOwner = Gam_PartyMember(tmp37)
+	tmp38, err := this._io.ReadBytes(int(20))
 	if err != nil {
 		return err
 	}
 	tmp38 = kaitai.BytesTerminate(tmp38, 0, false)
-	this.RandomEncounterArea = string(tmp38)
-	tmp39, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp39 = kaitai.BytesTerminate(tmp39, 0, false)
-	this.CurrentWorldmap = string(tmp39)
-	tmp40, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp40 = kaitai.BytesTerminate(tmp40, 0, false)
-	this.CurrentCampagin = string(tmp40)
-	tmp41, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.FamiliarOwner = uint32(tmp41)
-	tmp42, err := this._io.ReadBytes(int(20))
-	if err != nil {
-		return err
-	}
-	tmp42 = kaitai.BytesTerminate(tmp42, 0, false)
-	this.RandomEncounterEntry = string(tmp42)
+	this.RandomEncounterEntry = string(tmp38)
 	return err
 }
 func (this *Gam) FamiliarExtra() (v string, err error) {
@@ -365,12 +384,12 @@ func (this *Gam) FamiliarExtra() (v string, err error) {
 		if err != nil {
 			return "", err
 		}
-		tmp43, err := this._io.ReadBytes(int(8))
+		tmp39, err := this._io.ReadBytes(int(8))
 		if err != nil {
 			return "", err
 		}
-		tmp43 = kaitai.BytesTerminate(tmp43, 0, false)
-		this.familiarExtra = string(tmp43)
+		tmp39 = kaitai.BytesTerminate(tmp39, 0, false)
+		this.familiarExtra = string(tmp39)
 		_, err = this._io.Seek(_pos, io.SeekStart)
 		if err != nil {
 			return "", err
@@ -378,11 +397,11 @@ func (this *Gam) FamiliarExtra() (v string, err error) {
 	}
 	return this.familiarExtra, nil
 }
-func (this *Gam) FamiliarInfoVal() (v *Gam_FamiliarInfo, err error) {
-	if (this._f_familiarInfoVal) {
-		return this.familiarInfoVal, nil
+func (this *Gam) FamiliarInfo() (v *Gam_FamiliarInfo, err error) {
+	if (this._f_familiarInfo) {
+		return this.familiarInfo, nil
 	}
-	this._f_familiarInfoVal = true
+	this._f_familiarInfo = true
 	if (this.OfsFamiliarInfo != uint32(4294967295)) {
 		_pos, err := this._io.Pos()
 		if err != nil {
@@ -392,18 +411,18 @@ func (this *Gam) FamiliarInfoVal() (v *Gam_FamiliarInfo, err error) {
 		if err != nil {
 			return nil, err
 		}
-		tmp44 := NewGam_FamiliarInfo()
-		err = tmp44.Read(this._io, this, this._root)
+		tmp40 := NewGam_FamiliarInfo()
+		err = tmp40.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.familiarInfoVal = tmp44
+		this.familiarInfo = tmp40
 		_, err = this._io.Seek(_pos, io.SeekStart)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return this.familiarInfoVal, nil
+	return this.familiarInfo, nil
 }
 func (this *Gam) GlobalVariables() (v []*Gam_GlobalVar, err error) {
 	if (this._f_globalVariables) {
@@ -420,12 +439,12 @@ func (this *Gam) GlobalVariables() (v []*Gam_GlobalVar, err error) {
 	}
 	for i := 0; i < int(this.NumGlobalVariables); i++ {
 		_ = i
-		tmp45 := NewGam_GlobalVar()
-		err = tmp45.Read(this._io, this, this._root)
+		tmp41 := NewGam_GlobalVar()
+		err = tmp41.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.globalVariables = append(this.globalVariables, tmp45)
+		this.globalVariables = append(this.globalVariables, tmp41)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -448,12 +467,12 @@ func (this *Gam) JournalEntries() (v []*Gam_JournalEntry, err error) {
 	}
 	for i := 0; i < int(this.NumJournalEntries); i++ {
 		_ = i
-		tmp46 := NewGam_JournalEntry()
-		err = tmp46.Read(this._io, this, this._root)
+		tmp42 := NewGam_JournalEntry()
+		err = tmp42.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.journalEntries = append(this.journalEntries, tmp46)
+		this.journalEntries = append(this.journalEntries, tmp42)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -476,12 +495,12 @@ func (this *Gam) NonPartyMembers() (v []*Gam_Npcs, err error) {
 	}
 	for i := 0; i < int(this.NumNonPartyMembers); i++ {
 		_ = i
-		tmp47 := NewGam_Npcs()
-		err = tmp47.Read(this._io, this, this._root)
+		tmp43 := NewGam_Npcs()
+		err = tmp43.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.nonPartyMembers = append(this.nonPartyMembers, tmp47)
+		this.nonPartyMembers = append(this.nonPartyMembers, tmp43)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -504,12 +523,12 @@ func (this *Gam) PartyMembers() (v []*Gam_Npcs, err error) {
 	}
 	for i := 0; i < int(this.NumPartyMembers); i++ {
 		_ = i
-		tmp48 := NewGam_Npcs()
-		err = tmp48.Read(this._io, this, this._root)
+		tmp44 := NewGam_Npcs()
+		err = tmp44.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.partyMembers = append(this.partyMembers, tmp48)
+		this.partyMembers = append(this.partyMembers, tmp44)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -532,12 +551,12 @@ func (this *Gam) PocketPlaneLocations() (v []*Gam_PocketPlaneInfo, err error) {
 	}
 	for i := 0; i < int(this.NumPocketPlaneLocations); i++ {
 		_ = i
-		tmp49 := NewGam_PocketPlaneInfo()
-		err = tmp49.Read(this._io, this, this._root)
+		tmp45 := NewGam_PocketPlaneInfo()
+		err = tmp45.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.pocketPlaneLocations = append(this.pocketPlaneLocations, tmp49)
+		this.pocketPlaneLocations = append(this.pocketPlaneLocations, tmp45)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -560,12 +579,12 @@ func (this *Gam) StoredLocations() (v []*Gam_StoredLocationsInfo, err error) {
 	}
 	for i := 0; i < int(this.NumStoredLocations); i++ {
 		_ = i
-		tmp50 := NewGam_StoredLocationsInfo()
-		err = tmp50.Read(this._io, this, this._root)
+		tmp46 := NewGam_StoredLocationsInfo()
+		err = tmp46.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.storedLocations = append(this.storedLocations, tmp50)
+		this.storedLocations = append(this.storedLocations, tmp46)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -579,28 +598,16 @@ type Gam_CharStats struct {
 	TimeInParty uint32
 	TimeJoined uint32
 	IsPartyMember uint8
-	_unnamed5 uint16
+	_unnamed5 []byte
 	FirstLetterCre uint8
-	KillsXpChpt uint32
-	KillsCountChpt uint32
+	KillsXpChapter uint32
+	KillsCountChapter uint32
 	KillsXp uint32
 	KillsCount uint32
-	FavSpell1 string
-	FavSpell2 string
-	FavSpell3 string
-	FavSpell4 string
-	FavSpellCnt1 uint16
-	FavSpellCnt2 uint16
-	FavSpellCnt3 uint16
-	FavSpellCnt4 uint16
-	FavWeapon1 string
-	FavWeapon2 string
-	FavWeapon3 string
-	FavWeapon4 string
-	FavWeaponTime1 uint16
-	FavWeaponTime2 uint16
-	FavWeaponTime3 uint16
-	FavWeaponTime4 uint16
+	FavoriteSpellSpl []string
+	FavoriteSpellCount []uint16
+	FavoriteWeaponItm []string
+	FavoriteWeaponTime []uint16
 	_io *kaitai.Stream
 	_root *Gam
 	_parent *Gam_Npcs
@@ -619,243 +626,118 @@ func (this *Gam_CharStats) Read(io *kaitai.Stream, parent *Gam_Npcs, root *Gam) 
 	this._parent = parent
 	this._root = root
 
-	tmp51, err := this._io.ReadU4le()
+	tmp47, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.MpvNameRef = uint32(tmp51)
-	tmp52, err := this._io.ReadU4le()
+	this.MpvNameRef = uint32(tmp47)
+	tmp48, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.MpvXpReward = uint32(tmp52)
-	tmp53, err := this._io.ReadU4le()
+	this.MpvXpReward = uint32(tmp48)
+	tmp49, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.TimeInParty = uint32(tmp53)
+	this.TimeInParty = uint32(tmp49)
+	tmp50, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.TimeJoined = uint32(tmp50)
+	tmp51, err := this._io.ReadU1()
+	if err != nil {
+		return err
+	}
+	this.IsPartyMember = tmp51
+	tmp52, err := this._io.ReadBytes(int(2))
+	if err != nil {
+		return err
+	}
+	tmp52 = tmp52
+	this._unnamed5 = tmp52
+	tmp53, err := this._io.ReadU1()
+	if err != nil {
+		return err
+	}
+	this.FirstLetterCre = tmp53
 	tmp54, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.TimeJoined = uint32(tmp54)
-	tmp55, err := this._io.ReadU1()
+	this.KillsXpChapter = uint32(tmp54)
+	tmp55, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.IsPartyMember = tmp55
-	tmp56, err := this._io.ReadU2le()
+	this.KillsCountChapter = uint32(tmp55)
+	tmp56, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this._unnamed5 = tmp56
-	tmp57, err := this._io.ReadU1()
+	this.KillsXp = uint32(tmp56)
+	tmp57, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.FirstLetterCre = tmp57
-	tmp58, err := this._io.ReadU4le()
-	if err != nil {
-		return err
+	this.KillsCount = uint32(tmp57)
+	for i := 0; i < int(4); i++ {
+		_ = i
+		tmp58, err := this._io.ReadBytes(int(8))
+		if err != nil {
+			return err
+		}
+		tmp58 = kaitai.BytesTerminate(tmp58, 0, false)
+		this.FavoriteSpellSpl = append(this.FavoriteSpellSpl, string(tmp58))
 	}
-	this.KillsXpChpt = uint32(tmp58)
-	tmp59, err := this._io.ReadU4le()
-	if err != nil {
-		return err
+	for i := 0; i < int(4); i++ {
+		_ = i
+		tmp59, err := this._io.ReadU2le()
+		if err != nil {
+			return err
+		}
+		this.FavoriteSpellCount = append(this.FavoriteSpellCount, tmp59)
 	}
-	this.KillsCountChpt = uint32(tmp59)
-	tmp60, err := this._io.ReadU4le()
-	if err != nil {
-		return err
+	for i := 0; i < int(4); i++ {
+		_ = i
+		tmp60, err := this._io.ReadBytes(int(8))
+		if err != nil {
+			return err
+		}
+		tmp60 = kaitai.BytesTerminate(tmp60, 0, false)
+		this.FavoriteWeaponItm = append(this.FavoriteWeaponItm, string(tmp60))
 	}
-	this.KillsXp = uint32(tmp60)
-	tmp61, err := this._io.ReadU4le()
-	if err != nil {
-		return err
+	for i := 0; i < int(4); i++ {
+		_ = i
+		tmp61, err := this._io.ReadU2le()
+		if err != nil {
+			return err
+		}
+		this.FavoriteWeaponTime = append(this.FavoriteWeaponTime, tmp61)
 	}
-	this.KillsCount = uint32(tmp61)
-	tmp62, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp62 = kaitai.BytesTerminate(tmp62, 0, false)
-	this.FavSpell1 = string(tmp62)
-	tmp63, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp63 = kaitai.BytesTerminate(tmp63, 0, false)
-	this.FavSpell2 = string(tmp63)
-	tmp64, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp64 = kaitai.BytesTerminate(tmp64, 0, false)
-	this.FavSpell3 = string(tmp64)
-	tmp65, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp65 = kaitai.BytesTerminate(tmp65, 0, false)
-	this.FavSpell4 = string(tmp65)
-	tmp66, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.FavSpellCnt1 = uint16(tmp66)
-	tmp67, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.FavSpellCnt2 = uint16(tmp67)
-	tmp68, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.FavSpellCnt3 = uint16(tmp68)
-	tmp69, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.FavSpellCnt4 = uint16(tmp69)
-	tmp70, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp70 = kaitai.BytesTerminate(tmp70, 0, false)
-	this.FavWeapon1 = string(tmp70)
-	tmp71, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp71 = kaitai.BytesTerminate(tmp71, 0, false)
-	this.FavWeapon2 = string(tmp71)
-	tmp72, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp72 = kaitai.BytesTerminate(tmp72, 0, false)
-	this.FavWeapon3 = string(tmp72)
-	tmp73, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp73 = kaitai.BytesTerminate(tmp73, 0, false)
-	this.FavWeapon4 = string(tmp73)
-	tmp74, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.FavWeaponTime1 = uint16(tmp74)
-	tmp75, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.FavWeaponTime2 = uint16(tmp75)
-	tmp76, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.FavWeaponTime3 = uint16(tmp76)
-	tmp77, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.FavWeaponTime4 = uint16(tmp77)
 	return err
 }
 type Gam_FamiliarInfo struct {
-	LawfulGoodFamiliar string
-	LawfulNeutralFamiliar string
-	LawfulEvilFamiliar string
-	NeutralGoodFamiliar string
-	NeutralFamiliar string
-	NeutralEvilFamiliar string
-	ChaoticGoodFamiliar string
-	ChaoticNeutralFamiliar string
-	ChaoticEvilFamiliar string
+	LawfulGoodFamiliarCre string
+	LawfulNeutralFamiliarCre string
+	LawfulEvilFamiliarCre string
+	NeutralGoodFamiliarCre string
+	NeutralFamiliarCre string
+	NeutralEvilFamiliarCre string
+	ChaoticGoodFamiliarCre string
+	ChaoticNeutralFamiliarCre string
+	ChaoticEvilFamiliarCre string
 	OfsFamiliarRes uint32
-	NumFamiliarLgLevel1 uint32
-	NumFamiliarLgLevel2 uint32
-	NumFamiliarLgLevel3 uint32
-	NumFamiliarLgLevel4 uint32
-	NumFamiliarLgLevel5 uint32
-	NumFamiliarLgLevel6 uint32
-	NumFamiliarLgLevel7 uint32
-	NumFamiliarLgLevel8 uint32
-	NumFamiliarLgLevel9 uint32
-	NumFamiliarLnLevel1 uint32
-	NumFamiliarLnLevel2 uint32
-	NumFamiliarLnLevel3 uint32
-	NumFamiliarLnLevel4 uint32
-	NumFamiliarLnLevel5 uint32
-	NumFamiliarLnLevel6 uint32
-	NumFamiliarLnLevel7 uint32
-	NumFamiliarLnLevel8 uint32
-	NumFamiliarLnLevel9 uint32
-	NumFamiliarCgLevel1 uint32
-	NumFamiliarCgLevel2 uint32
-	NumFamiliarCgLevel3 uint32
-	NumFamiliarCgLevel4 uint32
-	NumFamiliarCgLevel5 uint32
-	NumFamiliarCgLevel6 uint32
-	NumFamiliarCgLevel7 uint32
-	NumFamiliarCgLevel8 uint32
-	NumFamiliarCgLevel9 uint32
-	NumFamiliarNgLevel1 uint32
-	NumFamiliarNgLevel2 uint32
-	NumFamiliarNgLevel3 uint32
-	NumFamiliarNgLevel4 uint32
-	NumFamiliarNgLevel5 uint32
-	NumFamiliarNgLevel6 uint32
-	NumFamiliarNgLevel7 uint32
-	NumFamiliarNgLevel8 uint32
-	NumFamiliarNgLevel9 uint32
-	NumFamiliarTnLevel1 uint32
-	NumFamiliarTnLevel2 uint32
-	NumFamiliarTnLevel3 uint32
-	NumFamiliarTnLevel4 uint32
-	NumFamiliarTnLevel5 uint32
-	NumFamiliarTnLevel6 uint32
-	NumFamiliarTnLevel7 uint32
-	NumFamiliarTnLevel8 uint32
-	NumFamiliarTnLevel9 uint32
-	NumFamiliarNeLevel1 uint32
-	NumFamiliarNeLevel2 uint32
-	NumFamiliarNeLevel3 uint32
-	NumFamiliarNeLevel4 uint32
-	NumFamiliarNeLevel5 uint32
-	NumFamiliarNeLevel6 uint32
-	NumFamiliarNeLevel7 uint32
-	NumFamiliarNeLevel8 uint32
-	NumFamiliarNeLevel9 uint32
-	NumFamiliarLeLevel1 uint32
-	NumFamiliarLeLevel2 uint32
-	NumFamiliarLeLevel3 uint32
-	NumFamiliarLeLevel4 uint32
-	NumFamiliarLeLevel5 uint32
-	NumFamiliarLeLevel6 uint32
-	NumFamiliarLeLevel7 uint32
-	NumFamiliarLeLevel8 uint32
-	NumFamiliarLeLevel9 uint32
-	NumFamiliarCnLevel1 uint32
-	NumFamiliarCnLevel2 uint32
-	NumFamiliarCnLevel3 uint32
-	NumFamiliarCnLevel4 uint32
-	NumFamiliarCnLevel5 uint32
-	NumFamiliarCnLevel6 uint32
-	NumFamiliarCnLevel7 uint32
-	NumFamiliarCnLevel8 uint32
-	NumFamiliarCnLevel9 uint32
-	NumFamiliarCeLevel1 uint32
-	NumFamiliarCeLevel2 uint32
-	NumFamiliarCeLevel3 uint32
-	NumFamiliarCeLevel4 uint32
-	NumFamiliarCeLevel5 uint32
-	NumFamiliarCeLevel6 uint32
-	NumFamiliarCeLevel7 uint32
-	NumFamiliarCeLevel8 uint32
-	NumFamiliarCeLevel9 uint32
+	NumFamiliarLgLevel []uint32
+	NumFamiliarLnLevel []uint32
+	NumFamiliarCgLevel []uint32
+	NumFamiliarNgLevel []uint32
+	NumFamiliarTnLevel []uint32
+	NumFamiliarNeLevel []uint32
+	NumFamiliarLeLevel []uint32
+	NumFamiliarCnLevel []uint32
+	NumFamiliarCeLevel []uint32
 	_io *kaitai.Stream
 	_root *Gam
 	_parent *Gam
@@ -874,470 +756,137 @@ func (this *Gam_FamiliarInfo) Read(io *kaitai.Stream, parent *Gam, root *Gam) (e
 	this._parent = parent
 	this._root = root
 
-	tmp78, err := this._io.ReadBytes(int(8))
+	tmp62, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp78 = kaitai.BytesTerminate(tmp78, 0, false)
-	this.LawfulGoodFamiliar = string(tmp78)
-	tmp79, err := this._io.ReadBytes(int(8))
+	tmp62 = kaitai.BytesTerminate(tmp62, 0, false)
+	this.LawfulGoodFamiliarCre = string(tmp62)
+	tmp63, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp79 = kaitai.BytesTerminate(tmp79, 0, false)
-	this.LawfulNeutralFamiliar = string(tmp79)
-	tmp80, err := this._io.ReadBytes(int(8))
+	tmp63 = kaitai.BytesTerminate(tmp63, 0, false)
+	this.LawfulNeutralFamiliarCre = string(tmp63)
+	tmp64, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp80 = kaitai.BytesTerminate(tmp80, 0, false)
-	this.LawfulEvilFamiliar = string(tmp80)
-	tmp81, err := this._io.ReadBytes(int(8))
+	tmp64 = kaitai.BytesTerminate(tmp64, 0, false)
+	this.LawfulEvilFamiliarCre = string(tmp64)
+	tmp65, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp81 = kaitai.BytesTerminate(tmp81, 0, false)
-	this.NeutralGoodFamiliar = string(tmp81)
-	tmp82, err := this._io.ReadBytes(int(8))
+	tmp65 = kaitai.BytesTerminate(tmp65, 0, false)
+	this.NeutralGoodFamiliarCre = string(tmp65)
+	tmp66, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp82 = kaitai.BytesTerminate(tmp82, 0, false)
-	this.NeutralFamiliar = string(tmp82)
-	tmp83, err := this._io.ReadBytes(int(8))
+	tmp66 = kaitai.BytesTerminate(tmp66, 0, false)
+	this.NeutralFamiliarCre = string(tmp66)
+	tmp67, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp83 = kaitai.BytesTerminate(tmp83, 0, false)
-	this.NeutralEvilFamiliar = string(tmp83)
-	tmp84, err := this._io.ReadBytes(int(8))
+	tmp67 = kaitai.BytesTerminate(tmp67, 0, false)
+	this.NeutralEvilFamiliarCre = string(tmp67)
+	tmp68, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp84 = kaitai.BytesTerminate(tmp84, 0, false)
-	this.ChaoticGoodFamiliar = string(tmp84)
-	tmp85, err := this._io.ReadBytes(int(8))
+	tmp68 = kaitai.BytesTerminate(tmp68, 0, false)
+	this.ChaoticGoodFamiliarCre = string(tmp68)
+	tmp69, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp85 = kaitai.BytesTerminate(tmp85, 0, false)
-	this.ChaoticNeutralFamiliar = string(tmp85)
-	tmp86, err := this._io.ReadBytes(int(8))
+	tmp69 = kaitai.BytesTerminate(tmp69, 0, false)
+	this.ChaoticNeutralFamiliarCre = string(tmp69)
+	tmp70, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp86 = kaitai.BytesTerminate(tmp86, 0, false)
-	this.ChaoticEvilFamiliar = string(tmp86)
-	tmp87, err := this._io.ReadU4le()
+	tmp70 = kaitai.BytesTerminate(tmp70, 0, false)
+	this.ChaoticEvilFamiliarCre = string(tmp70)
+	tmp71, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsFamiliarRes = uint32(tmp87)
-	tmp88, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLgLevel1 = uint32(tmp88)
-	tmp89, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLgLevel2 = uint32(tmp89)
-	tmp90, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLgLevel3 = uint32(tmp90)
-	tmp91, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLgLevel4 = uint32(tmp91)
-	tmp92, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLgLevel5 = uint32(tmp92)
-	tmp93, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLgLevel6 = uint32(tmp93)
-	tmp94, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLgLevel7 = uint32(tmp94)
-	tmp95, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLgLevel8 = uint32(tmp95)
-	tmp96, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLgLevel9 = uint32(tmp96)
-	tmp97, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLnLevel1 = uint32(tmp97)
-	tmp98, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLnLevel2 = uint32(tmp98)
-	tmp99, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLnLevel3 = uint32(tmp99)
-	tmp100, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLnLevel4 = uint32(tmp100)
-	tmp101, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLnLevel5 = uint32(tmp101)
-	tmp102, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLnLevel6 = uint32(tmp102)
-	tmp103, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLnLevel7 = uint32(tmp103)
-	tmp104, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLnLevel8 = uint32(tmp104)
-	tmp105, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLnLevel9 = uint32(tmp105)
-	tmp106, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCgLevel1 = uint32(tmp106)
-	tmp107, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCgLevel2 = uint32(tmp107)
-	tmp108, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCgLevel3 = uint32(tmp108)
-	tmp109, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCgLevel4 = uint32(tmp109)
-	tmp110, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCgLevel5 = uint32(tmp110)
-	tmp111, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCgLevel6 = uint32(tmp111)
-	tmp112, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCgLevel7 = uint32(tmp112)
-	tmp113, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCgLevel8 = uint32(tmp113)
-	tmp114, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCgLevel9 = uint32(tmp114)
-	tmp115, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNgLevel1 = uint32(tmp115)
-	tmp116, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNgLevel2 = uint32(tmp116)
-	tmp117, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNgLevel3 = uint32(tmp117)
-	tmp118, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNgLevel4 = uint32(tmp118)
-	tmp119, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNgLevel5 = uint32(tmp119)
-	tmp120, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNgLevel6 = uint32(tmp120)
-	tmp121, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNgLevel7 = uint32(tmp121)
-	tmp122, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNgLevel8 = uint32(tmp122)
-	tmp123, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNgLevel9 = uint32(tmp123)
-	tmp124, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarTnLevel1 = uint32(tmp124)
-	tmp125, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarTnLevel2 = uint32(tmp125)
-	tmp126, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarTnLevel3 = uint32(tmp126)
-	tmp127, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarTnLevel4 = uint32(tmp127)
-	tmp128, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarTnLevel5 = uint32(tmp128)
-	tmp129, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarTnLevel6 = uint32(tmp129)
-	tmp130, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarTnLevel7 = uint32(tmp130)
-	tmp131, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarTnLevel8 = uint32(tmp131)
-	tmp132, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarTnLevel9 = uint32(tmp132)
-	tmp133, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNeLevel1 = uint32(tmp133)
-	tmp134, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNeLevel2 = uint32(tmp134)
-	tmp135, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNeLevel3 = uint32(tmp135)
-	tmp136, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNeLevel4 = uint32(tmp136)
-	tmp137, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNeLevel5 = uint32(tmp137)
-	tmp138, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNeLevel6 = uint32(tmp138)
-	tmp139, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNeLevel7 = uint32(tmp139)
-	tmp140, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNeLevel8 = uint32(tmp140)
-	tmp141, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarNeLevel9 = uint32(tmp141)
-	tmp142, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLeLevel1 = uint32(tmp142)
-	tmp143, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLeLevel2 = uint32(tmp143)
-	tmp144, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLeLevel3 = uint32(tmp144)
-	tmp145, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLeLevel4 = uint32(tmp145)
-	tmp146, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLeLevel5 = uint32(tmp146)
-	tmp147, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLeLevel6 = uint32(tmp147)
-	tmp148, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLeLevel7 = uint32(tmp148)
-	tmp149, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLeLevel8 = uint32(tmp149)
-	tmp150, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarLeLevel9 = uint32(tmp150)
-	tmp151, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCnLevel1 = uint32(tmp151)
-	tmp152, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCnLevel2 = uint32(tmp152)
-	tmp153, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCnLevel3 = uint32(tmp153)
-	tmp154, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCnLevel4 = uint32(tmp154)
-	tmp155, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCnLevel5 = uint32(tmp155)
-	tmp156, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCnLevel6 = uint32(tmp156)
-	tmp157, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCnLevel7 = uint32(tmp157)
-	tmp158, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCnLevel8 = uint32(tmp158)
-	tmp159, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCnLevel9 = uint32(tmp159)
-	tmp160, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCeLevel1 = uint32(tmp160)
-	tmp161, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCeLevel2 = uint32(tmp161)
-	tmp162, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumFamiliarCeLevel3 = uint32(tmp162)
-	tmp163, err := this._io.ReadU4le()
-	if err != nil {
-		return err
+	this.OfsFamiliarRes = uint32(tmp71)
+	for i := 0; i < int(9); i++ {
+		_ = i
+		tmp72, err := this._io.ReadU4le()
+		if err != nil {
+			return err
+		}
+		this.NumFamiliarLgLevel = append(this.NumFamiliarLgLevel, tmp72)
 	}
-	this.NumFamiliarCeLevel4 = uint32(tmp163)
-	tmp164, err := this._io.ReadU4le()
-	if err != nil {
-		return err
+	for i := 0; i < int(9); i++ {
+		_ = i
+		tmp73, err := this._io.ReadU4le()
+		if err != nil {
+			return err
+		}
+		this.NumFamiliarLnLevel = append(this.NumFamiliarLnLevel, tmp73)
 	}
-	this.NumFamiliarCeLevel5 = uint32(tmp164)
-	tmp165, err := this._io.ReadU4le()
-	if err != nil {
-		return err
+	for i := 0; i < int(9); i++ {
+		_ = i
+		tmp74, err := this._io.ReadU4le()
+		if err != nil {
+			return err
+		}
+		this.NumFamiliarCgLevel = append(this.NumFamiliarCgLevel, tmp74)
 	}
-	this.NumFamiliarCeLevel6 = uint32(tmp165)
-	tmp166, err := this._io.ReadU4le()
-	if err != nil {
-		return err
+	for i := 0; i < int(9); i++ {
+		_ = i
+		tmp75, err := this._io.ReadU4le()
+		if err != nil {
+			return err
+		}
+		this.NumFamiliarNgLevel = append(this.NumFamiliarNgLevel, tmp75)
 	}
-	this.NumFamiliarCeLevel7 = uint32(tmp166)
-	tmp167, err := this._io.ReadU4le()
-	if err != nil {
-		return err
+	for i := 0; i < int(9); i++ {
+		_ = i
+		tmp76, err := this._io.ReadU4le()
+		if err != nil {
+			return err
+		}
+		this.NumFamiliarTnLevel = append(this.NumFamiliarTnLevel, tmp76)
 	}
-	this.NumFamiliarCeLevel8 = uint32(tmp167)
-	tmp168, err := this._io.ReadU4le()
-	if err != nil {
-		return err
+	for i := 0; i < int(9); i++ {
+		_ = i
+		tmp77, err := this._io.ReadU4le()
+		if err != nil {
+			return err
+		}
+		this.NumFamiliarNeLevel = append(this.NumFamiliarNeLevel, tmp77)
+	}
+	for i := 0; i < int(9); i++ {
+		_ = i
+		tmp78, err := this._io.ReadU4le()
+		if err != nil {
+			return err
+		}
+		this.NumFamiliarLeLevel = append(this.NumFamiliarLeLevel, tmp78)
+	}
+	for i := 0; i < int(9); i++ {
+		_ = i
+		tmp79, err := this._io.ReadU4le()
+		if err != nil {
+			return err
+		}
+		this.NumFamiliarCnLevel = append(this.NumFamiliarCnLevel, tmp79)
+	}
+	for i := 0; i < int(9); i++ {
+		_ = i
+		tmp80, err := this._io.ReadU4le()
+		if err != nil {
+			return err
+		}
+		this.NumFamiliarCeLevel = append(this.NumFamiliarCeLevel, tmp80)
 	}
-	this.NumFamiliarCeLevel9 = uint32(tmp168)
 	return err
 }
 type Gam_GlobalVar struct {
@@ -1366,48 +915,48 @@ func (this *Gam_GlobalVar) Read(io *kaitai.Stream, parent *Gam, root *Gam) (err 
 	this._parent = parent
 	this._root = root
 
-	tmp169, err := this._io.ReadBytes(int(32))
+	tmp81, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp169 = kaitai.BytesTerminate(tmp169, 0, false)
-	this.VarName = string(tmp169)
-	tmp170, err := this._io.ReadU2le()
+	tmp81 = kaitai.BytesTerminate(tmp81, 0, false)
+	this.VarName = string(tmp81)
+	tmp82, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.VarType = uint16(tmp170)
-	tmp171, err := this._io.ReadU2le()
+	this.VarType = uint16(tmp82)
+	tmp83, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.RefVal = uint16(tmp171)
-	tmp172, err := this._io.ReadU4le()
+	this.RefVal = uint16(tmp83)
+	tmp84, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.DwordVal = uint32(tmp172)
-	tmp173, err := this._io.ReadS4le()
+	this.DwordVal = uint32(tmp84)
+	tmp85, err := this._io.ReadS4le()
 	if err != nil {
 		return err
 	}
-	this.IntVal = int32(tmp173)
-	tmp174, err := this._io.ReadU8le()
+	this.IntVal = int32(tmp85)
+	tmp86, err := this._io.ReadU8le()
 	if err != nil {
 		return err
 	}
-	this.DoubleVal = uint64(tmp174)
-	tmp175, err := this._io.ReadBytes(int(32))
+	this.DoubleVal = uint64(tmp86)
+	tmp87, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp175 = kaitai.BytesTerminate(tmp175, 0, false)
-	this.ScriptName = string(tmp175)
+	tmp87 = kaitai.BytesTerminate(tmp87, 0, false)
+	this.ScriptName = string(tmp87)
 	return err
 }
 type Gam_GuiFlags struct {
 	PartyAiEnabled bool
-	TextWindowSize uint64
+	TextWindowSize Gam_TextWindowSize
 	_unnamed2 bool
 	HideGui bool
 	HideOptions bool
@@ -1431,50 +980,50 @@ func (this *Gam_GuiFlags) Read(io *kaitai.Stream, parent *Gam, root *Gam) (err e
 	this._parent = parent
 	this._root = root
 
-	tmp176, err := this._io.ReadBitsIntLe(1)
+	tmp88, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.PartyAiEnabled = tmp176 != 0
-	tmp177, err := this._io.ReadBitsIntLe(2)
+	this.PartyAiEnabled = tmp88 != 0
+	tmp89, err := this._io.ReadBitsIntLe(2)
 	if err != nil {
 		return err
 	}
-	this.TextWindowSize = tmp177
-	tmp178, err := this._io.ReadBitsIntLe(1)
+	this.TextWindowSize = Gam_TextWindowSize(tmp89)
+	tmp90, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this._unnamed2 = tmp178 != 0
-	tmp179, err := this._io.ReadBitsIntLe(1)
+	this._unnamed2 = tmp90 != 0
+	tmp91, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.HideGui = tmp179 != 0
-	tmp180, err := this._io.ReadBitsIntLe(1)
+	this.HideGui = tmp91 != 0
+	tmp92, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.HideOptions = tmp180 != 0
-	tmp181, err := this._io.ReadBitsIntLe(1)
+	this.HideOptions = tmp92 != 0
+	tmp93, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.HidePortraits = tmp181 != 0
-	tmp182, err := this._io.ReadBitsIntLe(1)
+	this.HidePortraits = tmp93 != 0
+	tmp94, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ShowAutomapNotes = tmp182 != 0
+	this.ShowAutomapNotes = tmp94 != 0
 	return err
 }
 type Gam_JournalEntry struct {
 	JournalTextRef uint32
 	TimeSeconds uint32
-	CurChapterNum uint8
+	CurrentChapterNum uint8
 	ReadByCharX uint8
 	JournalSection uint8
-	Location uint8
+	Location Gam_Location
 	_io *kaitai.Stream
 	_root *Gam
 	_parent *Gam
@@ -1493,40 +1042,40 @@ func (this *Gam_JournalEntry) Read(io *kaitai.Stream, parent *Gam, root *Gam) (e
 	this._parent = parent
 	this._root = root
 
-	tmp183, err := this._io.ReadU4le()
+	tmp95, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.JournalTextRef = uint32(tmp183)
-	tmp184, err := this._io.ReadU4le()
+	this.JournalTextRef = uint32(tmp95)
+	tmp96, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.TimeSeconds = uint32(tmp184)
-	tmp185, err := this._io.ReadU1()
+	this.TimeSeconds = uint32(tmp96)
+	tmp97, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.CurChapterNum = tmp185
-	tmp186, err := this._io.ReadU1()
+	this.CurrentChapterNum = tmp97
+	tmp98, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.ReadByCharX = tmp186
-	tmp187, err := this._io.ReadU1()
+	this.ReadByCharX = tmp98
+	tmp99, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.JournalSection = tmp187
-	tmp188, err := this._io.ReadU1()
+	this.JournalSection = tmp99
+	tmp100, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.Location = tmp188
+	this.Location = Gam_Location(tmp100)
 	return err
 }
 type Gam_Npcs struct {
-	CharacterSelection Gam_CharacterSelc
+	CharacterSelection Gam_CharacterSelection
 	PartyOrder uint16
 	OfsCreData uint32
 	SizeCreData uint32
@@ -1539,47 +1088,12 @@ type Gam_Npcs struct {
 	ViewRectY uint16
 	ModalAction uint16
 	Happiness uint16
-	CountInteractedNpc0 uint32
-	CountInteractedNpc1 uint32
-	CountInteractedNpc2 uint32
-	CountInteractedNpc3 uint32
-	CountInteractedNpc4 uint32
-	CountInteractedNpc5 uint32
-	CountInteractedNpc6 uint32
-	CountInteractedNpc7 uint32
-	CountInteractedNpc8 uint32
-	CountInteractedNpc9 uint32
-	CountInteractedNpc10 uint32
-	CountInteractedNpc11 uint32
-	CountInteractedNpc12 uint32
-	CountInteractedNpc13 uint32
-	CountInteractedNpc14 uint32
-	CountInteractedNpc15 uint32
-	CountInteractedNpc16 uint32
-	CountInteractedNpc17 uint32
-	CountInteractedNpc18 uint32
-	CountInteractedNpc19 uint32
-	CountInteractedNpc20 uint32
-	CountInteractedNpc21 uint32
-	CountInteractedNpc22 uint32
-	CountInteractedNpc23 uint32
-	IdxQuickWeapon1 uint16
-	IdxQuickWeapon2 uint16
-	IdxQuickWeapon3 uint16
-	IdxQuickWeapon4 uint16
-	QuickWeaponAbility1 int16
-	QuickWeaponAbility2 int16
-	QuickWeaponAbility3 int16
-	QuickWeaponAbility4 int16
-	ResQuickSpell1 string
-	ResQuickSpell2 string
-	ResQuickSpell3 string
-	IdxQuickItem1 uint16
-	IdxQuickItem2 uint16
-	IdxQuickItem3 uint16
-	QuickItemAbility1 int16
-	QuickItemAbility2 int16
-	QuickItemAbility3 int16
+	CountInteractedNpc []uint32
+	QuickWeaponSlot []uint16
+	QuickWeaponAbility []uint16
+	QuickSpellSpl []string
+	QuickItemSlot []uint16
+	QuickItemAbility []uint16
 	Name string
 	Talkcount uint32
 	CharacterStats *Gam_CharStats
@@ -1602,308 +1116,157 @@ func (this *Gam_Npcs) Read(io *kaitai.Stream, parent *Gam, root *Gam) (err error
 	this._parent = parent
 	this._root = root
 
-	tmp189, err := this._io.ReadU2le()
+	tmp101, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.CharacterSelection = Gam_CharacterSelc(tmp189)
-	tmp190, err := this._io.ReadU2le()
+	this.CharacterSelection = Gam_CharacterSelection(tmp101)
+	tmp102, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.PartyOrder = uint16(tmp190)
-	tmp191, err := this._io.ReadU4le()
+	this.PartyOrder = uint16(tmp102)
+	tmp103, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsCreData = uint32(tmp191)
-	tmp192, err := this._io.ReadU4le()
+	this.OfsCreData = uint32(tmp103)
+	tmp104, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.SizeCreData = uint32(tmp192)
-	tmp193, err := this._io.ReadBytes(int(8))
+	this.SizeCreData = uint32(tmp104)
+	tmp105, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp193 = kaitai.BytesTerminate(tmp193, 0, false)
-	this.CharacterName = string(tmp193)
-	tmp194, err := this._io.ReadU4le()
+	tmp105 = kaitai.BytesTerminate(tmp105, 0, false)
+	this.CharacterName = string(tmp105)
+	tmp106, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.CharacterOrientation = uint32(tmp194)
-	tmp195, err := this._io.ReadBytes(int(8))
+	this.CharacterOrientation = uint32(tmp106)
+	tmp107, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp195 = kaitai.BytesTerminate(tmp195, 0, false)
-	this.CharacterCurArea = string(tmp195)
-	tmp196, err := this._io.ReadU2le()
+	tmp107 = kaitai.BytesTerminate(tmp107, 0, false)
+	this.CharacterCurArea = string(tmp107)
+	tmp108, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.CharacterX = uint16(tmp196)
-	tmp197, err := this._io.ReadU2le()
+	this.CharacterX = uint16(tmp108)
+	tmp109, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.CharacterY = uint16(tmp197)
-	tmp198, err := this._io.ReadU2le()
+	this.CharacterY = uint16(tmp109)
+	tmp110, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ViewRectX = uint16(tmp198)
-	tmp199, err := this._io.ReadU2le()
+	this.ViewRectX = uint16(tmp110)
+	tmp111, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ViewRectY = uint16(tmp199)
-	tmp200, err := this._io.ReadU2le()
+	this.ViewRectY = uint16(tmp111)
+	tmp112, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ModalAction = uint16(tmp200)
-	tmp201, err := this._io.ReadU2le()
+	this.ModalAction = uint16(tmp112)
+	tmp113, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Happiness = uint16(tmp201)
-	tmp202, err := this._io.ReadU4le()
+	this.Happiness = uint16(tmp113)
+	for i := 0; i < int(24); i++ {
+		_ = i
+		tmp114, err := this._io.ReadU4le()
+		if err != nil {
+			return err
+		}
+		this.CountInteractedNpc = append(this.CountInteractedNpc, tmp114)
+	}
+	for i := 0; i < int(4); i++ {
+		_ = i
+		tmp115, err := this._io.ReadU2le()
+		if err != nil {
+			return err
+		}
+		this.QuickWeaponSlot = append(this.QuickWeaponSlot, tmp115)
+	}
+	for i := 0; i < int(4); i++ {
+		_ = i
+		tmp116, err := this._io.ReadU2le()
+		if err != nil {
+			return err
+		}
+		this.QuickWeaponAbility = append(this.QuickWeaponAbility, tmp116)
+	}
+	for i := 0; i < int(3); i++ {
+		_ = i
+		tmp117, err := this._io.ReadBytes(int(8))
+		if err != nil {
+			return err
+		}
+		tmp117 = kaitai.BytesTerminate(tmp117, 0, false)
+		this.QuickSpellSpl = append(this.QuickSpellSpl, string(tmp117))
+	}
+	for i := 0; i < int(3); i++ {
+		_ = i
+		tmp118, err := this._io.ReadU2le()
+		if err != nil {
+			return err
+		}
+		this.QuickItemSlot = append(this.QuickItemSlot, tmp118)
+	}
+	for i := 0; i < int(3); i++ {
+		_ = i
+		tmp119, err := this._io.ReadU2le()
+		if err != nil {
+			return err
+		}
+		this.QuickItemAbility = append(this.QuickItemAbility, tmp119)
+	}
+	tmp120, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	this.CountInteractedNpc0 = uint32(tmp202)
-	tmp203, err := this._io.ReadU4le()
+	tmp120 = kaitai.BytesTerminate(tmp120, 0, false)
+	this.Name = string(tmp120)
+	tmp121, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.CountInteractedNpc1 = uint32(tmp203)
-	tmp204, err := this._io.ReadU4le()
+	this.Talkcount = uint32(tmp121)
+	tmp122 := NewGam_CharStats()
+	err = tmp122.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.CountInteractedNpc2 = uint32(tmp204)
-	tmp205, err := this._io.ReadU4le()
+	this.CharacterStats = tmp122
+	tmp123, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.CountInteractedNpc3 = uint32(tmp205)
-	tmp206, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc4 = uint32(tmp206)
-	tmp207, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc5 = uint32(tmp207)
-	tmp208, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc6 = uint32(tmp208)
-	tmp209, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc7 = uint32(tmp209)
-	tmp210, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc8 = uint32(tmp210)
-	tmp211, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc9 = uint32(tmp211)
-	tmp212, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc10 = uint32(tmp212)
-	tmp213, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc11 = uint32(tmp213)
-	tmp214, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc12 = uint32(tmp214)
-	tmp215, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc13 = uint32(tmp215)
-	tmp216, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc14 = uint32(tmp216)
-	tmp217, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc15 = uint32(tmp217)
-	tmp218, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc16 = uint32(tmp218)
-	tmp219, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc17 = uint32(tmp219)
-	tmp220, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc18 = uint32(tmp220)
-	tmp221, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc19 = uint32(tmp221)
-	tmp222, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc20 = uint32(tmp222)
-	tmp223, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc21 = uint32(tmp223)
-	tmp224, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc22 = uint32(tmp224)
-	tmp225, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.CountInteractedNpc23 = uint32(tmp225)
-	tmp226, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.IdxQuickWeapon1 = uint16(tmp226)
-	tmp227, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.IdxQuickWeapon2 = uint16(tmp227)
-	tmp228, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.IdxQuickWeapon3 = uint16(tmp228)
-	tmp229, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.IdxQuickWeapon4 = uint16(tmp229)
-	tmp230, err := this._io.ReadS2le()
-	if err != nil {
-		return err
-	}
-	this.QuickWeaponAbility1 = int16(tmp230)
-	tmp231, err := this._io.ReadS2le()
-	if err != nil {
-		return err
-	}
-	this.QuickWeaponAbility2 = int16(tmp231)
-	tmp232, err := this._io.ReadS2le()
-	if err != nil {
-		return err
-	}
-	this.QuickWeaponAbility3 = int16(tmp232)
-	tmp233, err := this._io.ReadS2le()
-	if err != nil {
-		return err
-	}
-	this.QuickWeaponAbility4 = int16(tmp233)
-	tmp234, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp234 = kaitai.BytesTerminate(tmp234, 0, false)
-	this.ResQuickSpell1 = string(tmp234)
-	tmp235, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp235 = kaitai.BytesTerminate(tmp235, 0, false)
-	this.ResQuickSpell2 = string(tmp235)
-	tmp236, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp236 = kaitai.BytesTerminate(tmp236, 0, false)
-	this.ResQuickSpell3 = string(tmp236)
-	tmp237, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.IdxQuickItem1 = uint16(tmp237)
-	tmp238, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.IdxQuickItem2 = uint16(tmp238)
-	tmp239, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.IdxQuickItem3 = uint16(tmp239)
-	tmp240, err := this._io.ReadS2le()
-	if err != nil {
-		return err
-	}
-	this.QuickItemAbility1 = int16(tmp240)
-	tmp241, err := this._io.ReadS2le()
-	if err != nil {
-		return err
-	}
-	this.QuickItemAbility2 = int16(tmp241)
-	tmp242, err := this._io.ReadS2le()
-	if err != nil {
-		return err
-	}
-	this.QuickItemAbility3 = int16(tmp242)
-	tmp243, err := this._io.ReadBytes(int(32))
-	if err != nil {
-		return err
-	}
-	tmp243 = kaitai.BytesTerminate(tmp243, 0, false)
-	this.Name = string(tmp243)
-	tmp244, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.Talkcount = uint32(tmp244)
-	tmp245 := NewGam_CharStats()
-	err = tmp245.Read(this._io, this, this._root)
-	if err != nil {
-		return err
-	}
-	this.CharacterStats = tmp245
-	tmp246, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp246 = tmp246
-	this.VoiceSet = tmp246
+	tmp123 = tmp123
+	this.VoiceSet = tmp123
 	return err
 }
+
+/**
+ * See `slots.ids`
+ */
+
+/**
+ * See `slots.ids`
+ */
 type Gam_PocketPlaneInfo struct {
-	Area string
+	AreaAre string
 	XCoord uint16
 	YCoord uint16
 	_io *kaitai.Stream
@@ -1924,26 +1287,26 @@ func (this *Gam_PocketPlaneInfo) Read(io *kaitai.Stream, parent *Gam, root *Gam)
 	this._parent = parent
 	this._root = root
 
-	tmp247, err := this._io.ReadBytes(int(8))
+	tmp124, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp247 = kaitai.BytesTerminate(tmp247, 0, false)
-	this.Area = string(tmp247)
-	tmp248, err := this._io.ReadU2le()
+	tmp124 = kaitai.BytesTerminate(tmp124, 0, false)
+	this.AreaAre = string(tmp124)
+	tmp125, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.XCoord = uint16(tmp248)
-	tmp249, err := this._io.ReadU2le()
+	this.XCoord = uint16(tmp125)
+	tmp126, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.YCoord = uint16(tmp249)
+	this.YCoord = uint16(tmp126)
 	return err
 }
 type Gam_StoredLocationsInfo struct {
-	Area string
+	AreaAre string
 	XCoord uint16
 	YCoord uint16
 	_io *kaitai.Stream
@@ -1964,22 +1327,22 @@ func (this *Gam_StoredLocationsInfo) Read(io *kaitai.Stream, parent *Gam, root *
 	this._parent = parent
 	this._root = root
 
-	tmp250, err := this._io.ReadBytes(int(8))
+	tmp127, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp250 = kaitai.BytesTerminate(tmp250, 0, false)
-	this.Area = string(tmp250)
-	tmp251, err := this._io.ReadU2le()
+	tmp127 = kaitai.BytesTerminate(tmp127, 0, false)
+	this.AreaAre = string(tmp127)
+	tmp128, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.XCoord = uint16(tmp251)
-	tmp252, err := this._io.ReadU2le()
+	this.XCoord = uint16(tmp128)
+	tmp129, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.YCoord = uint16(tmp252)
+	this.YCoord = uint16(tmp129)
 	return err
 }
 type Gam_WeatherFlags struct {
@@ -2010,50 +1373,50 @@ func (this *Gam_WeatherFlags) Read(io *kaitai.Stream, parent *Gam, root *Gam) (e
 	this._parent = parent
 	this._root = root
 
-	tmp253, err := this._io.ReadBitsIntLe(1)
+	tmp130, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Rain = tmp253 != 0
-	tmp254, err := this._io.ReadBitsIntLe(1)
+	this.Rain = tmp130 != 0
+	tmp131, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Snow = tmp254 != 0
-	tmp255, err := this._io.ReadBitsIntLe(1)
+	this.Snow = tmp131 != 0
+	tmp132, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.LightRain = tmp255 != 0
-	tmp256, err := this._io.ReadBitsIntLe(1)
+	this.LightRain = tmp132 != 0
+	tmp133, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.MediumRain = tmp256 != 0
-	tmp257, err := this._io.ReadBitsIntLe(1)
+	this.MediumRain = tmp133 != 0
+	tmp134, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.LightWind = tmp257 != 0
-	tmp258, err := this._io.ReadBitsIntLe(1)
+	this.LightWind = tmp134 != 0
+	tmp135, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.MediumWind = tmp258 != 0
-	tmp259, err := this._io.ReadBitsIntLe(1)
+	this.MediumWind = tmp135 != 0
+	tmp136, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.RareLightning = tmp259 != 0
-	tmp260, err := this._io.ReadBitsIntLe(1)
+	this.RareLightning = tmp136 != 0
+	tmp137, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Lightning = tmp260 != 0
-	tmp261, err := this._io.ReadBitsIntLe(1)
+	this.Lightning = tmp137 != 0
+	tmp138, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.StormIncreasing = tmp261 != 0
+	this.StormIncreasing = tmp138 != 0
 	return err
 }
