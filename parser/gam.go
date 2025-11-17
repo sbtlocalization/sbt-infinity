@@ -1022,11 +1022,12 @@ type Gam_JournalEntry struct {
 	TimeSeconds uint32
 	CurrentChapterNum uint8
 	ReadByCharX uint8
-	JournalSection uint8
+	JournalSection *Gam_JournalSection
 	Location Gam_Location
 	_io *kaitai.Stream
 	_root *Gam
 	_parent *Gam
+	_raw_JournalSection []byte
 }
 func NewGam_JournalEntry() *Gam_JournalEntry {
 	return &Gam_JournalEntry{
@@ -1062,17 +1063,74 @@ func (this *Gam_JournalEntry) Read(io *kaitai.Stream, parent *Gam, root *Gam) (e
 		return err
 	}
 	this.ReadByCharX = tmp98
-	tmp99, err := this._io.ReadU1()
+	tmp99, err := this._io.ReadBytes(int(1))
 	if err != nil {
 		return err
 	}
-	this.JournalSection = tmp99
-	tmp100, err := this._io.ReadU1()
+	tmp99 = tmp99
+	this._raw_JournalSection = tmp99
+	_io__raw_JournalSection := kaitai.NewStream(bytes.NewReader(this._raw_JournalSection))
+	tmp100 := NewGam_JournalSection()
+	err = tmp100.Read(_io__raw_JournalSection, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Location = Gam_Location(tmp100)
+	this.JournalSection = tmp100
+	tmp101, err := this._io.ReadU1()
+	if err != nil {
+		return err
+	}
+	this.Location = Gam_Location(tmp101)
 	return err
+}
+type Gam_JournalSection struct {
+	Quests bool
+	CompletedQuests bool
+	JournalInfo bool
+	_io *kaitai.Stream
+	_root *Gam
+	_parent *Gam_JournalEntry
+	_f_userNote bool
+	userNote bool
+}
+func NewGam_JournalSection() *Gam_JournalSection {
+	return &Gam_JournalSection{
+	}
+}
+
+func (this Gam_JournalSection) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Gam_JournalSection) Read(io *kaitai.Stream, parent *Gam_JournalEntry, root *Gam) (err error) {
+	this._io = io
+	this._parent = parent
+	this._root = root
+
+	tmp102, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Quests = tmp102 != 0
+	tmp103, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.CompletedQuests = tmp103 != 0
+	tmp104, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.JournalInfo = tmp104 != 0
+	return err
+}
+func (this *Gam_JournalSection) UserNote() (v bool, err error) {
+	if (this._f_userNote) {
+		return this.userNote, nil
+	}
+	this._f_userNote = true
+	this.userNote = bool(!( ((this.Quests) || (this.CompletedQuests) || (this.JournalInfo)) ))
+	return this.userNote, nil
 }
 type Gam_Npcs struct {
 	CharacterSelection Gam_CharacterSelection
@@ -1116,145 +1174,145 @@ func (this *Gam_Npcs) Read(io *kaitai.Stream, parent *Gam, root *Gam) (err error
 	this._parent = parent
 	this._root = root
 
-	tmp101, err := this._io.ReadU2le()
+	tmp105, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.CharacterSelection = Gam_CharacterSelection(tmp101)
-	tmp102, err := this._io.ReadU2le()
+	this.CharacterSelection = Gam_CharacterSelection(tmp105)
+	tmp106, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.PartyOrder = uint16(tmp102)
-	tmp103, err := this._io.ReadU4le()
+	this.PartyOrder = uint16(tmp106)
+	tmp107, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsCreData = uint32(tmp103)
-	tmp104, err := this._io.ReadU4le()
+	this.OfsCreData = uint32(tmp107)
+	tmp108, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.SizeCreData = uint32(tmp104)
-	tmp105, err := this._io.ReadBytes(int(8))
+	this.SizeCreData = uint32(tmp108)
+	tmp109, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp105 = kaitai.BytesTerminate(tmp105, 0, false)
-	this.CharacterName = string(tmp105)
-	tmp106, err := this._io.ReadU4le()
+	tmp109 = kaitai.BytesTerminate(tmp109, 0, false)
+	this.CharacterName = string(tmp109)
+	tmp110, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.CharacterOrientation = uint32(tmp106)
-	tmp107, err := this._io.ReadBytes(int(8))
+	this.CharacterOrientation = uint32(tmp110)
+	tmp111, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp107 = kaitai.BytesTerminate(tmp107, 0, false)
-	this.CharacterCurArea = string(tmp107)
-	tmp108, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.CharacterX = uint16(tmp108)
-	tmp109, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.CharacterY = uint16(tmp109)
-	tmp110, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.ViewRectX = uint16(tmp110)
-	tmp111, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.ViewRectY = uint16(tmp111)
+	tmp111 = kaitai.BytesTerminate(tmp111, 0, false)
+	this.CharacterCurArea = string(tmp111)
 	tmp112, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ModalAction = uint16(tmp112)
+	this.CharacterX = uint16(tmp112)
 	tmp113, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Happiness = uint16(tmp113)
+	this.CharacterY = uint16(tmp113)
+	tmp114, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.ViewRectX = uint16(tmp114)
+	tmp115, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.ViewRectY = uint16(tmp115)
+	tmp116, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.ModalAction = uint16(tmp116)
+	tmp117, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.Happiness = uint16(tmp117)
 	for i := 0; i < int(24); i++ {
 		_ = i
-		tmp114, err := this._io.ReadU4le()
+		tmp118, err := this._io.ReadU4le()
 		if err != nil {
 			return err
 		}
-		this.CountInteractedNpc = append(this.CountInteractedNpc, tmp114)
+		this.CountInteractedNpc = append(this.CountInteractedNpc, tmp118)
 	}
 	for i := 0; i < int(4); i++ {
-		_ = i
-		tmp115, err := this._io.ReadU2le()
-		if err != nil {
-			return err
-		}
-		this.QuickWeaponSlot = append(this.QuickWeaponSlot, tmp115)
-	}
-	for i := 0; i < int(4); i++ {
-		_ = i
-		tmp116, err := this._io.ReadU2le()
-		if err != nil {
-			return err
-		}
-		this.QuickWeaponAbility = append(this.QuickWeaponAbility, tmp116)
-	}
-	for i := 0; i < int(3); i++ {
-		_ = i
-		tmp117, err := this._io.ReadBytes(int(8))
-		if err != nil {
-			return err
-		}
-		tmp117 = kaitai.BytesTerminate(tmp117, 0, false)
-		this.QuickSpellSpl = append(this.QuickSpellSpl, string(tmp117))
-	}
-	for i := 0; i < int(3); i++ {
-		_ = i
-		tmp118, err := this._io.ReadU2le()
-		if err != nil {
-			return err
-		}
-		this.QuickItemSlot = append(this.QuickItemSlot, tmp118)
-	}
-	for i := 0; i < int(3); i++ {
 		_ = i
 		tmp119, err := this._io.ReadU2le()
 		if err != nil {
 			return err
 		}
-		this.QuickItemAbility = append(this.QuickItemAbility, tmp119)
+		this.QuickWeaponSlot = append(this.QuickWeaponSlot, tmp119)
 	}
-	tmp120, err := this._io.ReadBytes(int(32))
+	for i := 0; i < int(4); i++ {
+		_ = i
+		tmp120, err := this._io.ReadU2le()
+		if err != nil {
+			return err
+		}
+		this.QuickWeaponAbility = append(this.QuickWeaponAbility, tmp120)
+	}
+	for i := 0; i < int(3); i++ {
+		_ = i
+		tmp121, err := this._io.ReadBytes(int(8))
+		if err != nil {
+			return err
+		}
+		tmp121 = kaitai.BytesTerminate(tmp121, 0, false)
+		this.QuickSpellSpl = append(this.QuickSpellSpl, string(tmp121))
+	}
+	for i := 0; i < int(3); i++ {
+		_ = i
+		tmp122, err := this._io.ReadU2le()
+		if err != nil {
+			return err
+		}
+		this.QuickItemSlot = append(this.QuickItemSlot, tmp122)
+	}
+	for i := 0; i < int(3); i++ {
+		_ = i
+		tmp123, err := this._io.ReadU2le()
+		if err != nil {
+			return err
+		}
+		this.QuickItemAbility = append(this.QuickItemAbility, tmp123)
+	}
+	tmp124, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp120 = kaitai.BytesTerminate(tmp120, 0, false)
-	this.Name = string(tmp120)
-	tmp121, err := this._io.ReadU4le()
+	tmp124 = kaitai.BytesTerminate(tmp124, 0, false)
+	this.Name = string(tmp124)
+	tmp125, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.Talkcount = uint32(tmp121)
-	tmp122 := NewGam_CharStats()
-	err = tmp122.Read(this._io, this, this._root)
+	this.Talkcount = uint32(tmp125)
+	tmp126 := NewGam_CharStats()
+	err = tmp126.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.CharacterStats = tmp122
-	tmp123, err := this._io.ReadBytes(int(8))
+	this.CharacterStats = tmp126
+	tmp127, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp123 = tmp123
-	this.VoiceSet = tmp123
+	tmp127 = tmp127
+	this.VoiceSet = tmp127
 	return err
 }
 
@@ -1287,22 +1345,22 @@ func (this *Gam_PocketPlaneInfo) Read(io *kaitai.Stream, parent *Gam, root *Gam)
 	this._parent = parent
 	this._root = root
 
-	tmp124, err := this._io.ReadBytes(int(8))
+	tmp128, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp124 = kaitai.BytesTerminate(tmp124, 0, false)
-	this.AreaAre = string(tmp124)
-	tmp125, err := this._io.ReadU2le()
+	tmp128 = kaitai.BytesTerminate(tmp128, 0, false)
+	this.AreaAre = string(tmp128)
+	tmp129, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.XCoord = uint16(tmp125)
-	tmp126, err := this._io.ReadU2le()
+	this.XCoord = uint16(tmp129)
+	tmp130, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.YCoord = uint16(tmp126)
+	this.YCoord = uint16(tmp130)
 	return err
 }
 type Gam_StoredLocationsInfo struct {
@@ -1327,22 +1385,22 @@ func (this *Gam_StoredLocationsInfo) Read(io *kaitai.Stream, parent *Gam, root *
 	this._parent = parent
 	this._root = root
 
-	tmp127, err := this._io.ReadBytes(int(8))
+	tmp131, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp127 = kaitai.BytesTerminate(tmp127, 0, false)
-	this.AreaAre = string(tmp127)
-	tmp128, err := this._io.ReadU2le()
+	tmp131 = kaitai.BytesTerminate(tmp131, 0, false)
+	this.AreaAre = string(tmp131)
+	tmp132, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.XCoord = uint16(tmp128)
-	tmp129, err := this._io.ReadU2le()
+	this.XCoord = uint16(tmp132)
+	tmp133, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.YCoord = uint16(tmp129)
+	this.YCoord = uint16(tmp133)
 	return err
 }
 type Gam_WeatherFlags struct {
@@ -1373,50 +1431,50 @@ func (this *Gam_WeatherFlags) Read(io *kaitai.Stream, parent *Gam, root *Gam) (e
 	this._parent = parent
 	this._root = root
 
-	tmp130, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Rain = tmp130 != 0
-	tmp131, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Snow = tmp131 != 0
-	tmp132, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.LightRain = tmp132 != 0
-	tmp133, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.MediumRain = tmp133 != 0
 	tmp134, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.LightWind = tmp134 != 0
+	this.Rain = tmp134 != 0
 	tmp135, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.MediumWind = tmp135 != 0
+	this.Snow = tmp135 != 0
 	tmp136, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.RareLightning = tmp136 != 0
+	this.LightRain = tmp136 != 0
 	tmp137, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Lightning = tmp137 != 0
+	this.MediumRain = tmp137 != 0
 	tmp138, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.StormIncreasing = tmp138 != 0
+	this.LightWind = tmp138 != 0
+	tmp139, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.MediumWind = tmp139 != 0
+	tmp140, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.RareLightning = tmp140 != 0
+	tmp141, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Lightning = tmp141 != 0
+	tmp142, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.StormIncreasing = tmp142 != 0
 	return err
 }

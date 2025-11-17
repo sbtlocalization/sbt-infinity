@@ -344,10 +344,23 @@ types:
     - id: read_by_char_x
       type: u1
     - id: journal_section
-      type: u1 #bitfield with weird state when no bits set
+      type: journal_section
+      size: 1
     - id: location
       type: u1
       enum: location
+
+  journal_section:
+    seq:
+    - id: quests
+      type: b1
+    - id: completed_quests
+      type: b1
+    - id: journal_info
+      type: b1
+    instances:
+      user_note:
+        value: not (quests or completed_quests or journal_info)
 
   familiar_info:
     seq:
