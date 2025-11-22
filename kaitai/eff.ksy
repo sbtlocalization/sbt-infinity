@@ -166,6 +166,7 @@ types:
             type: b1
           - id: ignore_secondary_target
             type: b1
+          - type: b13
           - id: bypass_mirror_image
             type: b1
           - id: ignore_difficulty

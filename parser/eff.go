@@ -636,6 +636,7 @@ type Eff_BodyV2_SavingThrowType struct {
 	EePetrifyPolymorph bool
 	IgnorePrimaryTarget bool
 	IgnoreSecondaryTarget bool
+	_unnamed12 uint64
 	BypassMirrorImage bool
 	IgnoreDifficulty bool
 	Reserved bool
@@ -717,20 +718,25 @@ func (this *Eff_BodyV2_SavingThrowType) Read(io *kaitai.Stream, parent *Eff_Body
 		return err
 	}
 	this.IgnoreSecondaryTarget = tmp77 != 0
-	tmp78, err := this._io.ReadBitsIntLe(1)
+	tmp78, err := this._io.ReadBitsIntLe(13)
 	if err != nil {
 		return err
 	}
-	this.BypassMirrorImage = tmp78 != 0
+	this._unnamed12 = tmp78
 	tmp79, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.IgnoreDifficulty = tmp79 != 0
+	this.BypassMirrorImage = tmp79 != 0
 	tmp80, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Reserved = tmp80 != 0
+	this.IgnoreDifficulty = tmp80 != 0
+	tmp81, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Reserved = tmp81 != 0
 	return err
 }
