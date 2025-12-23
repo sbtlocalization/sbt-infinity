@@ -12,6 +12,46 @@ import (
  * @see <a href="https://gibberlings3.github.io/iesdp/file_formats/ie_formats/eff_v2.htm
  * ">Source</a>
  */
+
+type Eff_TargetType int
+const (
+	Eff_TargetType__None Eff_TargetType = 0
+	Eff_TargetType__Self Eff_TargetType = 1
+	Eff_TargetType__ProjectileTarget Eff_TargetType = 2
+	Eff_TargetType__Party Eff_TargetType = 3
+	Eff_TargetType__Everyone Eff_TargetType = 4
+	Eff_TargetType__EveryoneButParty Eff_TargetType = 5
+	Eff_TargetType__CasterGroup Eff_TargetType = 6
+	Eff_TargetType__TargetGroup Eff_TargetType = 7
+	Eff_TargetType__EveryoneButSelf Eff_TargetType = 8
+	Eff_TargetType__OriginalCaster Eff_TargetType = 9
+)
+var values_Eff_TargetType = map[Eff_TargetType]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}, 9: {}}
+func (v Eff_TargetType) isDefined() bool {
+	_, ok := values_Eff_TargetType[v]
+	return ok
+}
+
+type Eff_TimingMode int
+const (
+	Eff_TimingMode__InstantLimited Eff_TimingMode = 0
+	Eff_TimingMode__InstantPermanentUntilDeath Eff_TimingMode = 1
+	Eff_TimingMode__InstantWhileEquipped Eff_TimingMode = 2
+	Eff_TimingMode__DelayLimited Eff_TimingMode = 3
+	Eff_TimingMode__DelayPermanent Eff_TimingMode = 4
+	Eff_TimingMode__DelayWhileEquipped Eff_TimingMode = 5
+	Eff_TimingMode__LimitedAfterDuration Eff_TimingMode = 6
+	Eff_TimingMode__PermanentAfterDuration Eff_TimingMode = 7
+	Eff_TimingMode__EquippedAfterDuration Eff_TimingMode = 8
+	Eff_TimingMode__InstantPermanent Eff_TimingMode = 9
+	Eff_TimingMode__InstantLimitedTicks Eff_TimingMode = 10
+	Eff_TimingMode__AbsoluteDuration Eff_TimingMode = 4096
+)
+var values_Eff_TimingMode = map[Eff_TimingMode]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}, 9: {}, 10: {}, 4096: {}}
+func (v Eff_TimingMode) isDefined() bool {
+	_, ok := values_Eff_TimingMode[v]
+	return ok
+}
 type Eff struct {
 	Magic []byte
 	Version []byte
@@ -72,57 +112,17 @@ func (v Eff_BodyV2_ParentResourceType) isDefined() bool {
 	_, ok := values_Eff_BodyV2_ParentResourceType[v]
 	return ok
 }
-
-type Eff_BodyV2_TargetType int
-const (
-	Eff_BodyV2_TargetType__None Eff_BodyV2_TargetType = 0
-	Eff_BodyV2_TargetType__Self Eff_BodyV2_TargetType = 1
-	Eff_BodyV2_TargetType__ProjectileTarget Eff_BodyV2_TargetType = 2
-	Eff_BodyV2_TargetType__Party Eff_BodyV2_TargetType = 3
-	Eff_BodyV2_TargetType__Everyone Eff_BodyV2_TargetType = 4
-	Eff_BodyV2_TargetType__EveryoneButParty Eff_BodyV2_TargetType = 5
-	Eff_BodyV2_TargetType__CasterGroup Eff_BodyV2_TargetType = 6
-	Eff_BodyV2_TargetType__TargetGroup Eff_BodyV2_TargetType = 7
-	Eff_BodyV2_TargetType__EveryoneButSelf Eff_BodyV2_TargetType = 8
-	Eff_BodyV2_TargetType__OriginalCaster Eff_BodyV2_TargetType = 9
-)
-var values_Eff_BodyV2_TargetType = map[Eff_BodyV2_TargetType]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}, 9: {}}
-func (v Eff_BodyV2_TargetType) isDefined() bool {
-	_, ok := values_Eff_BodyV2_TargetType[v]
-	return ok
-}
-
-type Eff_BodyV2_TimingMode int
-const (
-	Eff_BodyV2_TimingMode__InstantLimited Eff_BodyV2_TimingMode = 0
-	Eff_BodyV2_TimingMode__InstantPermanentUntilDeath Eff_BodyV2_TimingMode = 1
-	Eff_BodyV2_TimingMode__InstantWhileEquipped Eff_BodyV2_TimingMode = 2
-	Eff_BodyV2_TimingMode__DelayLimited Eff_BodyV2_TimingMode = 3
-	Eff_BodyV2_TimingMode__DelayPermanent Eff_BodyV2_TimingMode = 4
-	Eff_BodyV2_TimingMode__DelayWhileEquipped Eff_BodyV2_TimingMode = 5
-	Eff_BodyV2_TimingMode__LimitedAfterDuration Eff_BodyV2_TimingMode = 6
-	Eff_BodyV2_TimingMode__PermanentAfterDuration Eff_BodyV2_TimingMode = 7
-	Eff_BodyV2_TimingMode__EquippedAfterDuration Eff_BodyV2_TimingMode = 8
-	Eff_BodyV2_TimingMode__InstantPermanent Eff_BodyV2_TimingMode = 9
-	Eff_BodyV2_TimingMode__InstantLimitedTicks Eff_BodyV2_TimingMode = 10
-	Eff_BodyV2_TimingMode__AbsoluteDuration Eff_BodyV2_TimingMode = 4096
-)
-var values_Eff_BodyV2_TimingMode = map[Eff_BodyV2_TimingMode]struct{}{0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}, 9: {}, 10: {}, 4096: {}}
-func (v Eff_BodyV2_TimingMode) isDefined() bool {
-	_, ok := values_Eff_BodyV2_TimingMode[v]
-	return ok
-}
 type Eff_BodyV2 struct {
 	Magic []byte
 	Version []byte
 	Magic2 []byte
 	Version2 []byte
 	Opcode uint32
-	TargetType Eff_BodyV2_TargetType
+	TargetType Eff_TargetType
 	Power uint32
 	Parameter1 uint32
 	Parameter2 uint32
-	TimingMode Eff_BodyV2_TimingMode
+	TimingMode Eff_TimingMode
 	_unnamed10 uint16
 	Duration uint32
 	Probability1 uint16
@@ -130,7 +130,7 @@ type Eff_BodyV2 struct {
 	ResName string
 	DiceThrown uint32
 	DiceSides uint32
-	SavingThrowType *Eff_BodyV2_SavingThrowType
+	SavingThrowType *Eff_SavingThrowType
 	SaveBonus uint32
 	Special uint32
 	PrimaryType uint32
@@ -232,7 +232,7 @@ func (this *Eff_BodyV2) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err err
 	if err != nil {
 		return err
 	}
-	this.TargetType = Eff_BodyV2_TargetType(tmp9)
+	this.TargetType = Eff_TargetType(tmp9)
 	tmp10, err := this._io.ReadU4le()
 	if err != nil {
 		return err
@@ -252,7 +252,7 @@ func (this *Eff_BodyV2) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err err
 	if err != nil {
 		return err
 	}
-	this.TimingMode = Eff_BodyV2_TimingMode(tmp13)
+	this.TimingMode = Eff_TimingMode(tmp13)
 	tmp14, err := this._io.ReadU2le()
 	if err != nil {
 		return err
@@ -296,7 +296,7 @@ func (this *Eff_BodyV2) Read(io *kaitai.Stream, parent *Eff, root *Eff) (err err
 	tmp21 = tmp21
 	this._raw_SavingThrowType = tmp21
 	_io__raw_SavingThrowType := kaitai.NewStream(bytes.NewReader(this._raw_SavingThrowType))
-	tmp22 := NewEff_BodyV2_SavingThrowType()
+	tmp22 := NewEff_SavingThrowType()
 	err = tmp22.Read(_io__raw_SavingThrowType, this, this._root)
 	if err != nil {
 		return err
@@ -623,7 +623,184 @@ func (this *Eff_BodyV2_ParentResourceFlags) Read(io *kaitai.Stream, parent *Eff_
 	this.NonCombatAbility = tmp65 != 0
 	return err
 }
-type Eff_BodyV2_SavingThrowType struct {
+
+/**
+ * This file format describes an effect (opcode) and its parameters.
+ * The format is only ever found embedded in other files (e.g. ITM or SPL).
+ * The engine appears to roll a probability for each valid target type, rather than one probability per attack.
+ * @see <a href="https://gibberlings3.github.io/iesdp/file_formats/ie_formats/eff_v1.htm
+ * ">Source</a>
+ */
+type Eff_HeaderV1 struct {
+	EffectType uint16
+	TargetType Eff_TargetType
+	Power uint8
+	Parameter1 uint32
+	Parameter2 uint32
+	TimingMode Eff_TimingMode
+	DispelResistance *Eff_HeaderV1_DispelResistance
+	Duration uint32
+	Probability1 uint8
+	Probability2 uint8
+	ResSpl string
+	DiceThrown uint32
+	DiceSides uint32
+	SavingThrowType *Eff_SavingThrowType
+	SavingThrowBonus uint32
+	TobexStackingId uint32
+	_io *kaitai.Stream
+	_root *Eff
+	_parent kaitai.Struct
+	_raw_DispelResistance []byte
+	_raw_SavingThrowType []byte
+}
+func NewEff_HeaderV1() *Eff_HeaderV1 {
+	return &Eff_HeaderV1{
+	}
+}
+
+func (this Eff_HeaderV1) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Eff_HeaderV1) Read(io *kaitai.Stream, parent kaitai.Struct, root *Eff) (err error) {
+	this._io = io
+	this._parent = parent
+	this._root = root
+
+	tmp66, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.EffectType = uint16(tmp66)
+	tmp67, err := this._io.ReadU1()
+	if err != nil {
+		return err
+	}
+	this.TargetType = Eff_TargetType(tmp67)
+	tmp68, err := this._io.ReadU1()
+	if err != nil {
+		return err
+	}
+	this.Power = tmp68
+	tmp69, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.Parameter1 = uint32(tmp69)
+	tmp70, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.Parameter2 = uint32(tmp70)
+	tmp71, err := this._io.ReadU1()
+	if err != nil {
+		return err
+	}
+	this.TimingMode = Eff_TimingMode(tmp71)
+	tmp72, err := this._io.ReadBytes(int(1))
+	if err != nil {
+		return err
+	}
+	tmp72 = tmp72
+	this._raw_DispelResistance = tmp72
+	_io__raw_DispelResistance := kaitai.NewStream(bytes.NewReader(this._raw_DispelResistance))
+	tmp73 := NewEff_HeaderV1_DispelResistance()
+	err = tmp73.Read(_io__raw_DispelResistance, this, this._root)
+	if err != nil {
+		return err
+	}
+	this.DispelResistance = tmp73
+	tmp74, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.Duration = uint32(tmp74)
+	tmp75, err := this._io.ReadU1()
+	if err != nil {
+		return err
+	}
+	this.Probability1 = tmp75
+	tmp76, err := this._io.ReadU1()
+	if err != nil {
+		return err
+	}
+	this.Probability2 = tmp76
+	tmp77, err := this._io.ReadBytes(int(8))
+	if err != nil {
+		return err
+	}
+	tmp77 = kaitai.BytesTerminate(tmp77, 0, false)
+	this.ResSpl = string(tmp77)
+	tmp78, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.DiceThrown = uint32(tmp78)
+	tmp79, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.DiceSides = uint32(tmp79)
+	tmp80, err := this._io.ReadBytes(int(4))
+	if err != nil {
+		return err
+	}
+	tmp80 = tmp80
+	this._raw_SavingThrowType = tmp80
+	_io__raw_SavingThrowType := kaitai.NewStream(bytes.NewReader(this._raw_SavingThrowType))
+	tmp81 := NewEff_SavingThrowType()
+	err = tmp81.Read(_io__raw_SavingThrowType, this, this._root)
+	if err != nil {
+		return err
+	}
+	this.SavingThrowType = tmp81
+	tmp82, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.SavingThrowBonus = uint32(tmp82)
+	tmp83, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.TobexStackingId = uint32(tmp83)
+	return err
+}
+type Eff_HeaderV1_DispelResistance struct {
+	Dispel bool
+	BypassResistance bool
+	_io *kaitai.Stream
+	_root *Eff
+	_parent *Eff_HeaderV1
+}
+func NewEff_HeaderV1_DispelResistance() *Eff_HeaderV1_DispelResistance {
+	return &Eff_HeaderV1_DispelResistance{
+	}
+}
+
+func (this Eff_HeaderV1_DispelResistance) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Eff_HeaderV1_DispelResistance) Read(io *kaitai.Stream, parent *Eff_HeaderV1, root *Eff) (err error) {
+	this._io = io
+	this._parent = parent
+	this._root = root
+
+	tmp84, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Dispel = tmp84 != 0
+	tmp85, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.BypassResistance = tmp85 != 0
+	return err
+}
+type Eff_SavingThrowType struct {
 	Spells bool
 	Breath bool
 	ParalyzePoisonDeath bool
@@ -642,101 +819,101 @@ type Eff_BodyV2_SavingThrowType struct {
 	Reserved bool
 	_io *kaitai.Stream
 	_root *Eff
-	_parent *Eff_BodyV2
+	_parent kaitai.Struct
 }
-func NewEff_BodyV2_SavingThrowType() *Eff_BodyV2_SavingThrowType {
-	return &Eff_BodyV2_SavingThrowType{
+func NewEff_SavingThrowType() *Eff_SavingThrowType {
+	return &Eff_SavingThrowType{
 	}
 }
 
-func (this Eff_BodyV2_SavingThrowType) IO_() *kaitai.Stream {
+func (this Eff_SavingThrowType) IO_() *kaitai.Stream {
 	return this._io
 }
 
-func (this *Eff_BodyV2_SavingThrowType) Read(io *kaitai.Stream, parent *Eff_BodyV2, root *Eff) (err error) {
+func (this *Eff_SavingThrowType) Read(io *kaitai.Stream, parent kaitai.Struct, root *Eff) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
 
-	tmp66, err := this._io.ReadBitsIntLe(1)
+	tmp86, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Spells = tmp66 != 0
-	tmp67, err := this._io.ReadBitsIntLe(1)
+	this.Spells = tmp86 != 0
+	tmp87, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Breath = tmp67 != 0
-	tmp68, err := this._io.ReadBitsIntLe(1)
+	this.Breath = tmp87 != 0
+	tmp88, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ParalyzePoisonDeath = tmp68 != 0
-	tmp69, err := this._io.ReadBitsIntLe(1)
+	this.ParalyzePoisonDeath = tmp88 != 0
+	tmp89, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Wands = tmp69 != 0
-	tmp70, err := this._io.ReadBitsIntLe(1)
+	this.Wands = tmp89 != 0
+	tmp90, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.PetrifyPolymorph = tmp70 != 0
-	tmp71, err := this._io.ReadBitsIntLe(1)
+	this.PetrifyPolymorph = tmp90 != 0
+	tmp91, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.EeSpells = tmp71 != 0
-	tmp72, err := this._io.ReadBitsIntLe(1)
+	this.EeSpells = tmp91 != 0
+	tmp92, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.EeBreath = tmp72 != 0
-	tmp73, err := this._io.ReadBitsIntLe(1)
+	this.EeBreath = tmp92 != 0
+	tmp93, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.EeParalyzePoisonDeath = tmp73 != 0
-	tmp74, err := this._io.ReadBitsIntLe(1)
+	this.EeParalyzePoisonDeath = tmp93 != 0
+	tmp94, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.EeWands = tmp74 != 0
-	tmp75, err := this._io.ReadBitsIntLe(1)
+	this.EeWands = tmp94 != 0
+	tmp95, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.EePetrifyPolymorph = tmp75 != 0
-	tmp76, err := this._io.ReadBitsIntLe(1)
+	this.EePetrifyPolymorph = tmp95 != 0
+	tmp96, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.IgnorePrimaryTarget = tmp76 != 0
-	tmp77, err := this._io.ReadBitsIntLe(1)
+	this.IgnorePrimaryTarget = tmp96 != 0
+	tmp97, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.IgnoreSecondaryTarget = tmp77 != 0
-	tmp78, err := this._io.ReadBitsIntLe(13)
+	this.IgnoreSecondaryTarget = tmp97 != 0
+	tmp98, err := this._io.ReadBitsIntLe(13)
 	if err != nil {
 		return err
 	}
-	this._unnamed12 = tmp78
-	tmp79, err := this._io.ReadBitsIntLe(1)
+	this._unnamed12 = tmp98
+	tmp99, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.BypassMirrorImage = tmp79 != 0
-	tmp80, err := this._io.ReadBitsIntLe(1)
+	this.BypassMirrorImage = tmp99 != 0
+	tmp100, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.IgnoreDifficulty = tmp80 != 0
-	tmp81, err := this._io.ReadBitsIntLe(1)
+	this.IgnoreDifficulty = tmp100 != 0
+	tmp101, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Reserved = tmp81 != 0
+	this.Reserved = tmp101 != 0
 	return err
 }
