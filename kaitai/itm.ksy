@@ -30,7 +30,6 @@ seq:
     type: u4
   - id: item_or_sound
     type: item_or_sound
-    size: 8
   - id: flags
     type: header_flags
     size: 4
@@ -118,7 +117,7 @@ instances:
     pos: ofs_extended_headers
     repeat: expr
     repeat-expr: num_extended_headers
-  feature_blocks:
+  equipping_feature_blocks:
     type: eff::header_v1
     pos: ofs_feature_blocks + idx_equipping_feature_blocks * 48  # feature block size
     repeat: expr
@@ -129,9 +128,10 @@ types:
     seq:
       - id: bg_replacement_item_itm
         type: strz
+        size: 8
         encoding: ASCII
     instances:
-      pstee_drop_sound:
+      pst_drop_sound_wav:
         value: bg_replacement_item_itm
 
   header_flags:
@@ -305,7 +305,7 @@ types:
 
   kit_usability_4:
     seq:
-      - id: beserker_fighter
+      - id: berserker_fighter
         type: b1
       - id: wizardslayer_fighter
         type: b1
@@ -335,7 +335,7 @@ types:
         enum: location
       - id: alternative_dice_sides
         type: u1
-      - id: use_icon
+      - id: use_icon_bam
         type: strz
         encoding: ASCII
         size: 8
@@ -359,11 +359,13 @@ types:
         type: u2
       - id: dice_sides
         type: u1
-      - id: primary_type #mschool.2da
+      - id: primary_type
+        doc: See `MSCHOOL.2DA`
         type: u1
       - id: dice_thrown
         type: u1
-      - id: secondary_type #msectype.2da
+      - id: secondary_type
+        doc: See `MSECTYPE.2DA`
         type: u1
       - id: damage_bonus
         type: u2
@@ -382,21 +384,26 @@ types:
       - id: flags
         type: extension_header_flags
         size: 4
-      - id: projectile_animation
-        # [TODO] : link projectl.ids/missile.ids
+      - id: projectile_animation_pro
+        doc: See `projectl.ids`/`missile.ids`
         type: u2
       - id: melee_animation
         # [TODO] : wrap https://gibberlings3.github.io/iesdp/file_formats/ie_formats/itm_v1.htm#ExtendedHeader_MeleeAnimation
         size: 6
-      - id: arrow_qualifier
-        type: u2
-        enum: qualifier
-      - id: bolt_qualifier
-        type: u2
-        enum: qualifier
-      - id: bullet_qualifier
-        type: u2
-        enum: qualifier
+      - id: is_arrow
+        size: 2
+        type: bool
+      - id: is_bolt
+        size: 2
+        type: bool
+      - id: is_bullet
+        size: 2
+        type: bool
+    types:
+      bool:
+        seq:
+          - id: value
+            type: b1
     instances:
       feature_blocks:
         type: eff::header_v1
@@ -433,9 +440,9 @@ types:
       - type: b1
         repeat: expr
         repeat-expr: 13
-      - id: tobex_toggle_backstab
+      - id: toggle_backstab
         type: b1
-      - id: ee_tobex_cannot_target_invisible
+      - id: cannot_target_invisible
         type: b1
       - type: b1
         repeat: expr
@@ -501,9 +508,12 @@ enums:
   location:
     0: none
     1: weapon
-    2: spell
+    2: spell  # SPL only
     3: equipment_item
-    4: innate
+    4: innate  # SPL only
+    5: none_2
+    6: none_3
+    7: none_4
 
   target_type:
     0: invalid
@@ -534,14 +544,15 @@ enums:
     7: piercing_slashing_better
     8: crushing_slashing_worse
     9: blunt_missile
+    10: none_2
+    11: none_3
+    12: none_4
+    13: none_5
+    14: none_6
+    15: none_7
 
   charge_depletion_behavior:
     0: item_remains
     1: item_vanishes
     2: replace_with_used_up
     3: item_recharges
-
-  qualifier:
-    0: no
-    1: yes
-
