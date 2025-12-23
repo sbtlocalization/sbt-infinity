@@ -9,8 +9,8 @@ meta:
   endian: le
   bit-endian: le
   imports:
+    - eff
     - sto
-    - eff_v1
 
 doc: |
   This file format describes an "item". Items include weapons, armor, books, scrolls, rings and more.
@@ -108,9 +108,9 @@ seq:
     type: u2
   - id: ofs_feature_blocks
     type: u4
-  - id: index_into_equipping_feature_blocks
+  - id: idx_equipping_feature_blocks
     type: u2
-  - id: num_feature_blocks
+  - id: num_equipping_feature_blocks
     type: u2
 instances:
   extended_headers:
@@ -119,10 +119,10 @@ instances:
     repeat: expr
     repeat-expr: num_extended_headers
   feature_blocks:
-    type: eff_v1::header
-    pos: ofs_feature_blocks + index_into_equipping_feature_blocks * 48 #feature block size
+    type: eff::header_v1
+    pos: ofs_feature_blocks + idx_equipping_feature_blocks * 48  # feature block size
     repeat: expr
-    repeat-expr: num_feature_blocks
+    repeat-expr: num_equipping_feature_blocks
 
 types:
   item_or_sound:
@@ -372,7 +372,7 @@ types:
         enum: damage_type
       - id: num_feature_blocks
         type: u2
-      - id: index_into_feature_blocks
+      - id: idx_feature_blocks
         type: u2
       - id: max_charges
         type: u2
@@ -399,8 +399,8 @@ types:
         enum: qualifier
     instances:
       feature_blocks:
-        type: eff_v1::header
-        pos: _root.ofs_feature_blocks + index_into_feature_blocks * 48 #feature block size
+        type: eff::header_v1
+        pos: _root.ofs_feature_blocks + idx_feature_blocks * 48  # feature block size
         repeat: expr
         repeat-expr: num_feature_blocks
 
