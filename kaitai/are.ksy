@@ -134,7 +134,7 @@ seq:
     type: strz
     size: 8
     encoding: ASCII
-  - id: len_explored_bitmask
+  - id: num_explored_bitmask
     type: u4
   - id: ofs_explored_bitmask
     type: u4
@@ -150,13 +150,13 @@ seq:
     type: u4
   - id: ofs_tiled_objects
     type: u4
-  - id: ofs_song_entries
+  - id: ofs_songs
     type: u4
-  - id: ofs_rest_interruptions
+  - id: ofs_rest_encounters
     type: u4
   - id: other_offsets
     type: other_offsets
-  - id: num_projectile_traps
+  - id: num_bg_projectile_traps
     type: u4
   - id: bg_rest_movie_day
     type: strz
@@ -224,8 +224,53 @@ instances:
     repeat-expr: num_variables
   explored_bitmask:
     pos: ofs_explored_bitmask
-    size: len_explored_bitmask
-    type: explored_bitmask
+    repeat: expr
+    repeat-expr: num_explored_bitmask
+    type: b1
+  doors:
+    pos: ofs_doors
+    size: 0xc8
+    type: door
+    repeat: expr
+    repeat-expr: num_doors
+  animations:
+    pos: ofs_animations
+    size: 0x4c
+    type: animation
+    repeat: expr
+    repeat-expr: num_animations
+  bg_automap_notes:
+    pos: other_offsets.ofs_bg_automap_notes
+    size: 0x34
+    type: bg_automap_note
+    repeat: expr
+    repeat-expr: other_offsets.num_bg_automap_notes
+  pst_automap_notes:
+    pos: other_offsets.ofs_pst_automap_notes
+    size: 0x214
+    type: pst_automap_note
+    repeat: expr
+    repeat-expr: other_offsets.num_pst_automap_notes
+  tiled_objects:
+    pos: ofs_tiled_objects
+    size: 0x6c
+    type: tiled_object
+    repeat: expr
+    repeat-expr: num_tiled_objects
+  bg_projectile_traps:
+    pos: other_offsets.ofs_bg_projectile_traps
+    size: 0x1c
+    type: bg_projectile_trap
+    repeat: expr
+    repeat-expr: num_bg_projectile_traps
+  songs:
+    pos: ofs_songs
+    size: 0x90
+    type: songs
+  rest_encounters:
+    pos: ofs_rest_encounters
+    size: 0xe4
+    type: rest_encounters
 types:
   flags:
     seq:
@@ -289,15 +334,15 @@ types:
       - id: third
         type: u4
     instances:
-      ofs_bg_automap_note:
+      ofs_bg_automap_notes:
         value: first
-      num_bg_automap_note:
+      num_bg_automap_notes:
         value: second
       ofs_bg_projectile_traps:
         value: third
-      ofs_pst_automap_note:
+      ofs_pst_automap_notes:
         value: second
-      num_pst_automap_note:
+      num_pst_automap_notes:
         value: third
   actor:
     seq:
@@ -333,7 +378,7 @@ types:
         type: u2
       - id: follow_distance
         type: u2
-      - id: appearence_schedule
+      - id: appearance_schedule
         type: schedule
       - id: num_times_talked_to
         type: u4
@@ -529,7 +574,7 @@ types:
         type: u2
       - id: enabled
         type: bool2
-      - id: appearence_schedule
+      - id: appearance_schedule
         type: schedule
       - id: probability_day
         type: u2
@@ -844,12 +889,366 @@ types:
         3: res_ref
         4: str_ref
         5: dword
-  explored_bitmask:
+  door:
     seq:
-      - id: bit
-        type: b1
-        # repeat: expr
-        # repeat-expr: _root.len_explored_bitmask * 8
+      - id: name
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: door_id
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: flags
+        type: flags
+        size: 4
+      - id: first_vertex_index_open_door
+        type: u4
+      - id: num_vertices_open_door
+        type: u2
+      - id: num_vertices_closed_door
+        type: u2
+      - id: first_vertex_index_closed_door
+        type: u4
+      - id: minimum_bb_open_door
+        type: bounding_box
+      - id: minimmum_bb_closed_door
+        type: bounding_box
+      - id: first_impeded_cell_index_open_door
+        type: u4
+      - id: num_impeded_cells_open_door
+        type: u2
+      - id: num_impeded_cells_closed_door
+        type: u2
+      - id: first_impeded_cell_index_closed_door
+        type: u4
+      - id: hit_points
+        type: u2
+      - id: armor_class
+        type: u2
+      - id: door_open_sound_wav
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: door_close_sound_wav
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: cursor_index
+        type: u4
+        doc: See `cursors.bam`
+      - id: trap_detection_difficulty
+        type: u2
+      - id: trap_removal_difficulty
+        type: u2
+      - id: is_trapped
+        type: bool2
+      - id: trap_detected
+        type: bool2
+      - id: trap_launch_point
+        type: point
+      - id: key_itm
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: script_bcs
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: detection_difficulty
+        type: u4
+      - id: lock_difficulty
+        type: u4
+      - id: open_location
+        type: point
+      - id: close_location
+        type: point
+      - id: unlock_message_ref
+        type: u4
+      - id: travel_trigger_name
+        type: strz
+        size: 24
+        encoding: ASCII
+      - id: speaker_name_ref
+        type: u4
+      - id: dialog_dlg
+        type: strz
+        size: 8
+        encoding: ASCII
+      - size: 8
+    types:
+      flags:
+        seq:
+          - id: door_open
+            type: b1
+          - id: door_locked
+            type: b1
+          - id: reset_trap
+            type: b1
+          - id: trap_detectable
+            type: b1
+          - id: broken
+            type: b1
+          - id: cant_close
+            type: b1
+          - id: linked
+            type: b1
+          - id: door_hidden
+            type: b1
+          - id: door_found
+            type: b1
+          - id: can_be_looked_through
+            type: b1
+          - id: consumes_key
+            type: b1
+          - id: ignore_obstacles_when_closing
+            type: b1
+  animation:
+    seq:
+      - id: name
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: coordinate
+        type: point
+      - id: appearance_schedule
+        type: schedule
+      - id: animation_bam
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: bam_sequence
+        type: u2
+      - id: bam_frame
+        type: u2
+      - id: flags
+        size: 4
+        type: flags
+      - id: height
+        type: u2
+      - id: transparency
+        type: u2
+      - id: start_range
+        type: u2
+      - id: loop_probability
+        type: u1
+      - id: start_delay
+        type: u1
+      - id: palette_bmp
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: movie_width
+        type: u2
+      - id: movie_height
+        type: u2
+    types:
+      flags:
+        seq:
+          - id: enabled
+            type: b1
+          - id: black_is_transparent
+            type: b1
+          - id: not_light_source
+            type: b1
+          - id: partial
+            type: b1
+          - id: synchronized_draw
+            type: b1
+          - id: random_start_frame
+            type: b1
+          - id: not_covered_by_wall
+            type: b1
+          - id: disable_on_slow_machines
+            type: b1
+          - id: draw_as_background
+            type: b1
+          - id: play_all_frames
+            type: b1
+          - id: use_palette
+            type: b1
+          - id: mirror_y_axis
+            type: b1
+          - id: show_in_combat
+            type: b1
+          - id: use_wbm
+            type: b1
+          - id: draw_stenciled
+            type: b1
+          - id: use_pvrz
+            type: b1
+          - id: pst_cover_animations
+            type: b1
+        instances:
+          pst_alt_blending_mode:
+            value: draw_as_background
+  bg_automap_note:
+    seq:
+      - id: coordinate
+        type: point
+      - id: note_ref
+        type: u4
+      - id: note_ref_is_internal
+        doc: |
+          Internal means it's in `dialog.tlk`,
+          external means it's overridden with TOH/TOT.
+        type: bool2
+      - id: marker_color
+        type: u2
+        enum: marker_color
+      - id: control_id
+        type: u4
+      - size: 36
+    enums:
+      marker_color:
+        0: gray
+        1: violet
+        2: green
+        3: orange
+        4: red
+        5: blue
+        6: dark_blue
+        7: light_gray
+  pst_automap_note:
+    seq:
+      - id: x
+        type: u4
+      - id: y
+        type: u4
+      - id: text
+        type: strz
+        size: 500
+        encoding: ASCII
+      - id: note_color
+        type: u4
+        enum: note_color
+      - size: 20
+    enums:
+      note_color:
+        0: blue_user_note
+        1: red_game_note
+  tiled_object:
+    seq:
+      - id: name
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: tile_id
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: flags
+        size: 4
+        type: flags
+      - id: ofs_open_search_squares
+        type: u4
+      - id: num_open_search_squares
+        type: u2
+      - id: num_closed_search_squares
+        type: u2
+      - id: ofs_closed_search_squares
+        type: u4
+      - size: 48
+  bg_projectile_trap:
+    seq:
+      - id: projectile_pro
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: effect_block_offset
+        type: u4
+      - id: effect_block_size
+        type: u2
+      - id: missile_id
+        type: u2
+        doc: See `missile.ids`
+      - id: ticks_until_next_trigger_check
+        type: u2
+      - id: triggers_remaining
+        type: u2
+      - id: x
+        type: u2
+      - id: y
+        type: u2
+      - id: z
+        type: u2
+      - id: enemy_ally_targeting
+        type: u1
+      - id: party_member_index
+        type: u1
+  songs:
+    doc: See `songlist.2ds`/`musiclis.ids`/`songs.ids`.
+    seq:
+      - id: day_song
+        type: u4
+      - id: night_song
+        type: u4
+      - id: win_song
+        type: u4
+      - id: battle_song
+        type: u4
+      - id: lose_song
+        type: u4
+      - id: alt_music
+        type: u4
+        repeat: expr
+        repeat-expr: 5
+      - id: main_day_ambient_wav
+        type: strz
+        size: 8
+        encoding: ASCII
+        repeat: expr
+        repeat-expr: 2
+      - id: main_day_ambient_volume
+        type: u4
+      - id: main_night_ambient_wav
+        type: strz
+        size: 8
+        encoding: ASCII
+        repeat: expr
+        repeat-expr: 2
+      - id: main_night_ambient_volume
+        type: u4
+      - id: reverb
+        type: u4
+        doc: See `REVERB.IDS`/`REVERB.2DA` if exist.
+      - size: 60
+  rest_encounters:
+    seq:
+      - id: name
+        type: strz
+        size: 32
+        encoding: UTF-8
+      - id: creature_text_ref
+        type: u4
+        repeat: expr
+        repeat-expr: 10
+      - id: creature_to_spawn
+        type: strz
+        size: 8
+        encoding: ASCII
+        repeat: expr
+        repeat-expr: 10
+        doc: See `spawngrp.2da`.
+      - id: num_creatures
+        type: u2
+      - id: difficulty
+        type: u2
+      - id: expiry_time
+        type: u4
+      - id: creature_wander_distance
+        type: u2
+      - id: creature_follow_distance
+        type: u2
+      - id: maximum_creatures
+        type: u2
+      - id: active
+        type: bool2
+      - id: hourly_probability_day
+        type: u2
+      - id: hourly_probability_night
+        type: u2
+      - size: 56
 enums:
   orientation:
     0: south
