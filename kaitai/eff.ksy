@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: © 2025 SBT Localization https://sbt.localization.com.ua
 # SPDX-FileContributor: Serhii Olendarenko <sergey.olendarenko@gmail.com>
+# SPDX-FileContributor: @definitelythehuman
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
@@ -20,6 +21,63 @@ seq:
   - id: body
     type: body_v2(false)
 types:
+  header_v1:
+    doc: |
+      This file format describes an effect (opcode) and its parameters.
+      The format is only ever found embedded in other files (e.g. ITM or SPL).
+      The engine appears to roll a probability for each valid target type, rather than one probability per attack.
+
+    doc-ref: |
+      https://gibberlings3.github.io/iesdp/file_formats/ie_formats/eff_v1.htm
+
+    seq:
+      - id: effect_type
+        type: u2
+      - id: target_type
+        type: u1
+        enum: target_type
+      - id: power
+        type: u1
+        # [TODO] : Link IDS files to parameter_1 and parameter_2
+      - id: parameter_1 #IDS value
+        type: u4
+      - id: parameter_2 #IDS target
+        type: u4
+      - id: timing_mode
+        type: u1
+        enum: timing_mode
+      - id: dispel_resistance
+        type: dispel_resistance
+        size: 1
+      - id: duration
+        type: u4
+      - id: probability1
+        type: u1
+      - id: probability2
+        type: u1
+      - id: res_spl
+        type: strz
+        size: 8
+        encoding: ASCII
+      - id: dice_thrown
+        type: u4
+      - id: dice_sides
+        type: u4
+      - id: saving_throw_type
+        size: 4
+        type: saving_throw_type
+      - id: saving_throw_bonus
+        type: u4
+      - id: tobex_stacking_id
+        type: u4
+    types:
+      dispel_resistance:
+        seq:
+          - id: dispel
+            type: b1
+          - id: bypass_resistance
+            type: b1
+
   body_v2:
     params:
       - id: embedded
@@ -140,38 +198,6 @@ types:
             type: u4
           - id: y
             type: u4
-      saving_throw_type:
-        seq:
-          - id: spells
-            type: b1
-          - id: breath
-            type: b1
-          - id: paralyze_poison_death
-            type: b1
-          - id: wands
-            type: b1
-          - id: petrify_polymorph
-            type: b1
-          - id: ee_spells
-            type: b1
-          - id: ee_breath
-            type: b1
-          - id: ee_paralyze_poison_death
-            type: b1
-          - id: ee_wands
-            type: b1
-          - id: ee_petrify_polymorph
-            type: b1
-          - id: ignore_primary_target
-            type: b1
-          - id: ignore_secondary_target
-            type: b1
-          - id: bypass_mirror_image
-            type: b1
-          - id: ignore_difficulty
-            type: b1
-          - id: reserved
-            type: b1
       dispel_resistance:
         seq:
           - id: dispel
@@ -203,31 +229,68 @@ types:
           - id: non_combat_ability
             type: b1
     enums:
-      target_type:
-        0: none
-        1: self
-        2: projectile_target
-        3: party
-        4: everyone
-        5: everyone_but_party
-        6: caster_group
-        7: target_group
-        8: everyone_but_self
-        9: original_caster
-      timing_mode:
-        0: instant_limited
-        1: instant_permanent_until_death
-        2: instant_while_equipped
-        3: delay_limited
-        4: delay_permanent
-        5: delay_while_equipped
-        6: limited_after_duration
-        7: permanent_after_duration
-        8: equipped_after_duration
-        9: instant_permanent
-        10: instant_limited_ticks
-        4096: absolute_duration
       parent_resource_type:
         0: none
         1: spell
         2: item
+
+  saving_throw_type:
+    seq:
+      - id: spells
+        type: b1
+      - id: breath
+        type: b1
+      - id: paralyze_poison_death
+        type: b1
+      - id: wands
+        type: b1
+      - id: petrify_polymorph
+        type: b1
+      - id: ee_spells
+        type: b1
+      - id: ee_breath
+        type: b1
+      - id: ee_paralyze_poison_death
+        type: b1
+      - id: ee_wands
+        type: b1
+      - id: ee_petrify_polymorph
+        type: b1
+      - id: ignore_primary_target
+        type: b1
+      - id: ignore_secondary_target
+        type: b1
+      - type: b13
+      - id: bypass_mirror_image
+        type: b1
+      - id: ignore_difficulty
+        type: b1
+      - id: reserved
+        type: b1
+
+enums:
+  target_type:
+    0: none
+    1: self
+    2: projectile_target
+    3: party
+    4: everyone
+    5: everyone_but_party
+    6: caster_group
+    7: target_group
+    8: everyone_but_self
+    9: original_caster
+
+  timing_mode:
+    0: instant_limited
+    1: instant_permanent_until_death
+    2: instant_while_equipped
+    3: delay_limited
+    4: delay_permanent
+    5: delay_while_equipped
+    6: limited_after_duration
+    7: permanent_after_duration
+    8: equipped_after_duration
+    9: instant_permanent
+    10: instant_limited_ticks
+    4096: absolute_duration
