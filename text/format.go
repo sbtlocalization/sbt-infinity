@@ -154,5 +154,11 @@ func joinContext(entry *TextEntry) string {
 		parts = append(parts, "World maps:\n"+strings.Join(maps, "\n"))
 	}
 
+	if areContexts, ok := contexts[ContextArea]; ok && len(areContexts) > 0 {
+		areas := lo.MapToSlice(areContexts, toAutoList)
+		slices.Sort(areas)
+		parts = append(parts, "Areas:\n"+strings.Join(areas, "\n"))
+	}
+
 	return strings.Join(parts, "\n\n")
 }

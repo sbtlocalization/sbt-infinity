@@ -89,9 +89,10 @@ func runEx(cmd *cobra.Command, args []string) error {
 	}
 
 	contextTypes := []fs.FileType{
-		fs.FileType_DLG,
-		fs.FileType_CRE,
+		fs.FileType_ARE,
 		fs.FileType_CHU,
+		fs.FileType_CRE,
+		fs.FileType_DLG,
 		fs.FileType_WMP,
 	}
 	if !slices.Contains(contextFrom, "all") {
@@ -102,6 +103,11 @@ func runEx(cmd *cobra.Command, args []string) error {
 
 	for _, t := range contextTypes {
 		switch t {
+		case fs.FileType_ARE:
+			err = processAreas(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process areas:", err)
+			}
 		case fs.FileType_CHU:
 			err = processUiScreens(collection, infFs, verbose)
 			if err != nil {
@@ -290,6 +296,46 @@ func processWorldMaps(collection *text.TextCollection, infFs afero.Fs, verbose b
 		}
 
 		collection.LoadContextFromWorldMaps(wf, wmp)
+	}
+
+	if verbose {
+		fmt.Println("done.")
+	}
+
+	return nil
+}
+
+func processAreas(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	if verbose {
+		fmt.Print("extracting context from areas... ")
+	}
+
+	dir, err := infFs.Open("ARE")
+	if err != nil {
+		return fmt.Errorf("unable to list existing ARE files: %v", err)
+	}
+	defer dir.Close()
+
+	areFiles, err := dir.Readdirnames(0)
+	if err != nil {
+		return fmt.Errorf("unable to read ARE directory names: %v", err)
+	}
+
+	for _, af := range areFiles {
+		areFile, err := infFs.Open(af)
+		if err != nil {
+			return fmt.Errorf("unable to open ARE file %q: %v", af, err)
+		}
+		defer areFile.Close()
+
+		are := p.NewAre()
+		stream := kaitai.NewStream(areFile)
+		err = are.Read(stream, nil, are)
+		if err != nil {
+			return fmt.Errorf("unable to parse ARE file %q: %v", af, err)
+		}
+
+		collection.LoadContextFromAreas(af, are)
 	}
 
 	if verbose {

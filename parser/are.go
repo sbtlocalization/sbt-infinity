@@ -63,13 +63,13 @@ type Are struct {
 	Area string
 	LastSaved uint32
 	Flags *Are_Flags
-	NorthArea string
+	NorthAreaAre string
 	NorthAreaFlags *Are_NeighboringAreaFlags
-	EastArea string
+	EastAreaAre string
 	EastAreaFlags *Are_NeighboringAreaFlags
-	SouthArea string
+	SouthAreaAre string
 	SouthAreaFlags *Are_NeighboringAreaFlags
-	WestArea string
+	WestAreaAre string
 	WestAreaFlags *Are_NeighboringAreaFlags
 	AreaTypeFlags *Are_AreaTypeFlags
 	RainProbability uint16
@@ -237,7 +237,7 @@ func (this *Are) Read(io *kaitai.Stream, parent kaitai.Struct, root *Are) (err e
 		return err
 	}
 	tmp7 = kaitai.BytesTerminate(tmp7, 0, false)
-	this.NorthArea = string(tmp7)
+	this.NorthAreaAre = string(tmp7)
 	tmp8, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
@@ -256,7 +256,7 @@ func (this *Are) Read(io *kaitai.Stream, parent kaitai.Struct, root *Are) (err e
 		return err
 	}
 	tmp10 = kaitai.BytesTerminate(tmp10, 0, false)
-	this.EastArea = string(tmp10)
+	this.EastAreaAre = string(tmp10)
 	tmp11, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
@@ -275,7 +275,7 @@ func (this *Are) Read(io *kaitai.Stream, parent kaitai.Struct, root *Are) (err e
 		return err
 	}
 	tmp13 = kaitai.BytesTerminate(tmp13, 0, false)
-	this.SouthArea = string(tmp13)
+	this.SouthAreaAre = string(tmp13)
 	tmp14, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
@@ -294,7 +294,7 @@ func (this *Are) Read(io *kaitai.Stream, parent kaitai.Struct, root *Are) (err e
 		return err
 	}
 	tmp16 = kaitai.BytesTerminate(tmp16, 0, false)
-	this.WestArea = string(tmp16)
+	this.WestAreaAre = string(tmp16)
 	tmp17, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
@@ -3434,7 +3434,7 @@ type Are_Region struct {
 	FirstVertexIndex uint32
 	TriggerValue uint32
 	CursorIndex uint32
-	DestinationArea string
+	DestinationAreaAre string
 	EntranceName string
 	Flags *Are_Region_Flags
 	InfoRef uint32
@@ -3516,7 +3516,7 @@ func (this *Are_Region) Read(io *kaitai.Stream, parent *Are, root *Are) (err err
 		return err
 	}
 	tmp327 = kaitai.BytesTerminate(tmp327, 0, false)
-	this.DestinationArea = string(tmp327)
+	this.DestinationAreaAre = string(tmp327)
 	tmp328, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
