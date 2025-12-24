@@ -119,7 +119,7 @@ instances:
     repeat: expr
     repeat-expr: num_extended_headers
   global_effects:
-    pos: ofs_effects + idx_global_effects * 48  # eff::header_v1 size
+    pos: ofs_effects + idx_global_effects.as<u4> * 48  # eff::header_v1 size
     size: 48
     type: eff::header_v1
     repeat: expr
@@ -408,7 +408,7 @@ types:
             type: b1
     instances:
       effects:
-        pos: _root.ofs_effects + idx_effects * 48  # eff::header_v1 size
+        pos: _root.ofs_effects + idx_effects.as<u4> * 48  # eff::header_v1 size
         size: 48
         type: eff::header_v1
         repeat: expr

@@ -525,7 +525,7 @@ func (this *Itm) GlobalEffects() (v []*Eff_HeaderV1, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this.OfsEffects + this.IdxGlobalEffects * 48), io.SeekStart)
+	_, err = this._io.Seek(int64(this.OfsEffects + uint32(this.IdxGlobalEffects) * 48), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
@@ -805,7 +805,7 @@ func (this *Itm_ExtendedHeader) Effects() (v []*Eff_HeaderV1, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this._root.OfsEffects + this.IdxEffects * 48), io.SeekStart)
+	_, err = this._io.Seek(int64(this._root.OfsEffects + uint32(this.IdxEffects) * 48), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}

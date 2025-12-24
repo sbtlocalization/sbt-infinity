@@ -10,7 +10,8 @@ meta:
   bit-endian: le
 doc: |
   This file format is used to hold game information in save games.
-  The GAM file does not store area, creature or item information, instead, it stores information on the party members and the global variables which affect party members.
+  The GAM file does not store area, creature or item information, instead, it stores information on the party members
+  and the global variables which affect party members.
 
 doc-ref: |
   https://gibberlings3.github.io/iesdp/file_formats/ie_formats/gam_v2.0.htm

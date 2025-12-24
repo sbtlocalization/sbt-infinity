@@ -293,7 +293,7 @@ func (this *Spl) Effects() (v []*Eff_HeaderV1, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this.OfsEffects + this.FirstEffectIndex * 48), io.SeekStart)
+	_, err = this._io.Seek(int64(this.OfsEffects + uint32(this.FirstEffectIndex) * 48), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
@@ -812,7 +812,7 @@ func (this *Spl_ExtendedHeader) Effects() (v []*Eff_HeaderV1, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = thisIo.Seek(int64(this._root.OfsEffects + this.FirstEffectIndex * 48), io.SeekStart)
+	_, err = thisIo.Seek(int64(this._root.OfsEffects + uint32(this.FirstEffectIndex) * 48), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}

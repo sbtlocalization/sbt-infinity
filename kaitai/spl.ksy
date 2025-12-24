@@ -97,7 +97,7 @@ instances:
     repeat: expr
     repeat-expr: num_extended_headers
   effects:
-    pos: ofs_effects + first_effect_index * 48  # eff::header_v1 size
+    pos: ofs_effects + first_effect_index.as<u4> * 48  # eff::header_v1 size
     size: 48
     type: eff::header_v1
     repeat: expr
@@ -142,7 +142,7 @@ types:
         doc: See `projectl.ids`
     instances:
       effects:
-        pos: _root.ofs_effects + first_effect_index * 48
+        pos: _root.ofs_effects + first_effect_index.as<u4> * 48
         io: _root._io
         size: 48
         type: eff::header_v1
