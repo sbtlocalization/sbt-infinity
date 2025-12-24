@@ -78,9 +78,9 @@ seq:
     size: 8
     encoding: ASCII
   - size: 4
-  - id: ofs_extended_header
+  - id: ofs_extended_headers
     type: u4
-  - id: num_extended_header
+  - id: num_extended_headers
     type: u2
   - id: ofs_effects
     type: u4
@@ -90,13 +90,13 @@ seq:
     type: u2
 instances:
   extended_headers:
-    pos: ofs_extended_header
+    pos: ofs_extended_headers
     size: 40
     type: extended_header
     repeat: expr
-    repeat-expr: num_extended_header
+    repeat-expr: num_extended_headers
   effects:
-    pos: ofs_effects + first_effect_index * 48 # eff::header_v1 size
+    pos: ofs_effects + first_effect_index * 48  # eff::header_v1 size
     size: 48
     type: eff::header_v1
     repeat: expr

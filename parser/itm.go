@@ -208,9 +208,9 @@ type Itm struct {
 	Enchantment uint32
 	OfsExtendedHeaders uint32
 	NumExtendedHeaders uint16
-	OfsFeatureBlocks uint32
-	IdxEquippingFeatureBlocks uint16
-	NumEquippingFeatureBlocks uint16
+	OfsEffects uint32
+	IdxGlobalEffects uint16
+	NumGlobalEffects uint16
 	_io *kaitai.Stream
 	_root *Itm
 	_parent kaitai.Struct
@@ -220,10 +220,11 @@ type Itm struct {
 	_raw_KitUsability2 []byte
 	_raw_KitUsability3 []byte
 	_raw_KitUsability4 []byte
-	_f_equippingFeatureBlocks bool
-	equippingFeatureBlocks []*Eff_HeaderV1
+	_raw_globalEffects [][]byte
 	_f_extendedHeaders bool
 	extendedHeaders []*Itm_ExtendedHeader
+	_f_globalEffects bool
+	globalEffects []*Eff_HeaderV1
 }
 func NewItm() *Itm {
 	return &Itm{
@@ -474,46 +475,18 @@ func (this *Itm) Read(io *kaitai.Stream, parent kaitai.Struct, root *Itm) (err e
 	if err != nil {
 		return err
 	}
-	this.OfsFeatureBlocks = uint32(tmp41)
+	this.OfsEffects = uint32(tmp41)
 	tmp42, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.IdxEquippingFeatureBlocks = uint16(tmp42)
+	this.IdxGlobalEffects = uint16(tmp42)
 	tmp43, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumEquippingFeatureBlocks = uint16(tmp43)
+	this.NumGlobalEffects = uint16(tmp43)
 	return err
-}
-func (this *Itm) EquippingFeatureBlocks() (v []*Eff_HeaderV1, err error) {
-	if (this._f_equippingFeatureBlocks) {
-		return this.equippingFeatureBlocks, nil
-	}
-	this._f_equippingFeatureBlocks = true
-	_pos, err := this._io.Pos()
-	if err != nil {
-		return nil, err
-	}
-	_, err = this._io.Seek(int64(this.OfsFeatureBlocks + this.IdxEquippingFeatureBlocks * 48), io.SeekStart)
-	if err != nil {
-		return nil, err
-	}
-	for i := 0; i < int(this.NumEquippingFeatureBlocks); i++ {
-		_ = i
-		tmp44 := NewEff_HeaderV1()
-		err = tmp44.Read(this._io, nil, nil)
-		if err != nil {
-			return nil, err
-		}
-		this.equippingFeatureBlocks = append(this.equippingFeatureBlocks, tmp44)
-	}
-	_, err = this._io.Seek(_pos, io.SeekStart)
-	if err != nil {
-		return nil, err
-	}
-	return this.equippingFeatureBlocks, nil
 }
 func (this *Itm) ExtendedHeaders() (v []*Itm_ExtendedHeader, err error) {
 	if (this._f_extendedHeaders) {
@@ -530,18 +503,53 @@ func (this *Itm) ExtendedHeaders() (v []*Itm_ExtendedHeader, err error) {
 	}
 	for i := 0; i < int(this.NumExtendedHeaders); i++ {
 		_ = i
-		tmp45 := NewItm_ExtendedHeader()
-		err = tmp45.Read(this._io, this, this._root)
+		tmp44 := NewItm_ExtendedHeader()
+		err = tmp44.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.extendedHeaders = append(this.extendedHeaders, tmp45)
+		this.extendedHeaders = append(this.extendedHeaders, tmp44)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
 	return this.extendedHeaders, nil
+}
+func (this *Itm) GlobalEffects() (v []*Eff_HeaderV1, err error) {
+	if (this._f_globalEffects) {
+		return this.globalEffects, nil
+	}
+	this._f_globalEffects = true
+	_pos, err := this._io.Pos()
+	if err != nil {
+		return nil, err
+	}
+	_, err = this._io.Seek(int64(this.OfsEffects + this.IdxGlobalEffects * 48), io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < int(this.NumGlobalEffects); i++ {
+		_ = i
+		tmp45, err := this._io.ReadBytes(int(48))
+		if err != nil {
+			return nil, err
+		}
+		tmp45 = tmp45
+		this._raw_globalEffects = append(this._raw_globalEffects, tmp45)
+		_io__raw_globalEffects := kaitai.NewStream(bytes.NewReader(this._raw_globalEffects[i]))
+		tmp46 := NewEff_HeaderV1()
+		err = tmp46.Read(_io__raw_globalEffects, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+		this.globalEffects = append(this.globalEffects, tmp46)
+	}
+	_, err = this._io.Seek(_pos, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	return this.globalEffects, nil
 }
 type Itm_ExtendedHeader struct {
 	AttackType Itm_AttackType
@@ -563,8 +571,8 @@ type Itm_ExtendedHeader struct {
 	SecondaryType uint8
 	DamageBonus uint16
 	DamageType Itm_DamageType
-	NumFeatureBlocks uint16
-	IdxFeatureBlocks uint16
+	NumEffects uint16
+	IdxEffects uint16
 	MaxCharges uint16
 	ChargeDepletionBehavior Itm_ChargeDepletionBehavior
 	Flags *Itm_ExtensionHeaderFlags
@@ -581,8 +589,9 @@ type Itm_ExtendedHeader struct {
 	_raw_IsArrow []byte
 	_raw_IsBolt []byte
 	_raw_IsBullet []byte
-	_f_featureBlocks bool
-	featureBlocks []*Eff_HeaderV1
+	_raw_effects [][]byte
+	_f_effects bool
+	effects []*Eff_HeaderV1
 }
 func NewItm_ExtendedHeader() *Itm_ExtendedHeader {
 	return &Itm_ExtendedHeader{
@@ -598,222 +607,229 @@ func (this *Itm_ExtendedHeader) Read(io *kaitai.Stream, parent *Itm, root *Itm) 
 	this._parent = parent
 	this._root = root
 
-	tmp46, err := this._io.ReadU1()
+	tmp47, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.AttackType = Itm_AttackType(tmp46)
-	tmp47, err := this._io.ReadBytes(int(1))
+	this.AttackType = Itm_AttackType(tmp47)
+	tmp48, err := this._io.ReadBytes(int(1))
 	if err != nil {
 		return err
 	}
-	tmp47 = tmp47
-	this._raw_IdRequirement = tmp47
+	tmp48 = tmp48
+	this._raw_IdRequirement = tmp48
 	_io__raw_IdRequirement := kaitai.NewStream(bytes.NewReader(this._raw_IdRequirement))
-	tmp48 := NewItm_IdRequirement()
-	err = tmp48.Read(_io__raw_IdRequirement, this, this._root)
+	tmp49 := NewItm_IdRequirement()
+	err = tmp49.Read(_io__raw_IdRequirement, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.IdRequirement = tmp48
-	tmp49, err := this._io.ReadU1()
-	if err != nil {
-		return err
-	}
-	this.Location = Itm_Location(tmp49)
+	this.IdRequirement = tmp49
 	tmp50, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.AlternativeDiceSides = tmp50
-	tmp51, err := this._io.ReadBytes(int(8))
+	this.Location = Itm_Location(tmp50)
+	tmp51, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	tmp51 = kaitai.BytesTerminate(tmp51, 0, false)
-	this.UseIconBam = string(tmp51)
-	tmp52, err := this._io.ReadU1()
+	this.AlternativeDiceSides = tmp51
+	tmp52, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.TargetType = Itm_TargetType(tmp52)
+	tmp52 = kaitai.BytesTerminate(tmp52, 0, false)
+	this.UseIconBam = string(tmp52)
 	tmp53, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.TargetCount = tmp53
-	tmp54, err := this._io.ReadU2le()
+	this.TargetType = Itm_TargetType(tmp53)
+	tmp54, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.Range = uint16(tmp54)
-	tmp55, err := this._io.ReadU1()
+	this.TargetCount = tmp54
+	tmp55, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.LauncherRequired = Itm_LauncherRequired(tmp55)
+	this.Range = uint16(tmp55)
 	tmp56, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.AlternativeDiceThrown = tmp56
+	this.LauncherRequired = Itm_LauncherRequired(tmp56)
 	tmp57, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.SpeedFactor = tmp57
+	this.AlternativeDiceThrown = tmp57
 	tmp58, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.AlternativeDamageBonus = tmp58
-	tmp59, err := this._io.ReadU2le()
+	this.SpeedFactor = tmp58
+	tmp59, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.Thac0Bonus = uint16(tmp59)
-	tmp60, err := this._io.ReadU1()
+	this.AlternativeDamageBonus = tmp59
+	tmp60, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.DiceSides = tmp60
+	this.Thac0Bonus = uint16(tmp60)
 	tmp61, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.PrimaryType = tmp61
+	this.DiceSides = tmp61
 	tmp62, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.DiceThrown = tmp62
+	this.PrimaryType = tmp62
 	tmp63, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.SecondaryType = tmp63
-	tmp64, err := this._io.ReadU2le()
+	this.DiceThrown = tmp63
+	tmp64, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.DamageBonus = uint16(tmp64)
+	this.SecondaryType = tmp64
 	tmp65, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.DamageType = Itm_DamageType(tmp65)
+	this.DamageBonus = uint16(tmp65)
 	tmp66, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumFeatureBlocks = uint16(tmp66)
+	this.DamageType = Itm_DamageType(tmp66)
 	tmp67, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.IdxFeatureBlocks = uint16(tmp67)
+	this.NumEffects = uint16(tmp67)
 	tmp68, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.MaxCharges = uint16(tmp68)
+	this.IdxEffects = uint16(tmp68)
 	tmp69, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ChargeDepletionBehavior = Itm_ChargeDepletionBehavior(tmp69)
-	tmp70, err := this._io.ReadBytes(int(4))
+	this.MaxCharges = uint16(tmp69)
+	tmp70, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	tmp70 = tmp70
-	this._raw_Flags = tmp70
+	this.ChargeDepletionBehavior = Itm_ChargeDepletionBehavior(tmp70)
+	tmp71, err := this._io.ReadBytes(int(4))
+	if err != nil {
+		return err
+	}
+	tmp71 = tmp71
+	this._raw_Flags = tmp71
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp71 := NewItm_ExtensionHeaderFlags()
-	err = tmp71.Read(_io__raw_Flags, this, this._root)
+	tmp72 := NewItm_ExtensionHeaderFlags()
+	err = tmp72.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp71
-	tmp72, err := this._io.ReadU2le()
+	this.Flags = tmp72
+	tmp73, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ProjectileAnimationPro = uint16(tmp72)
-	tmp73, err := this._io.ReadBytes(int(6))
-	if err != nil {
-		return err
-	}
-	tmp73 = tmp73
-	this.MeleeAnimation = tmp73
-	tmp74, err := this._io.ReadBytes(int(2))
+	this.ProjectileAnimationPro = uint16(tmp73)
+	tmp74, err := this._io.ReadBytes(int(6))
 	if err != nil {
 		return err
 	}
 	tmp74 = tmp74
-	this._raw_IsArrow = tmp74
+	this.MeleeAnimation = tmp74
+	tmp75, err := this._io.ReadBytes(int(2))
+	if err != nil {
+		return err
+	}
+	tmp75 = tmp75
+	this._raw_IsArrow = tmp75
 	_io__raw_IsArrow := kaitai.NewStream(bytes.NewReader(this._raw_IsArrow))
-	tmp75 := NewItm_ExtendedHeader_Bool()
-	err = tmp75.Read(_io__raw_IsArrow, this, this._root)
+	tmp76 := NewItm_ExtendedHeader_Bool()
+	err = tmp76.Read(_io__raw_IsArrow, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.IsArrow = tmp75
-	tmp76, err := this._io.ReadBytes(int(2))
+	this.IsArrow = tmp76
+	tmp77, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	tmp76 = tmp76
-	this._raw_IsBolt = tmp76
+	tmp77 = tmp77
+	this._raw_IsBolt = tmp77
 	_io__raw_IsBolt := kaitai.NewStream(bytes.NewReader(this._raw_IsBolt))
-	tmp77 := NewItm_ExtendedHeader_Bool()
-	err = tmp77.Read(_io__raw_IsBolt, this, this._root)
+	tmp78 := NewItm_ExtendedHeader_Bool()
+	err = tmp78.Read(_io__raw_IsBolt, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.IsBolt = tmp77
-	tmp78, err := this._io.ReadBytes(int(2))
+	this.IsBolt = tmp78
+	tmp79, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	tmp78 = tmp78
-	this._raw_IsBullet = tmp78
+	tmp79 = tmp79
+	this._raw_IsBullet = tmp79
 	_io__raw_IsBullet := kaitai.NewStream(bytes.NewReader(this._raw_IsBullet))
-	tmp79 := NewItm_ExtendedHeader_Bool()
-	err = tmp79.Read(_io__raw_IsBullet, this, this._root)
+	tmp80 := NewItm_ExtendedHeader_Bool()
+	err = tmp80.Read(_io__raw_IsBullet, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.IsBullet = tmp79
+	this.IsBullet = tmp80
 	return err
 }
-func (this *Itm_ExtendedHeader) FeatureBlocks() (v []*Eff_HeaderV1, err error) {
-	if (this._f_featureBlocks) {
-		return this.featureBlocks, nil
+func (this *Itm_ExtendedHeader) Effects() (v []*Eff_HeaderV1, err error) {
+	if (this._f_effects) {
+		return this.effects, nil
 	}
-	this._f_featureBlocks = true
+	this._f_effects = true
 	_pos, err := this._io.Pos()
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this._root.OfsFeatureBlocks + this.IdxFeatureBlocks * 48), io.SeekStart)
+	_, err = this._io.Seek(int64(this._root.OfsEffects + this.IdxEffects * 48), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	for i := 0; i < int(this.NumFeatureBlocks); i++ {
+	for i := 0; i < int(this.NumEffects); i++ {
 		_ = i
-		tmp80 := NewEff_HeaderV1()
-		err = tmp80.Read(this._io, nil, nil)
+		tmp81, err := this._io.ReadBytes(int(48))
 		if err != nil {
 			return nil, err
 		}
-		this.featureBlocks = append(this.featureBlocks, tmp80)
+		tmp81 = tmp81
+		this._raw_effects = append(this._raw_effects, tmp81)
+		_io__raw_effects := kaitai.NewStream(bytes.NewReader(this._raw_effects[i]))
+		tmp82 := NewEff_HeaderV1()
+		err = tmp82.Read(_io__raw_effects, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+		this.effects = append(this.effects, tmp82)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	return this.featureBlocks, nil
+	return this.effects, nil
 }
 
 /**
@@ -847,11 +863,11 @@ func (this *Itm_ExtendedHeader_Bool) Read(io *kaitai.Stream, parent *Itm_Extende
 	this._parent = parent
 	this._root = root
 
-	tmp81, err := this._io.ReadBitsIntLe(1)
+	tmp83, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Value = tmp81 != 0
+	this.Value = tmp83 != 0
 	return err
 }
 type Itm_ExtensionHeaderFlags struct {
@@ -885,74 +901,74 @@ func (this *Itm_ExtensionHeaderFlags) Read(io *kaitai.Stream, parent *Itm_Extend
 	this._parent = parent
 	this._root = root
 
-	tmp82, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.AddStrengthBonus = tmp82 != 0
-	tmp83, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Breakable = tmp83 != 0
 	tmp84, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DamageStrengthBonus = tmp84 != 0
+	this.AddStrengthBonus = tmp84 != 0
 	tmp85, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Thac0StrengthBonus = tmp85 != 0
-	for i := 0; i < int(5); i++ {
-		_ = i
-		tmp86, err := this._io.ReadBitsIntLe(1)
-		if err != nil {
-			return err
-		}
-		this._unnamed4 = append(this._unnamed4, tmp86 != 0)
+	this.Breakable = tmp85 != 0
+	tmp86, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
 	}
+	this.DamageStrengthBonus = tmp86 != 0
 	tmp87, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.BreaksSanctuaryInvisibility = tmp87 != 0
-	tmp88, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
+	this.Thac0StrengthBonus = tmp87 != 0
+	for i := 0; i < int(5); i++ {
+		_ = i
+		tmp88, err := this._io.ReadBitsIntLe(1)
+		if err != nil {
+			return err
+		}
+		this._unnamed4 = append(this._unnamed4, tmp88 != 0)
 	}
-	this.Hostile = tmp88 != 0
 	tmp89, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.RechargeAfterResting = tmp89 != 0
-	for i := 0; i < int(13); i++ {
-		_ = i
-		tmp90, err := this._io.ReadBitsIntLe(1)
-		if err != nil {
-			return err
-		}
-		this._unnamed8 = append(this._unnamed8, tmp90 != 0)
+	this.BreaksSanctuaryInvisibility = tmp89 != 0
+	tmp90, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
 	}
+	this.Hostile = tmp90 != 0
 	tmp91, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ToggleBackstab = tmp91 != 0
-	tmp92, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.CannotTargetInvisible = tmp92 != 0
-	for i := 0; i < int(5); i++ {
+	this.RechargeAfterResting = tmp91 != 0
+	for i := 0; i < int(13); i++ {
 		_ = i
-		tmp93, err := this._io.ReadBitsIntLe(1)
+		tmp92, err := this._io.ReadBitsIntLe(1)
 		if err != nil {
 			return err
 		}
-		this._unnamed11 = append(this._unnamed11, tmp93 != 0)
+		this._unnamed8 = append(this._unnamed8, tmp92 != 0)
+	}
+	tmp93, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.ToggleBackstab = tmp93 != 0
+	tmp94, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.CannotTargetInvisible = tmp94 != 0
+	for i := 0; i < int(5); i++ {
+		_ = i
+		tmp95, err := this._io.ReadBitsIntLe(1)
+		if err != nil {
+			return err
+		}
+		this._unnamed11 = append(this._unnamed11, tmp95 != 0)
 	}
 	return err
 }
@@ -995,111 +1011,111 @@ func (this *Itm_HeaderFlags) Read(io *kaitai.Stream, parent *Itm, root *Itm) (er
 	this._parent = parent
 	this._root = root
 
-	tmp94, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Unsellable = tmp94 != 0
-	tmp95, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.TwoHanded = tmp95 != 0
 	tmp96, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.MovableDroppable = tmp96 != 0
+	this.Unsellable = tmp96 != 0
 	tmp97, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Displayable = tmp97 != 0
+	this.TwoHanded = tmp97 != 0
 	tmp98, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Cursed = tmp98 != 0
+	this.MovableDroppable = tmp98 != 0
 	tmp99, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.CannotScribeToSpellbook = tmp99 != 0
+	this.Displayable = tmp99 != 0
 	tmp100, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Magical = tmp100 != 0
+	this.Cursed = tmp100 != 0
 	tmp101, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.LeftHanded = tmp101 != 0
+	this.CannotScribeToSpellbook = tmp101 != 0
 	tmp102, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Silver = tmp102 != 0
+	this.Magical = tmp102 != 0
 	tmp103, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ColdIron = tmp103 != 0
+	this.LeftHanded = tmp103 != 0
 	tmp104, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.StolenOffHanded = tmp104 != 0
+	this.Silver = tmp104 != 0
 	tmp105, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ConversableUnsellable = tmp105 != 0
+	this.ColdIron = tmp105 != 0
 	tmp106, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.FakeTwoHandded = tmp106 != 0
+	this.StolenOffHanded = tmp106 != 0
 	tmp107, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ForbidOffHandWeapon = tmp107 != 0
+	this.ConversableUnsellable = tmp107 != 0
 	tmp108, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.UsableInInventory = tmp108 != 0
+	this.FakeTwoHandded = tmp108 != 0
 	tmp109, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Adamantine = tmp109 != 0
-	for i := 0; i < int(8); i++ {
-		_ = i
-		tmp110, err := this._io.ReadBitsIntLe(1)
-		if err != nil {
-			return err
-		}
-		this._unnamed16 = append(this._unnamed16, tmp110 != 0)
+	this.ForbidOffHandWeapon = tmp109 != 0
+	tmp110, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
 	}
+	this.UsableInInventory = tmp110 != 0
 	tmp111, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Undispellable = tmp111 != 0
-	tmp112, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.ToggleCriticalHitAversion = tmp112 != 0
-	for i := 0; i < int(6); i++ {
+	this.Adamantine = tmp111 != 0
+	for i := 0; i < int(8); i++ {
 		_ = i
-		tmp113, err := this._io.ReadBitsIntLe(1)
+		tmp112, err := this._io.ReadBitsIntLe(1)
 		if err != nil {
 			return err
 		}
-		this._unnamed19 = append(this._unnamed19, tmp113 != 0)
+		this._unnamed16 = append(this._unnamed16, tmp112 != 0)
+	}
+	tmp113, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Undispellable = tmp113 != 0
+	tmp114, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.ToggleCriticalHitAversion = tmp114 != 0
+	for i := 0; i < int(6); i++ {
+		_ = i
+		tmp115, err := this._io.ReadBitsIntLe(1)
+		if err != nil {
+			return err
+		}
+		this._unnamed19 = append(this._unnamed19, tmp115 != 0)
 	}
 	return err
 }
@@ -1124,16 +1140,16 @@ func (this *Itm_IdRequirement) Read(io *kaitai.Stream, parent *Itm_ExtendedHeade
 	this._parent = parent
 	this._root = root
 
-	tmp114, err := this._io.ReadBitsIntLe(1)
+	tmp116, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.IdRequired = tmp114 != 0
-	tmp115, err := this._io.ReadBitsIntLe(1)
+	this.IdRequired = tmp116 != 0
+	tmp117, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.NonIdRequired = tmp115 != 0
+	this.NonIdRequired = tmp117 != 0
 	return err
 }
 type Itm_ItemOrSound struct {
@@ -1158,12 +1174,12 @@ func (this *Itm_ItemOrSound) Read(io *kaitai.Stream, parent *Itm, root *Itm) (er
 	this._parent = parent
 	this._root = root
 
-	tmp116, err := this._io.ReadBytes(int(8))
+	tmp118, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp116 = kaitai.BytesTerminate(tmp116, 0, false)
-	this.BgReplacementItemItm = string(tmp116)
+	tmp118 = kaitai.BytesTerminate(tmp118, 0, false)
+	this.BgReplacementItemItm = string(tmp118)
 	return err
 }
 func (this *Itm_ItemOrSound) PstDropSoundWav() (v string, err error) {
@@ -1201,46 +1217,46 @@ func (this *Itm_KitUsability1) Read(io *kaitai.Stream, parent *Itm, root *Itm) (
 	this._parent = parent
 	this._root = root
 
-	tmp117, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.ClericOfTalos = tmp117 != 0
-	tmp118, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.ClericOfHelm = tmp118 != 0
 	tmp119, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ClericOfLathlander = tmp119 != 0
+	this.ClericOfTalos = tmp119 != 0
 	tmp120, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.TotemicDruid = tmp120 != 0
+	this.ClericOfHelm = tmp120 != 0
 	tmp121, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ShapeshifterDruid = tmp121 != 0
+	this.ClericOfLathlander = tmp121 != 0
 	tmp122, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AvengerDruid = tmp122 != 0
+	this.TotemicDruid = tmp122 != 0
 	tmp123, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Barbarian = tmp123 != 0
+	this.ShapeshifterDruid = tmp123 != 0
 	tmp124, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Wildmage = tmp124 != 0
+	this.AvengerDruid = tmp124 != 0
+	tmp125, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Barbarian = tmp125 != 0
+	tmp126, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Wildmage = tmp126 != 0
 	return err
 }
 type Itm_KitUsability2 struct {
@@ -1270,46 +1286,46 @@ func (this *Itm_KitUsability2) Read(io *kaitai.Stream, parent *Itm, root *Itm) (
 	this._parent = parent
 	this._root = root
 
-	tmp125, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.StalkerRanger = tmp125 != 0
-	tmp126, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.BeastmasterRanger = tmp126 != 0
 	tmp127, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AssassinThief = tmp127 != 0
+	this.StalkerRanger = tmp127 != 0
 	tmp128, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.BountyHunterThief = tmp128 != 0
+	this.BeastmasterRanger = tmp128 != 0
 	tmp129, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.SwashbucklerThief = tmp129 != 0
+	this.AssassinThief = tmp129 != 0
 	tmp130, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.BladeBard = tmp130 != 0
+	this.BountyHunterThief = tmp130 != 0
 	tmp131, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.JesterBard = tmp131 != 0
+	this.SwashbucklerThief = tmp131 != 0
 	tmp132, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.SkaldBard = tmp132 != 0
+	this.BladeBard = tmp132 != 0
+	tmp133, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.JesterBard = tmp133 != 0
+	tmp134, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.SkaldBard = tmp134 != 0
 	return err
 }
 type Itm_KitUsability3 struct {
@@ -1339,46 +1355,46 @@ func (this *Itm_KitUsability3) Read(io *kaitai.Stream, parent *Itm, root *Itm) (
 	this._parent = parent
 	this._root = root
 
-	tmp133, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Diviner = tmp133 != 0
-	tmp134, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Enchanter = tmp134 != 0
 	tmp135, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Illusionist = tmp135 != 0
+	this.Diviner = tmp135 != 0
 	tmp136, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Invoker = tmp136 != 0
+	this.Enchanter = tmp136 != 0
 	tmp137, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Necromancer = tmp137 != 0
+	this.Illusionist = tmp137 != 0
 	tmp138, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Transmuter = tmp138 != 0
+	this.Invoker = tmp138 != 0
 	tmp139, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.All = tmp139 != 0
+	this.Necromancer = tmp139 != 0
 	tmp140, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Ferlain = tmp140 != 0
+	this.Transmuter = tmp140 != 0
+	tmp141, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.All = tmp141 != 0
+	tmp142, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Ferlain = tmp142 != 0
 	return err
 }
 type Itm_KitUsability4 struct {
@@ -1408,46 +1424,46 @@ func (this *Itm_KitUsability4) Read(io *kaitai.Stream, parent *Itm, root *Itm) (
 	this._parent = parent
 	this._root = root
 
-	tmp141, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.BerserkerFighter = tmp141 != 0
-	tmp142, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.WizardslayerFighter = tmp142 != 0
 	tmp143, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.KensaiFighter = tmp143 != 0
+	this.BerserkerFighter = tmp143 != 0
 	tmp144, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.CavalierPaladin = tmp144 != 0
+	this.WizardslayerFighter = tmp144 != 0
 	tmp145, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.InquisiterPaladin = tmp145 != 0
+	this.KensaiFighter = tmp145 != 0
 	tmp146, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.UndeadHunterPaladin = tmp146 != 0
+	this.CavalierPaladin = tmp146 != 0
 	tmp147, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Abjurer = tmp147 != 0
+	this.InquisiterPaladin = tmp147 != 0
 	tmp148, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Conjurer = tmp148 != 0
+	this.UndeadHunterPaladin = tmp148 != 0
+	tmp149, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Abjurer = tmp149 != 0
+	tmp150, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Conjurer = tmp150 != 0
 	return err
 }
 type Itm_UsabilityFlags struct {
@@ -1501,165 +1517,165 @@ func (this *Itm_UsabilityFlags) Read(io *kaitai.Stream, parent *Itm, root *Itm) 
 	this._parent = parent
 	this._root = root
 
-	tmp149, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.ChaoticPrefix = tmp149 != 0
-	tmp150, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Evil = tmp150 != 0
 	tmp151, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Good = tmp151 != 0
+	this.ChaoticPrefix = tmp151 != 0
 	tmp152, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Neutral = tmp152 != 0
+	this.Evil = tmp152 != 0
 	tmp153, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.LawfulPrefix = tmp153 != 0
+	this.Good = tmp153 != 0
 	tmp154, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.NeutralPrefix = tmp154 != 0
+	this.Neutral = tmp154 != 0
 	tmp155, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Bard = tmp155 != 0
+	this.LawfulPrefix = tmp155 != 0
 	tmp156, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Cleric = tmp156 != 0
+	this.NeutralPrefix = tmp156 != 0
 	tmp157, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ClericMage = tmp157 != 0
+	this.Bard = tmp157 != 0
 	tmp158, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ClericThief = tmp158 != 0
+	this.Cleric = tmp158 != 0
 	tmp159, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ClericRanger = tmp159 != 0
+	this.ClericMage = tmp159 != 0
 	tmp160, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Fighter = tmp160 != 0
+	this.ClericThief = tmp160 != 0
 	tmp161, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.FighterDruid = tmp161 != 0
+	this.ClericRanger = tmp161 != 0
 	tmp162, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.FighterMage = tmp162 != 0
+	this.Fighter = tmp162 != 0
 	tmp163, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.FighterCleric = tmp163 != 0
+	this.FighterDruid = tmp163 != 0
 	tmp164, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.FighterMageCleric = tmp164 != 0
+	this.FighterMage = tmp164 != 0
 	tmp165, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.FighterMageThief = tmp165 != 0
+	this.FighterCleric = tmp165 != 0
 	tmp166, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.FighterThief = tmp166 != 0
+	this.FighterMageCleric = tmp166 != 0
 	tmp167, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Mage = tmp167 != 0
+	this.FighterMageThief = tmp167 != 0
 	tmp168, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.MageThief = tmp168 != 0
+	this.FighterThief = tmp168 != 0
 	tmp169, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Paladin = tmp169 != 0
+	this.Mage = tmp169 != 0
 	tmp170, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Ranger = tmp170 != 0
+	this.MageThief = tmp170 != 0
 	tmp171, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Thief = tmp171 != 0
+	this.Paladin = tmp171 != 0
 	tmp172, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Elf = tmp172 != 0
+	this.Ranger = tmp172 != 0
 	tmp173, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Dwarf = tmp173 != 0
+	this.Thief = tmp173 != 0
 	tmp174, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.HalfElf = tmp174 != 0
+	this.Elf = tmp174 != 0
 	tmp175, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Halfling = tmp175 != 0
+	this.Dwarf = tmp175 != 0
 	tmp176, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Human = tmp176 != 0
+	this.HalfElf = tmp176 != 0
 	tmp177, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Gnome = tmp177 != 0
+	this.Halfling = tmp177 != 0
 	tmp178, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Monk = tmp178 != 0
+	this.Human = tmp178 != 0
 	tmp179, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Druid = tmp179 != 0
+	this.Gnome = tmp179 != 0
 	tmp180, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.HalfOrc = tmp180 != 0
+	this.Monk = tmp180 != 0
+	tmp181, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Druid = tmp181 != 0
+	tmp182, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.HalfOrc = tmp182 != 0
 	return err
 }
