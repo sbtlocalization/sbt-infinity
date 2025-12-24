@@ -10,7 +10,8 @@ import (
 
 
 /**
- * This file format describes a "spell". Spells include mage spells, priest spells, innate abilities, special abilities and effects used for game advancement (e.g. animation effects, custom spells).
+ * This file format describes a "spell". Spells include mage spells, priest spells, innate abilities, special abilities
+ * and effects used for game advancement (e.g. animation effects, custom spells).
  * @see <a href="https://gibberlings3.github.io/iesdp/file_formats/ie_formats/spl_v1.htm
  * ">Source</a>
  */
