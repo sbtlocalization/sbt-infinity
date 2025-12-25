@@ -29,16 +29,17 @@ type TextEntry struct {
 type ContextType int
 
 const (
-	ContextDialog ContextType = iota
-	ContextSound
-	ContextUI
+	ContextArea ContextType = iota
 	ContextCreature
 	ContextCreatureSound
-	ContextWorldMap
-	ContextArea
+	ContextDialog 
 	ContextItem
 	ContextProjectile
+	ContextSound
 	ContextSpell
+	ContextStore
+	ContextUI
+	ContextWorldMap
 )
 
 type TextCollection struct {
@@ -381,6 +382,24 @@ func (c *TextCollection) LoadContextFromSpell(splFilename string, spl *p.Spl) er
 	if identDescRef := int(spl.IdentifiedDescriptionRef); identDescRef != 0 && identDescRef != 9_999_999 && identDescRef != 0xFFFFFFFF {
 		c.AddLabel(identDescRef, "spell")
 		c.AddContext(identDescRef, ContextSpell, "Identified spell description", splFilename)
+	}
+
+	return nil
+}
+
+func (c *TextCollection) LoadContextFromStore(stoFilename string, sto *p.Sto) error {
+	if nameRef := int(sto.NameRef); nameRef != 0 && nameRef != 0xFFFFFFFF {
+		c.AddLabel(nameRef, "store")
+		c.AddContext(nameRef, ContextStore, "Store name", stoFilename)
+	}
+
+	if drinks, err := sto.Drinks(); err == nil {
+		for i, drink := range drinks {
+			if nameRef := int(drink.DrinkNameRef); nameRef != 0 && nameRef != 0xFFFFFFFF {
+				c.AddLabel(nameRef, "drink")
+				c.AddContext(nameRef, ContextStore, "Drink name (at merchant)", fmt.Sprintf("%s → drink %d", stoFilename, i))
+			}
+		}
 	}
 
 	return nil

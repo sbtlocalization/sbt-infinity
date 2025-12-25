@@ -96,6 +96,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 		fs.FileType_ITM,
 		fs.FileType_PRO,
 		fs.FileType_SPL,
+		fs.FileType_STO,
 		fs.FileType_WMP,
 	}
 	if !slices.Contains(contextFrom, "all") {
@@ -140,6 +141,11 @@ func runEx(cmd *cobra.Command, args []string) error {
 			err = processSpells(collection, infFs, verbose)
 			if err != nil {
 				fmt.Println("warning: unable to process spells:", err)
+			}
+		case fs.FileType_STO:
+			err = processStores(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process stores:", err)
 			}
 		case fs.FileType_WMP:
 			err = processWorldMaps(collection, infFs, verbose)
@@ -375,6 +381,17 @@ func processSpells(collection *text.TextCollection, infFs afero.Fs, verbose bool
 			return err
 		}
 		collection.LoadContextFromSpell(filename, spl)
+		return nil
+	})
+}
+
+func processStores(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	return processFiles(infFs, verbose, "STO", "stores", func(filename string, stream *kaitai.Stream) error {
+		sto := p.NewSto()
+		if err := sto.Read(stream, nil, sto); err != nil {
+			return err
+		}
+		collection.LoadContextFromStore(filename, sto)
 		return nil
 	})
 }
