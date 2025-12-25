@@ -439,11 +439,7 @@ type Wmp_AreaLinkEntry struct {
 	EntryPoint string
 	TravelTime uint32
 	DefaultEntrance Wmp_AreaLinkEntry_Entrance
-	RandomEncounterArea1 string
-	RandomEncounterArea2 string
-	RandomEncounterArea3 string
-	RandomEncounterArea4 string
-	RandomEncounterArea5 string
+	RandomEncounterArea []string
 	RandomEncounterProbability uint32
 	Reserved []byte
 	_io *kaitai.Stream
@@ -485,47 +481,26 @@ func (this *Wmp_AreaLinkEntry) Read(io *kaitai.Stream, parent *Wmp_AreaEntry, ro
 		return err
 	}
 	this.DefaultEntrance = Wmp_AreaLinkEntry_Entrance(tmp37)
-	tmp38, err := this._io.ReadBytes(int(8))
+	for i := 0; i < int(5); i++ {
+		_ = i
+		tmp38, err := this._io.ReadBytes(int(8))
+		if err != nil {
+			return err
+		}
+		tmp38 = kaitai.BytesTerminate(tmp38, 0, false)
+		this.RandomEncounterArea = append(this.RandomEncounterArea, string(tmp38))
+	}
+	tmp39, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp38 = kaitai.BytesTerminate(tmp38, 0, false)
-	this.RandomEncounterArea1 = string(tmp38)
-	tmp39, err := this._io.ReadBytes(int(8))
+	this.RandomEncounterProbability = uint32(tmp39)
+	tmp40, err := this._io.ReadBytes(int(128))
 	if err != nil {
 		return err
 	}
-	tmp39 = kaitai.BytesTerminate(tmp39, 0, false)
-	this.RandomEncounterArea2 = string(tmp39)
-	tmp40, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp40 = kaitai.BytesTerminate(tmp40, 0, false)
-	this.RandomEncounterArea3 = string(tmp40)
-	tmp41, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp41 = kaitai.BytesTerminate(tmp41, 0, false)
-	this.RandomEncounterArea4 = string(tmp41)
-	tmp42, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp42 = kaitai.BytesTerminate(tmp42, 0, false)
-	this.RandomEncounterArea5 = string(tmp42)
-	tmp43, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.RandomEncounterProbability = uint32(tmp43)
-	tmp44, err := this._io.ReadBytes(int(128))
-	if err != nil {
-		return err
-	}
-	tmp44 = tmp44
-	this.Reserved = tmp44
+	tmp40 = tmp40
+	this.Reserved = tmp40
 	return err
 }
 type Wmp_WorldmapEntry struct {
@@ -564,87 +539,87 @@ func (this *Wmp_WorldmapEntry) Read(io *kaitai.Stream, parent *Wmp, root *Wmp) (
 	this._parent = parent
 	this._root = root
 
-	tmp45, err := this._io.ReadBytes(int(8))
+	tmp41, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp45 = kaitai.BytesTerminate(tmp45, 0, false)
-	this.BackgroundImageMos = string(tmp45)
+	tmp41 = kaitai.BytesTerminate(tmp41, 0, false)
+	this.BackgroundImageMos = string(tmp41)
+	tmp42, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.Width = uint32(tmp42)
+	tmp43, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.Height = uint32(tmp43)
+	tmp44, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.MapId = uint32(tmp44)
+	tmp45, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.AreaNameRef = uint32(tmp45)
 	tmp46, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.Width = uint32(tmp46)
+	this.CenterX = uint32(tmp46)
 	tmp47, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.Height = uint32(tmp47)
+	this.CenterY = uint32(tmp47)
 	tmp48, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.MapId = uint32(tmp48)
+	this.NumAreaEntries = uint32(tmp48)
 	tmp49, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.AreaNameRef = uint32(tmp49)
+	this.OfsAreaEntries = uint32(tmp49)
 	tmp50, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.CenterX = uint32(tmp50)
+	this.OfsAreaLinkEntries = uint32(tmp50)
 	tmp51, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.CenterY = uint32(tmp51)
-	tmp52, err := this._io.ReadU4le()
+	this.NumAreaLinkEntries = uint32(tmp51)
+	tmp52, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.NumAreaEntries = uint32(tmp52)
-	tmp53, err := this._io.ReadU4le()
+	tmp52 = kaitai.BytesTerminate(tmp52, 0, false)
+	this.MapIconsBam = string(tmp52)
+	tmp53, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	this.OfsAreaEntries = uint32(tmp53)
-	tmp54, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.OfsAreaLinkEntries = uint32(tmp54)
-	tmp55, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NumAreaLinkEntries = uint32(tmp55)
-	tmp56, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp56 = kaitai.BytesTerminate(tmp56, 0, false)
-	this.MapIconsBam = string(tmp56)
-	tmp57, err := this._io.ReadBytes(int(4))
-	if err != nil {
-		return err
-	}
-	tmp57 = tmp57
-	this._raw_Flags = tmp57
+	tmp53 = tmp53
+	this._raw_Flags = tmp53
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp58 := NewWmp_WorldmapEntry_Flags()
-	err = tmp58.Read(_io__raw_Flags, this, this._root)
+	tmp54 := NewWmp_WorldmapEntry_Flags()
+	err = tmp54.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp58
-	tmp59, err := this._io.ReadBytes(int(124))
+	this.Flags = tmp54
+	tmp55, err := this._io.ReadBytes(int(124))
 	if err != nil {
 		return err
 	}
-	tmp59 = tmp59
-	this.Reserved = tmp59
+	tmp55 = tmp55
+	this.Reserved = tmp55
 	return err
 }
 func (this *Wmp_WorldmapEntry) AreaEntries() (v []*Wmp_AreaEntry, err error) {
@@ -662,12 +637,12 @@ func (this *Wmp_WorldmapEntry) AreaEntries() (v []*Wmp_AreaEntry, err error) {
 	}
 	for i := 0; i < int(this.NumAreaEntries); i++ {
 		_ = i
-		tmp60 := NewWmp_AreaEntry()
-		err = tmp60.Read(this._io, this, this._root)
+		tmp56 := NewWmp_AreaEntry()
+		err = tmp56.Read(this._io, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.areaEntries = append(this.areaEntries, tmp60)
+		this.areaEntries = append(this.areaEntries, tmp56)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -696,15 +671,15 @@ func (this *Wmp_WorldmapEntry_Flags) Read(io *kaitai.Stream, parent *Wmp_Worldma
 	this._parent = parent
 	this._root = root
 
-	tmp61, err := this._io.ReadBitsIntLe(1)
+	tmp57, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ColoredIcons = tmp61 != 0
-	tmp62, err := this._io.ReadBitsIntLe(1)
+	this.ColoredIcons = tmp57 != 0
+	tmp58, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.IgnorePalette = tmp62 != 0
+	this.IgnorePalette = tmp58 != 0
 	return err
 }
