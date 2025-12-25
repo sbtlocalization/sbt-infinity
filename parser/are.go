@@ -76,8 +76,7 @@ type Are struct {
 	SnowProbability uint16
 	FogProbability uint16
 	LightningProbability uint16
-	OverlayTransparency bool
-	_unnamed19 []byte
+	OverlayTransparency *Are_Bool2
 	OfsActors uint32
 	NumActors uint16
 	NumRegions uint16
@@ -113,7 +112,7 @@ type Are struct {
 	NumBgProjectileTraps uint32
 	BgRestMovieDay string
 	BgRestMovieNight string
-	_unnamed55 []byte
+	_unnamed54 []byte
 	_io *kaitai.Stream
 	_root *Are
 	_parent kaitai.Struct
@@ -342,203 +341,197 @@ func (this *Are) Read(io *kaitai.Stream, parent kaitai.Struct, root *Are) (err e
 		return err
 	}
 	this.LightningProbability = uint16(tmp24)
-	tmp25, err := this._io.ReadBitsIntLe(1)
+	tmp25 := NewAre_Bool2()
+	err = tmp25.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.OverlayTransparency = tmp25 != 0
-	this._io.AlignToByte()
-	tmp26, err := this._io.ReadBytes(int(1))
+	this.OverlayTransparency = tmp25
+	tmp26, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp26 = tmp26
-	this._unnamed19 = tmp26
-	tmp27, err := this._io.ReadU4le()
+	this.OfsActors = uint32(tmp26)
+	tmp27, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.OfsActors = uint32(tmp27)
+	this.NumActors = uint16(tmp27)
 	tmp28, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumActors = uint16(tmp28)
-	tmp29, err := this._io.ReadU2le()
+	this.NumRegions = uint16(tmp28)
+	tmp29, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumRegions = uint16(tmp29)
+	this.OfsRegions = uint32(tmp29)
 	tmp30, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsRegions = uint32(tmp30)
+	this.OfsSpawnPoints = uint32(tmp30)
 	tmp31, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsSpawnPoints = uint32(tmp31)
+	this.NumSpawnPoints = uint32(tmp31)
 	tmp32, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumSpawnPoints = uint32(tmp32)
+	this.OfsEntrances = uint32(tmp32)
 	tmp33, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsEntrances = uint32(tmp33)
+	this.NumEntrances = uint32(tmp33)
 	tmp34, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumEntrances = uint32(tmp34)
-	tmp35, err := this._io.ReadU4le()
+	this.OfsContainers = uint32(tmp34)
+	tmp35, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.OfsContainers = uint32(tmp35)
+	this.NumContainers = uint16(tmp35)
 	tmp36, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumContainers = uint16(tmp36)
-	tmp37, err := this._io.ReadU2le()
+	this.NumItems = uint16(tmp36)
+	tmp37, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumItems = uint16(tmp37)
+	this.OfsItems = uint32(tmp37)
 	tmp38, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsItems = uint32(tmp38)
-	tmp39, err := this._io.ReadU4le()
+	this.OfsVertices = uint32(tmp38)
+	tmp39, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.OfsVertices = uint32(tmp39)
+	this.NumVertices = uint16(tmp39)
 	tmp40, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumVertices = uint16(tmp40)
-	tmp41, err := this._io.ReadU2le()
+	this.NumAmbients = uint16(tmp40)
+	tmp41, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumAmbients = uint16(tmp41)
+	this.OfsAmbients = uint32(tmp41)
 	tmp42, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsAmbients = uint32(tmp42)
+	this.OfsVariables = uint32(tmp42)
 	tmp43, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsVariables = uint32(tmp43)
-	tmp44, err := this._io.ReadU4le()
+	this.NumVariables = uint32(tmp43)
+	tmp44, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumVariables = uint32(tmp44)
+	this.OfsTiledObjectFlags = uint16(tmp44)
 	tmp45, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.OfsTiledObjectFlags = uint16(tmp45)
-	tmp46, err := this._io.ReadU2le()
+	this.NumTiledObjectFlags = uint16(tmp45)
+	tmp46, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.NumTiledObjectFlags = uint16(tmp46)
-	tmp47, err := this._io.ReadBytes(int(8))
+	tmp46 = kaitai.BytesTerminate(tmp46, 0, false)
+	this.AreaScriptBcs = string(tmp46)
+	tmp47, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp47 = kaitai.BytesTerminate(tmp47, 0, false)
-	this.AreaScriptBcs = string(tmp47)
+	this.NumExploredBitmask = uint32(tmp47)
 	tmp48, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumExploredBitmask = uint32(tmp48)
+	this.OfsExploredBitmask = uint32(tmp48)
 	tmp49, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsExploredBitmask = uint32(tmp49)
+	this.NumDoors = uint32(tmp49)
 	tmp50, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumDoors = uint32(tmp50)
+	this.OfsDoors = uint32(tmp50)
 	tmp51, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsDoors = uint32(tmp51)
+	this.NumAnimations = uint32(tmp51)
 	tmp52, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumAnimations = uint32(tmp52)
+	this.OfsAnimations = uint32(tmp52)
 	tmp53, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsAnimations = uint32(tmp53)
+	this.NumTiledObjects = uint32(tmp53)
 	tmp54, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumTiledObjects = uint32(tmp54)
+	this.OfsTiledObjects = uint32(tmp54)
 	tmp55, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsTiledObjects = uint32(tmp55)
+	this.OfsSongs = uint32(tmp55)
 	tmp56, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsSongs = uint32(tmp56)
-	tmp57, err := this._io.ReadU4le()
+	this.OfsRestEncounters = uint32(tmp56)
+	tmp57 := NewAre_OtherOffsets()
+	err = tmp57.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.OfsRestEncounters = uint32(tmp57)
-	tmp58 := NewAre_OtherOffsets()
-	err = tmp58.Read(this._io, this, this._root)
+	this.OtherOffsets = tmp57
+	tmp58, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OtherOffsets = tmp58
-	tmp59, err := this._io.ReadU4le()
+	this.NumBgProjectileTraps = uint32(tmp58)
+	tmp59, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.NumBgProjectileTraps = uint32(tmp59)
+	tmp59 = kaitai.BytesTerminate(tmp59, 0, false)
+	this.BgRestMovieDay = string(tmp59)
 	tmp60, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
 	tmp60 = kaitai.BytesTerminate(tmp60, 0, false)
-	this.BgRestMovieDay = string(tmp60)
-	tmp61, err := this._io.ReadBytes(int(8))
+	this.BgRestMovieNight = string(tmp60)
+	tmp61, err := this._io.ReadBytes(int(56))
 	if err != nil {
 		return err
 	}
-	tmp61 = kaitai.BytesTerminate(tmp61, 0, false)
-	this.BgRestMovieNight = string(tmp61)
-	tmp62, err := this._io.ReadBytes(int(56))
-	if err != nil {
-		return err
-	}
-	tmp62 = tmp62
-	this._unnamed55 = tmp62
+	tmp61 = tmp61
+	this._unnamed54 = tmp61
 	return err
 }
 func (this *Are) Actors() (v []*Are_Actor, err error) {
@@ -556,19 +549,19 @@ func (this *Are) Actors() (v []*Are_Actor, err error) {
 	}
 	for i := 0; i < int(this.NumActors); i++ {
 		_ = i
-		tmp63, err := this._io.ReadBytes(int(272))
+		tmp62, err := this._io.ReadBytes(int(272))
 		if err != nil {
 			return nil, err
 		}
-		tmp63 = tmp63
-		this._raw_actors = append(this._raw_actors, tmp63)
+		tmp62 = tmp62
+		this._raw_actors = append(this._raw_actors, tmp62)
 		_io__raw_actors := kaitai.NewStream(bytes.NewReader(this._raw_actors[i]))
-		tmp64 := NewAre_Actor()
-		err = tmp64.Read(_io__raw_actors, this, this._root)
+		tmp63 := NewAre_Actor()
+		err = tmp63.Read(_io__raw_actors, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.actors = append(this.actors, tmp64)
+		this.actors = append(this.actors, tmp63)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -591,19 +584,19 @@ func (this *Are) Ambients() (v []*Are_Ambient, err error) {
 	}
 	for i := 0; i < int(this.NumAmbients); i++ {
 		_ = i
-		tmp65, err := this._io.ReadBytes(int(212))
+		tmp64, err := this._io.ReadBytes(int(212))
 		if err != nil {
 			return nil, err
 		}
-		tmp65 = tmp65
-		this._raw_ambients = append(this._raw_ambients, tmp65)
+		tmp64 = tmp64
+		this._raw_ambients = append(this._raw_ambients, tmp64)
 		_io__raw_ambients := kaitai.NewStream(bytes.NewReader(this._raw_ambients[i]))
-		tmp66 := NewAre_Ambient()
-		err = tmp66.Read(_io__raw_ambients, this, this._root)
+		tmp65 := NewAre_Ambient()
+		err = tmp65.Read(_io__raw_ambients, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.ambients = append(this.ambients, tmp66)
+		this.ambients = append(this.ambients, tmp65)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -626,19 +619,19 @@ func (this *Are) Animations() (v []*Are_Animation, err error) {
 	}
 	for i := 0; i < int(this.NumAnimations); i++ {
 		_ = i
-		tmp67, err := this._io.ReadBytes(int(76))
+		tmp66, err := this._io.ReadBytes(int(76))
 		if err != nil {
 			return nil, err
 		}
-		tmp67 = tmp67
-		this._raw_animations = append(this._raw_animations, tmp67)
+		tmp66 = tmp66
+		this._raw_animations = append(this._raw_animations, tmp66)
 		_io__raw_animations := kaitai.NewStream(bytes.NewReader(this._raw_animations[i]))
-		tmp68 := NewAre_Animation()
-		err = tmp68.Read(_io__raw_animations, this, this._root)
+		tmp67 := NewAre_Animation()
+		err = tmp67.Read(_io__raw_animations, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.animations = append(this.animations, tmp68)
+		this.animations = append(this.animations, tmp67)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -655,33 +648,33 @@ func (this *Are) BgAutomapNotes() (v []*Are_BgAutomapNote, err error) {
 	if err != nil {
 		return nil, err
 	}
-	tmp69, err := this.OtherOffsets.OfsBgAutomapNotes()
+	tmp68, err := this.OtherOffsets.OfsBgAutomapNotes()
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(tmp69), io.SeekStart)
+	_, err = this._io.Seek(int64(tmp68), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	tmp70, err := this.OtherOffsets.NumBgAutomapNotes()
+	tmp69, err := this.OtherOffsets.NumBgAutomapNotes()
 	if err != nil {
 		return nil, err
 	}
-	for i := 0; i < int(tmp70); i++ {
+	for i := 0; i < int(tmp69); i++ {
 		_ = i
-		tmp71, err := this._io.ReadBytes(int(52))
+		tmp70, err := this._io.ReadBytes(int(52))
 		if err != nil {
 			return nil, err
 		}
-		tmp71 = tmp71
-		this._raw_bgAutomapNotes = append(this._raw_bgAutomapNotes, tmp71)
+		tmp70 = tmp70
+		this._raw_bgAutomapNotes = append(this._raw_bgAutomapNotes, tmp70)
 		_io__raw_bgAutomapNotes := kaitai.NewStream(bytes.NewReader(this._raw_bgAutomapNotes[i]))
-		tmp72 := NewAre_BgAutomapNote()
-		err = tmp72.Read(_io__raw_bgAutomapNotes, this, this._root)
+		tmp71 := NewAre_BgAutomapNote()
+		err = tmp71.Read(_io__raw_bgAutomapNotes, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.bgAutomapNotes = append(this.bgAutomapNotes, tmp72)
+		this.bgAutomapNotes = append(this.bgAutomapNotes, tmp71)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -698,29 +691,29 @@ func (this *Are) BgProjectileTraps() (v []*Are_BgProjectileTrap, err error) {
 	if err != nil {
 		return nil, err
 	}
-	tmp73, err := this.OtherOffsets.OfsBgProjectileTraps()
+	tmp72, err := this.OtherOffsets.OfsBgProjectileTraps()
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(tmp73), io.SeekStart)
+	_, err = this._io.Seek(int64(tmp72), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
 	for i := 0; i < int(this.NumBgProjectileTraps); i++ {
 		_ = i
-		tmp74, err := this._io.ReadBytes(int(28))
+		tmp73, err := this._io.ReadBytes(int(28))
 		if err != nil {
 			return nil, err
 		}
-		tmp74 = tmp74
-		this._raw_bgProjectileTraps = append(this._raw_bgProjectileTraps, tmp74)
+		tmp73 = tmp73
+		this._raw_bgProjectileTraps = append(this._raw_bgProjectileTraps, tmp73)
 		_io__raw_bgProjectileTraps := kaitai.NewStream(bytes.NewReader(this._raw_bgProjectileTraps[i]))
-		tmp75 := NewAre_BgProjectileTrap()
-		err = tmp75.Read(_io__raw_bgProjectileTraps, this, this._root)
+		tmp74 := NewAre_BgProjectileTrap()
+		err = tmp74.Read(_io__raw_bgProjectileTraps, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.bgProjectileTraps = append(this.bgProjectileTraps, tmp75)
+		this.bgProjectileTraps = append(this.bgProjectileTraps, tmp74)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -743,19 +736,19 @@ func (this *Are) Containers() (v []*Are_Container, err error) {
 	}
 	for i := 0; i < int(this.NumContainers); i++ {
 		_ = i
-		tmp76, err := this._io.ReadBytes(int(192))
+		tmp75, err := this._io.ReadBytes(int(192))
 		if err != nil {
 			return nil, err
 		}
-		tmp76 = tmp76
-		this._raw_containers = append(this._raw_containers, tmp76)
+		tmp75 = tmp75
+		this._raw_containers = append(this._raw_containers, tmp75)
 		_io__raw_containers := kaitai.NewStream(bytes.NewReader(this._raw_containers[i]))
-		tmp77 := NewAre_Container()
-		err = tmp77.Read(_io__raw_containers, this, this._root)
+		tmp76 := NewAre_Container()
+		err = tmp76.Read(_io__raw_containers, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.containers = append(this.containers, tmp77)
+		this.containers = append(this.containers, tmp76)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -778,19 +771,19 @@ func (this *Are) Doors() (v []*Are_Door, err error) {
 	}
 	for i := 0; i < int(this.NumDoors); i++ {
 		_ = i
-		tmp78, err := this._io.ReadBytes(int(200))
+		tmp77, err := this._io.ReadBytes(int(200))
 		if err != nil {
 			return nil, err
 		}
-		tmp78 = tmp78
-		this._raw_doors = append(this._raw_doors, tmp78)
+		tmp77 = tmp77
+		this._raw_doors = append(this._raw_doors, tmp77)
 		_io__raw_doors := kaitai.NewStream(bytes.NewReader(this._raw_doors[i]))
-		tmp79 := NewAre_Door()
-		err = tmp79.Read(_io__raw_doors, this, this._root)
+		tmp78 := NewAre_Door()
+		err = tmp78.Read(_io__raw_doors, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.doors = append(this.doors, tmp79)
+		this.doors = append(this.doors, tmp78)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -813,19 +806,19 @@ func (this *Are) Entrances() (v []*Are_Entrance, err error) {
 	}
 	for i := 0; i < int(this.NumEntrances); i++ {
 		_ = i
-		tmp80, err := this._io.ReadBytes(int(104))
+		tmp79, err := this._io.ReadBytes(int(104))
 		if err != nil {
 			return nil, err
 		}
-		tmp80 = tmp80
-		this._raw_entrances = append(this._raw_entrances, tmp80)
+		tmp79 = tmp79
+		this._raw_entrances = append(this._raw_entrances, tmp79)
 		_io__raw_entrances := kaitai.NewStream(bytes.NewReader(this._raw_entrances[i]))
-		tmp81 := NewAre_Entrance()
-		err = tmp81.Read(_io__raw_entrances, this, this._root)
+		tmp80 := NewAre_Entrance()
+		err = tmp80.Read(_io__raw_entrances, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.entrances = append(this.entrances, tmp81)
+		this.entrances = append(this.entrances, tmp80)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -848,11 +841,11 @@ func (this *Are) ExploredBitmask() (v []bool, err error) {
 	}
 	for i := 0; i < int(this.NumExploredBitmask); i++ {
 		_ = i
-		tmp82, err := this._io.ReadBitsIntLe(1)
+		tmp81, err := this._io.ReadBitsIntLe(1)
 		if err != nil {
 			return nil, err
 		}
-		this.exploredBitmask = append(this.exploredBitmask, tmp82 != 0)
+		this.exploredBitmask = append(this.exploredBitmask, tmp81 != 0)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -875,19 +868,19 @@ func (this *Are) Items() (v []*Are_Item, err error) {
 	}
 	for i := 0; i < int(this.NumItems); i++ {
 		_ = i
-		tmp83, err := this._io.ReadBytes(int(20))
+		tmp82, err := this._io.ReadBytes(int(20))
 		if err != nil {
 			return nil, err
 		}
-		tmp83 = tmp83
-		this._raw_items = append(this._raw_items, tmp83)
+		tmp82 = tmp82
+		this._raw_items = append(this._raw_items, tmp82)
 		_io__raw_items := kaitai.NewStream(bytes.NewReader(this._raw_items[i]))
-		tmp84 := NewAre_Item()
-		err = tmp84.Read(_io__raw_items, this, this._root)
+		tmp83 := NewAre_Item()
+		err = tmp83.Read(_io__raw_items, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.items = append(this.items, tmp84)
+		this.items = append(this.items, tmp83)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -904,33 +897,33 @@ func (this *Are) PstAutomapNotes() (v []*Are_PstAutomapNote, err error) {
 	if err != nil {
 		return nil, err
 	}
-	tmp85, err := this.OtherOffsets.OfsPstAutomapNotes()
+	tmp84, err := this.OtherOffsets.OfsPstAutomapNotes()
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(tmp85), io.SeekStart)
+	_, err = this._io.Seek(int64(tmp84), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
-	tmp86, err := this.OtherOffsets.NumPstAutomapNotes()
+	tmp85, err := this.OtherOffsets.NumPstAutomapNotes()
 	if err != nil {
 		return nil, err
 	}
-	for i := 0; i < int(tmp86); i++ {
+	for i := 0; i < int(tmp85); i++ {
 		_ = i
-		tmp87, err := this._io.ReadBytes(int(532))
+		tmp86, err := this._io.ReadBytes(int(532))
 		if err != nil {
 			return nil, err
 		}
-		tmp87 = tmp87
-		this._raw_pstAutomapNotes = append(this._raw_pstAutomapNotes, tmp87)
+		tmp86 = tmp86
+		this._raw_pstAutomapNotes = append(this._raw_pstAutomapNotes, tmp86)
 		_io__raw_pstAutomapNotes := kaitai.NewStream(bytes.NewReader(this._raw_pstAutomapNotes[i]))
-		tmp88 := NewAre_PstAutomapNote()
-		err = tmp88.Read(_io__raw_pstAutomapNotes, this, this._root)
+		tmp87 := NewAre_PstAutomapNote()
+		err = tmp87.Read(_io__raw_pstAutomapNotes, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.pstAutomapNotes = append(this.pstAutomapNotes, tmp88)
+		this.pstAutomapNotes = append(this.pstAutomapNotes, tmp87)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -953,19 +946,19 @@ func (this *Are) Regions() (v []*Are_Region, err error) {
 	}
 	for i := 0; i < int(this.NumRegions); i++ {
 		_ = i
-		tmp89, err := this._io.ReadBytes(int(196))
+		tmp88, err := this._io.ReadBytes(int(196))
 		if err != nil {
 			return nil, err
 		}
-		tmp89 = tmp89
-		this._raw_regions = append(this._raw_regions, tmp89)
+		tmp88 = tmp88
+		this._raw_regions = append(this._raw_regions, tmp88)
 		_io__raw_regions := kaitai.NewStream(bytes.NewReader(this._raw_regions[i]))
-		tmp90 := NewAre_Region()
-		err = tmp90.Read(_io__raw_regions, this, this._root)
+		tmp89 := NewAre_Region()
+		err = tmp89.Read(_io__raw_regions, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.regions = append(this.regions, tmp90)
+		this.regions = append(this.regions, tmp89)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -986,19 +979,19 @@ func (this *Are) RestEncounters() (v *Are_RestEncounters, err error) {
 	if err != nil {
 		return nil, err
 	}
-	tmp91, err := this._io.ReadBytes(int(228))
+	tmp90, err := this._io.ReadBytes(int(228))
 	if err != nil {
 		return nil, err
 	}
-	tmp91 = tmp91
-	this._raw_restEncounters = tmp91
+	tmp90 = tmp90
+	this._raw_restEncounters = tmp90
 	_io__raw_restEncounters := kaitai.NewStream(bytes.NewReader(this._raw_restEncounters))
-	tmp92 := NewAre_RestEncounters()
-	err = tmp92.Read(_io__raw_restEncounters, this, this._root)
+	tmp91 := NewAre_RestEncounters()
+	err = tmp91.Read(_io__raw_restEncounters, this, this._root)
 	if err != nil {
 		return nil, err
 	}
-	this.restEncounters = tmp92
+	this.restEncounters = tmp91
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
@@ -1018,19 +1011,19 @@ func (this *Are) Songs() (v *Are_Songs, err error) {
 	if err != nil {
 		return nil, err
 	}
-	tmp93, err := this._io.ReadBytes(int(144))
+	tmp92, err := this._io.ReadBytes(int(144))
 	if err != nil {
 		return nil, err
 	}
-	tmp93 = tmp93
-	this._raw_songs = tmp93
+	tmp92 = tmp92
+	this._raw_songs = tmp92
 	_io__raw_songs := kaitai.NewStream(bytes.NewReader(this._raw_songs))
-	tmp94 := NewAre_Songs()
-	err = tmp94.Read(_io__raw_songs, this, this._root)
+	tmp93 := NewAre_Songs()
+	err = tmp93.Read(_io__raw_songs, this, this._root)
 	if err != nil {
 		return nil, err
 	}
-	this.songs = tmp94
+	this.songs = tmp93
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
 		return nil, err
@@ -1052,19 +1045,19 @@ func (this *Are) SpawnPoints() (v []*Are_SpawnPoint, err error) {
 	}
 	for i := 0; i < int(this.NumSpawnPoints); i++ {
 		_ = i
-		tmp95, err := this._io.ReadBytes(int(200))
+		tmp94, err := this._io.ReadBytes(int(200))
 		if err != nil {
 			return nil, err
 		}
-		tmp95 = tmp95
-		this._raw_spawnPoints = append(this._raw_spawnPoints, tmp95)
+		tmp94 = tmp94
+		this._raw_spawnPoints = append(this._raw_spawnPoints, tmp94)
 		_io__raw_spawnPoints := kaitai.NewStream(bytes.NewReader(this._raw_spawnPoints[i]))
-		tmp96 := NewAre_SpawnPoint()
-		err = tmp96.Read(_io__raw_spawnPoints, this, this._root)
+		tmp95 := NewAre_SpawnPoint()
+		err = tmp95.Read(_io__raw_spawnPoints, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.spawnPoints = append(this.spawnPoints, tmp96)
+		this.spawnPoints = append(this.spawnPoints, tmp95)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -1087,19 +1080,19 @@ func (this *Are) TiledObjects() (v []*Are_TiledObject, err error) {
 	}
 	for i := 0; i < int(this.NumTiledObjects); i++ {
 		_ = i
-		tmp97, err := this._io.ReadBytes(int(108))
+		tmp96, err := this._io.ReadBytes(int(104))
 		if err != nil {
 			return nil, err
 		}
-		tmp97 = tmp97
-		this._raw_tiledObjects = append(this._raw_tiledObjects, tmp97)
+		tmp96 = tmp96
+		this._raw_tiledObjects = append(this._raw_tiledObjects, tmp96)
 		_io__raw_tiledObjects := kaitai.NewStream(bytes.NewReader(this._raw_tiledObjects[i]))
-		tmp98 := NewAre_TiledObject()
-		err = tmp98.Read(_io__raw_tiledObjects, this, this._root)
+		tmp97 := NewAre_TiledObject()
+		err = tmp97.Read(_io__raw_tiledObjects, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.tiledObjects = append(this.tiledObjects, tmp98)
+		this.tiledObjects = append(this.tiledObjects, tmp97)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -1122,19 +1115,19 @@ func (this *Are) Variables() (v []*Are_Variable, err error) {
 	}
 	for i := 0; i < int(this.NumVariables); i++ {
 		_ = i
-		tmp99, err := this._io.ReadBytes(int(80))
+		tmp98, err := this._io.ReadBytes(int(84))
 		if err != nil {
 			return nil, err
 		}
-		tmp99 = tmp99
-		this._raw_variables = append(this._raw_variables, tmp99)
+		tmp98 = tmp98
+		this._raw_variables = append(this._raw_variables, tmp98)
 		_io__raw_variables := kaitai.NewStream(bytes.NewReader(this._raw_variables[i]))
-		tmp100 := NewAre_Variable()
-		err = tmp100.Read(_io__raw_variables, this, this._root)
+		tmp99 := NewAre_Variable()
+		err = tmp99.Read(_io__raw_variables, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.variables = append(this.variables, tmp100)
+		this.variables = append(this.variables, tmp99)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -1157,19 +1150,19 @@ func (this *Are) Vertices() (v []*Are_Point, err error) {
 	}
 	for i := 0; i < int(this.NumVertices); i++ {
 		_ = i
-		tmp101, err := this._io.ReadBytes(int(4))
+		tmp100, err := this._io.ReadBytes(int(4))
 		if err != nil {
 			return nil, err
 		}
-		tmp101 = tmp101
-		this._raw_vertices = append(this._raw_vertices, tmp101)
+		tmp100 = tmp100
+		this._raw_vertices = append(this._raw_vertices, tmp100)
 		_io__raw_vertices := kaitai.NewStream(bytes.NewReader(this._raw_vertices[i]))
-		tmp102 := NewAre_Point()
-		err = tmp102.Read(_io__raw_vertices, this, this._root)
+		tmp101 := NewAre_Point()
+		err = tmp101.Read(_io__raw_vertices, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.vertices = append(this.vertices, tmp102)
+		this.vertices = append(this.vertices, tmp101)
 	}
 	_, err = this._io.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -1233,168 +1226,168 @@ func (this *Are_Actor) Read(io *kaitai.Stream, parent *Are, root *Are) (err erro
 	this._parent = parent
 	this._root = root
 
-	tmp103, err := this._io.ReadBytes(int(32))
+	tmp102, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp103 = kaitai.BytesTerminate(tmp103, 0, false)
-	this.Name = string(tmp103)
+	tmp102 = kaitai.BytesTerminate(tmp102, 0, false)
+	this.Name = string(tmp102)
+	tmp103, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.CurrentX = uint16(tmp103)
 	tmp104, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.CurrentX = uint16(tmp104)
+	this.CurrentY = uint16(tmp104)
 	tmp105, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.CurrentY = uint16(tmp105)
+	this.DestinationX = uint16(tmp105)
 	tmp106, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.DestinationX = uint16(tmp106)
-	tmp107, err := this._io.ReadU2le()
+	this.DestinationY = uint16(tmp106)
+	tmp107, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	this.DestinationY = uint16(tmp107)
-	tmp108, err := this._io.ReadBytes(int(4))
-	if err != nil {
-		return err
-	}
-	tmp108 = tmp108
-	this._raw_Flags = tmp108
+	tmp107 = tmp107
+	this._raw_Flags = tmp107
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp109 := NewAre_Actor_Flags()
-	err = tmp109.Read(_io__raw_Flags, this, this._root)
+	tmp108 := NewAre_Actor_Flags()
+	err = tmp108.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp109
-	tmp110 := NewAre_Bool2()
-	err = tmp110.Read(this._io, this, this._root)
+	this.Flags = tmp108
+	tmp109 := NewAre_Bool2()
+	err = tmp109.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Spawnable = tmp110
-	tmp111, err := this._io.ReadU1()
+	this.Spawnable = tmp109
+	tmp110, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.FirstCreLetter = tmp111
-	tmp112, err := this._io.ReadBytes(int(1))
+	this.FirstCreLetter = tmp110
+	tmp111, err := this._io.ReadBytes(int(1))
 	if err != nil {
 		return err
 	}
-	tmp112 = tmp112
-	this._unnamed8 = tmp112
-	tmp113, err := this._io.ReadU4le()
+	tmp111 = tmp111
+	this._unnamed8 = tmp111
+	tmp112, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.ActorAnimation = uint32(tmp113)
-	tmp114, err := this._io.ReadU2le()
+	this.ActorAnimation = uint32(tmp112)
+	tmp113, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ActorOrientation = Are_Orientation(tmp114)
-	tmp115, err := this._io.ReadBytes(int(2))
+	this.ActorOrientation = Are_Orientation(tmp113)
+	tmp114, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	tmp115 = tmp115
-	this._unnamed11 = tmp115
-	tmp116, err := this._io.ReadU4le()
+	tmp114 = tmp114
+	this._unnamed11 = tmp114
+	tmp115, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.ExpiryTime = uint32(tmp116)
+	this.ExpiryTime = uint32(tmp115)
+	tmp116, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.WanderDistance = uint16(tmp116)
 	tmp117, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.WanderDistance = uint16(tmp117)
-	tmp118, err := this._io.ReadU2le()
+	this.FollowDistance = uint16(tmp117)
+	tmp118 := NewAre_Schedule()
+	err = tmp118.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.FollowDistance = uint16(tmp118)
-	tmp119 := NewAre_Schedule()
-	err = tmp119.Read(this._io, this, this._root)
+	this.AppearanceSchedule = tmp118
+	tmp119, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.AppearanceSchedule = tmp119
-	tmp120, err := this._io.ReadU4le()
+	this.NumTimesTalkedTo = uint32(tmp119)
+	tmp120, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.NumTimesTalkedTo = uint32(tmp120)
+	tmp120 = kaitai.BytesTerminate(tmp120, 0, false)
+	this.DialogDlg = string(tmp120)
 	tmp121, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
 	tmp121 = kaitai.BytesTerminate(tmp121, 0, false)
-	this.DialogDlg = string(tmp121)
+	this.OverrideScriptBcs = string(tmp121)
 	tmp122, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
 	tmp122 = kaitai.BytesTerminate(tmp122, 0, false)
-	this.OverrideScriptBcs = string(tmp122)
+	this.GeneralScriptBcs = string(tmp122)
 	tmp123, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
 	tmp123 = kaitai.BytesTerminate(tmp123, 0, false)
-	this.GeneralScriptBcs = string(tmp123)
+	this.ClassScriptBcs = string(tmp123)
 	tmp124, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
 	tmp124 = kaitai.BytesTerminate(tmp124, 0, false)
-	this.ClassScriptBcs = string(tmp124)
+	this.RaceScriptBcs = string(tmp124)
 	tmp125, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
 	tmp125 = kaitai.BytesTerminate(tmp125, 0, false)
-	this.RaceScriptBcs = string(tmp125)
+	this.DefaultScriptBcs = string(tmp125)
 	tmp126, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
 	tmp126 = kaitai.BytesTerminate(tmp126, 0, false)
-	this.DefaultScriptBcs = string(tmp126)
+	this.SpecificScriptBcs = string(tmp126)
 	tmp127, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
 	tmp127 = kaitai.BytesTerminate(tmp127, 0, false)
-	this.SpecificScriptBcs = string(tmp127)
-	tmp128, err := this._io.ReadBytes(int(8))
+	this.Cre = string(tmp127)
+	tmp128, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp128 = kaitai.BytesTerminate(tmp128, 0, false)
-	this.Cre = string(tmp128)
+	this.OfsCreStructure = uint32(tmp128)
 	tmp129, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsCreStructure = uint32(tmp129)
-	tmp130, err := this._io.ReadU4le()
+	this.LenCreStructure = uint32(tmp129)
+	tmp130, err := this._io.ReadBytes(int(128))
 	if err != nil {
 		return err
 	}
-	this.LenCreStructure = uint32(tmp130)
-	tmp131, err := this._io.ReadBytes(int(128))
-	if err != nil {
-		return err
-	}
-	tmp131 = tmp131
-	this._unnamed27 = tmp131
+	tmp130 = tmp130
+	this._unnamed27 = tmp130
 	return err
 }
 type Are_Actor_Flags struct {
@@ -1420,53 +1413,26 @@ func (this *Are_Actor_Flags) Read(io *kaitai.Stream, parent *Are_Actor, root *Ar
 	this._parent = parent
 	this._root = root
 
+	tmp131, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.CreAttached = tmp131 != 0
 	tmp132, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.CreAttached = tmp132 != 0
+	this.HasSeenParty = tmp132 != 0
 	tmp133, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.HasSeenParty = tmp133 != 0
+	this.Invulnerable = tmp133 != 0
 	tmp134, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Invulnerable = tmp134 != 0
-	tmp135, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.OverrideScriptName = tmp135 != 0
-	return err
-}
-type Are_Actor_SpawnFlags struct {
-	IsRandomMonster bool
-	_io *kaitai.Stream
-	_root *Are
-	_parent kaitai.Struct
-}
-func NewAre_Actor_SpawnFlags() *Are_Actor_SpawnFlags {
-	return &Are_Actor_SpawnFlags{
-	}
-}
-
-func (this Are_Actor_SpawnFlags) IO_() *kaitai.Stream {
-	return this._io
-}
-
-func (this *Are_Actor_SpawnFlags) Read(io *kaitai.Stream, parent kaitai.Struct, root *Are) (err error) {
-	this._io = io
-	this._parent = parent
-	this._root = root
-
-	tmp136, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.IsRandomMonster = tmp136 != 0
+	this.OverrideScriptName = tmp134 != 0
 	return err
 }
 type Are_Ambient struct {
@@ -1484,7 +1450,7 @@ type Are_Ambient struct {
 	IntervalVariation uint32
 	PlaySchedule *Are_Schedule
 	Flags *Are_Ambient_Flags
-	Reserved []byte
+	_unnamed14 []byte
 	_io *kaitai.Stream
 	_root *Are
 	_parent *Are
@@ -1504,98 +1470,98 @@ func (this *Are_Ambient) Read(io *kaitai.Stream, parent *Are, root *Are) (err er
 	this._parent = parent
 	this._root = root
 
-	tmp137, err := this._io.ReadBytes(int(32))
+	tmp135, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp137 = kaitai.BytesTerminate(tmp137, 0, false)
-	this.Name = string(tmp137)
-	tmp138 := NewAre_Point()
-	err = tmp138.Read(this._io, this, this._root)
+	tmp135 = kaitai.BytesTerminate(tmp135, 0, false)
+	this.Name = string(tmp135)
+	tmp136 := NewAre_Point()
+	err = tmp136.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Coord = tmp138
-	tmp139, err := this._io.ReadU2le()
+	this.Coord = tmp136
+	tmp137, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Radius = uint16(tmp139)
+	this.Radius = uint16(tmp137)
+	tmp138, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.Height = uint16(tmp138)
+	tmp139, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.PitchVariance = uint32(tmp139)
 	tmp140, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Height = uint16(tmp140)
-	tmp141, err := this._io.ReadU4le()
+	this.VolumeVariance = uint16(tmp140)
+	tmp141, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.PitchVariance = uint32(tmp141)
-	tmp142, err := this._io.ReadU2le()
-	if err != nil {
-		return err
+	this.Volume = uint16(tmp141)
+	for i := 0; i < int(10); i++ {
+		_ = i
+		tmp142, err := this._io.ReadBytes(int(8))
+		if err != nil {
+			return err
+		}
+		tmp142 = kaitai.BytesTerminate(tmp142, 0, false)
+		this.SoundWav = append(this.SoundWav, string(tmp142))
 	}
-	this.VolumeVariance = uint16(tmp142)
 	tmp143, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Volume = uint16(tmp143)
-	for i := 0; i < int(10); i++ {
-		_ = i
-		tmp144, err := this._io.ReadBytes(int(8))
-		if err != nil {
-			return err
-		}
-		tmp144 = kaitai.BytesTerminate(tmp144, 0, false)
-		this.SoundWav = append(this.SoundWav, string(tmp144))
-	}
-	tmp145, err := this._io.ReadU2le()
+	this.NumSounds = uint16(tmp143)
+	tmp144, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	this.NumSounds = uint16(tmp145)
-	tmp146, err := this._io.ReadBytes(int(2))
+	tmp144 = tmp144
+	this._unnamed9 = tmp144
+	tmp145, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp146 = tmp146
-	this._unnamed9 = tmp146
-	tmp147, err := this._io.ReadU4le()
+	this.BaseInterval = uint32(tmp145)
+	tmp146, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.BaseInterval = uint32(tmp147)
-	tmp148, err := this._io.ReadU4le()
+	this.IntervalVariation = uint32(tmp146)
+	tmp147 := NewAre_Schedule()
+	err = tmp147.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.IntervalVariation = uint32(tmp148)
-	tmp149 := NewAre_Schedule()
-	err = tmp149.Read(this._io, this, this._root)
+	this.PlaySchedule = tmp147
+	tmp148, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	this.PlaySchedule = tmp149
-	tmp150, err := this._io.ReadBytes(int(4))
+	tmp148 = tmp148
+	this._raw_Flags = tmp148
+	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
+	tmp149 := NewAre_Ambient_Flags()
+	err = tmp149.Read(_io__raw_Flags, this, this._root)
+	if err != nil {
+		return err
+	}
+	this.Flags = tmp149
+	tmp150, err := this._io.ReadBytes(int(64))
 	if err != nil {
 		return err
 	}
 	tmp150 = tmp150
-	this._raw_Flags = tmp150
-	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp151 := NewAre_Ambient_Flags()
-	err = tmp151.Read(_io__raw_Flags, this, this._root)
-	if err != nil {
-		return err
-	}
-	this.Flags = tmp151
-	tmp152, err := this._io.ReadBytes(int(64))
-	if err != nil {
-		return err
-	}
-	tmp152 = tmp152
-	this.Reserved = tmp152
+	this._unnamed14 = tmp150
 	return err
 }
 type Are_Ambient_Flags struct {
@@ -1622,31 +1588,31 @@ func (this *Are_Ambient_Flags) Read(io *kaitai.Stream, parent *Are_Ambient, root
 	this._parent = parent
 	this._root = root
 
+	tmp151, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Enabled = tmp151 != 0
+	tmp152, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Loop = tmp152 != 0
 	tmp153, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Enabled = tmp153 != 0
+	this.IgnoreRadius = tmp153 != 0
 	tmp154, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Loop = tmp154 != 0
+	this.RandomOrder = tmp154 != 0
 	tmp155, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.IgnoreRadius = tmp155 != 0
-	tmp156, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.RandomOrder = tmp156 != 0
-	tmp157, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.HighMemoryAmbient = tmp157 != 0
+	this.HighMemoryAmbient = tmp155 != 0
 	return err
 }
 type Are_Animation struct {
@@ -1684,94 +1650,94 @@ func (this *Are_Animation) Read(io *kaitai.Stream, parent *Are, root *Are) (err 
 	this._parent = parent
 	this._root = root
 
-	tmp158, err := this._io.ReadBytes(int(32))
+	tmp156, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp158 = kaitai.BytesTerminate(tmp158, 0, false)
-	this.Name = string(tmp158)
-	tmp159 := NewAre_Point()
-	err = tmp159.Read(this._io, this, this._root)
+	tmp156 = kaitai.BytesTerminate(tmp156, 0, false)
+	this.Name = string(tmp156)
+	tmp157 := NewAre_Point()
+	err = tmp157.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Coordinate = tmp159
-	tmp160 := NewAre_Schedule()
-	err = tmp160.Read(this._io, this, this._root)
+	this.Coordinate = tmp157
+	tmp158 := NewAre_Schedule()
+	err = tmp158.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.AppearanceSchedule = tmp160
-	tmp161, err := this._io.ReadBytes(int(8))
+	this.AppearanceSchedule = tmp158
+	tmp159, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp161 = kaitai.BytesTerminate(tmp161, 0, false)
-	this.AnimationBam = string(tmp161)
-	tmp162, err := this._io.ReadU2le()
+	tmp159 = kaitai.BytesTerminate(tmp159, 0, false)
+	this.AnimationBam = string(tmp159)
+	tmp160, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.BamSequence = uint16(tmp162)
-	tmp163, err := this._io.ReadU2le()
+	this.BamSequence = uint16(tmp160)
+	tmp161, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.BamFrame = uint16(tmp163)
-	tmp164, err := this._io.ReadBytes(int(4))
+	this.BamFrame = uint16(tmp161)
+	tmp162, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	tmp164 = tmp164
-	this._raw_Flags = tmp164
+	tmp162 = tmp162
+	this._raw_Flags = tmp162
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp165 := NewAre_Animation_Flags()
-	err = tmp165.Read(_io__raw_Flags, this, this._root)
+	tmp163 := NewAre_Animation_Flags()
+	err = tmp163.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp165
+	this.Flags = tmp163
+	tmp164, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.Height = uint16(tmp164)
+	tmp165, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.Transparency = uint16(tmp165)
 	tmp166, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Height = uint16(tmp166)
-	tmp167, err := this._io.ReadU2le()
+	this.StartRange = uint16(tmp166)
+	tmp167, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.Transparency = uint16(tmp167)
-	tmp168, err := this._io.ReadU2le()
+	this.LoopProbability = tmp167
+	tmp168, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.StartRange = uint16(tmp168)
-	tmp169, err := this._io.ReadU1()
+	this.StartDelay = tmp168
+	tmp169, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.LoopProbability = tmp169
-	tmp170, err := this._io.ReadU1()
+	tmp169 = kaitai.BytesTerminate(tmp169, 0, false)
+	this.PaletteBmp = string(tmp169)
+	tmp170, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.StartDelay = tmp170
-	tmp171, err := this._io.ReadBytes(int(8))
+	this.MovieWidth = uint16(tmp170)
+	tmp171, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	tmp171 = kaitai.BytesTerminate(tmp171, 0, false)
-	this.PaletteBmp = string(tmp171)
-	tmp172, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.MovieWidth = uint16(tmp172)
-	tmp173, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.MovieHeight = uint16(tmp173)
+	this.MovieHeight = uint16(tmp171)
 	return err
 }
 type Are_Animation_Flags struct {
@@ -1812,91 +1778,91 @@ func (this *Are_Animation_Flags) Read(io *kaitai.Stream, parent *Are_Animation, 
 	this._parent = parent
 	this._root = root
 
+	tmp172, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Enabled = tmp172 != 0
+	tmp173, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.BlackIsTransparent = tmp173 != 0
 	tmp174, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Enabled = tmp174 != 0
+	this.NotLightSource = tmp174 != 0
 	tmp175, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.BlackIsTransparent = tmp175 != 0
+	this.Partial = tmp175 != 0
 	tmp176, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.NotLightSource = tmp176 != 0
+	this.SynchronizedDraw = tmp176 != 0
 	tmp177, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Partial = tmp177 != 0
+	this.RandomStartFrame = tmp177 != 0
 	tmp178, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.SynchronizedDraw = tmp178 != 0
+	this.NotCoveredByWall = tmp178 != 0
 	tmp179, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.RandomStartFrame = tmp179 != 0
+	this.DisableOnSlowMachines = tmp179 != 0
 	tmp180, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.NotCoveredByWall = tmp180 != 0
+	this.DrawAsBackground = tmp180 != 0
 	tmp181, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DisableOnSlowMachines = tmp181 != 0
+	this.PlayAllFrames = tmp181 != 0
 	tmp182, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DrawAsBackground = tmp182 != 0
+	this.UsePalette = tmp182 != 0
 	tmp183, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.PlayAllFrames = tmp183 != 0
+	this.MirrorYAxis = tmp183 != 0
 	tmp184, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.UsePalette = tmp184 != 0
+	this.ShowInCombat = tmp184 != 0
 	tmp185, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.MirrorYAxis = tmp185 != 0
+	this.UseWbm = tmp185 != 0
 	tmp186, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ShowInCombat = tmp186 != 0
+	this.DrawStenciled = tmp186 != 0
 	tmp187, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.UseWbm = tmp187 != 0
+	this.UsePvrz = tmp187 != 0
 	tmp188, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DrawStenciled = tmp188 != 0
-	tmp189, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.UsePvrz = tmp189 != 0
-	tmp190, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.PstCoverAnimations = tmp190 != 0
+	this.PstCoverAnimations = tmp188 != 0
 	return err
 }
 func (this *Are_Animation_Flags) PstAltBlendingMode() (v bool, err error) {
@@ -1965,11 +1931,11 @@ func (this *Are_AreaTypeFlags) Read(io *kaitai.Stream, parent *Are, root *Are) (
 
 	for i := 0; i < int(11); i++ {
 		_ = i
-		tmp191, err := this._io.ReadBitsIntLe(1)
+		tmp189, err := this._io.ReadBitsIntLe(1)
 		if err != nil {
 			return err
 		}
-		this.Bit = append(this.Bit, tmp191 != 0)
+		this.Bit = append(this.Bit, tmp189 != 0)
 	}
 	return err
 }
@@ -2159,39 +2125,39 @@ func (this *Are_BgAutomapNote) Read(io *kaitai.Stream, parent *Are, root *Are) (
 	this._parent = parent
 	this._root = root
 
-	tmp192 := NewAre_Point()
+	tmp190 := NewAre_Point()
+	err = tmp190.Read(this._io, this, this._root)
+	if err != nil {
+		return err
+	}
+	this.Coordinate = tmp190
+	tmp191, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.NoteRef = uint32(tmp191)
+	tmp192 := NewAre_Bool2()
 	err = tmp192.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Coordinate = tmp192
-	tmp193, err := this._io.ReadU4le()
+	this.NoteRefIsInternal = tmp192
+	tmp193, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NoteRef = uint32(tmp193)
-	tmp194 := NewAre_Bool2()
-	err = tmp194.Read(this._io, this, this._root)
+	this.MarkerColor = Are_BgAutomapNote_MarkerColor(tmp193)
+	tmp194, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NoteRefIsInternal = tmp194
-	tmp195, err := this._io.ReadU2le()
+	this.ControlId = uint32(tmp194)
+	tmp195, err := this._io.ReadBytes(int(36))
 	if err != nil {
 		return err
 	}
-	this.MarkerColor = Are_BgAutomapNote_MarkerColor(tmp195)
-	tmp196, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.ControlId = uint32(tmp196)
-	tmp197, err := this._io.ReadBytes(int(36))
-	if err != nil {
-		return err
-	}
-	tmp197 = tmp197
-	this._unnamed5 = tmp197
+	tmp195 = tmp195
+	this._unnamed5 = tmp195
 	return err
 }
 
@@ -2229,62 +2195,62 @@ func (this *Are_BgProjectileTrap) Read(io *kaitai.Stream, parent *Are, root *Are
 	this._parent = parent
 	this._root = root
 
-	tmp198, err := this._io.ReadBytes(int(8))
+	tmp196, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp198 = kaitai.BytesTerminate(tmp198, 0, false)
-	this.ProjectilePro = string(tmp198)
-	tmp199, err := this._io.ReadU4le()
+	tmp196 = kaitai.BytesTerminate(tmp196, 0, false)
+	this.ProjectilePro = string(tmp196)
+	tmp197, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.EffectBlockOffset = uint32(tmp199)
+	this.EffectBlockOffset = uint32(tmp197)
+	tmp198, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.EffectBlockSize = uint16(tmp198)
+	tmp199, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.MissileId = uint16(tmp199)
 	tmp200, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.EffectBlockSize = uint16(tmp200)
+	this.TicksUntilNextTriggerCheck = uint16(tmp200)
 	tmp201, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.MissileId = uint16(tmp201)
+	this.TriggersRemaining = uint16(tmp201)
 	tmp202, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.TicksUntilNextTriggerCheck = uint16(tmp202)
+	this.X = uint16(tmp202)
 	tmp203, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.TriggersRemaining = uint16(tmp203)
+	this.Y = uint16(tmp203)
 	tmp204, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.X = uint16(tmp204)
-	tmp205, err := this._io.ReadU2le()
+	this.Z = uint16(tmp204)
+	tmp205, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.Y = uint16(tmp205)
-	tmp206, err := this._io.ReadU2le()
+	this.EnemyAllyTargeting = tmp205
+	tmp206, err := this._io.ReadU1()
 	if err != nil {
 		return err
 	}
-	this.Z = uint16(tmp206)
-	tmp207, err := this._io.ReadU1()
-	if err != nil {
-		return err
-	}
-	this.EnemyAllyTargeting = tmp207
-	tmp208, err := this._io.ReadU1()
-	if err != nil {
-		return err
-	}
-	this.PartyMemberIndex = tmp208
+	this.PartyMemberIndex = tmp206
 	return err
 }
 
@@ -2312,16 +2278,16 @@ func (this *Are_Bool2) Read(io *kaitai.Stream, parent kaitai.Struct, root *Are) 
 	this._parent = parent
 	this._root = root
 
-	tmp209, err := this._io.ReadBitsIntLe(1)
+	tmp207, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Value = tmp209 != 0
-	tmp210, err := this._io.ReadBitsIntLe(15)
+	this.Value = tmp207 != 0
+	tmp208, err := this._io.ReadBitsIntLe(15)
 	if err != nil {
 		return err
 	}
-	this._unnamed1 = tmp210
+	this._unnamed1 = tmp208
 	return err
 }
 type Are_BoundingBox struct {
@@ -2347,26 +2313,26 @@ func (this *Are_BoundingBox) Read(io *kaitai.Stream, parent kaitai.Struct, root 
 	this._parent = parent
 	this._root = root
 
+	tmp209, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.Left = uint16(tmp209)
+	tmp210, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.Top = uint16(tmp210)
 	tmp211, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Left = uint16(tmp211)
+	this.Right = uint16(tmp211)
 	tmp212, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Top = uint16(tmp212)
-	tmp213, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.Right = uint16(tmp213)
-	tmp214, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.Bottom = uint16(tmp214)
+	this.Bottom = uint16(tmp212)
 	return err
 }
 
@@ -2439,134 +2405,134 @@ func (this *Are_Container) Read(io *kaitai.Stream, parent *Are, root *Are) (err 
 	this._parent = parent
 	this._root = root
 
-	tmp215, err := this._io.ReadBytes(int(32))
+	tmp213, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp215 = kaitai.BytesTerminate(tmp215, 0, false)
-	this.Name = string(tmp215)
-	tmp216 := NewAre_Point()
-	err = tmp216.Read(this._io, this, this._root)
+	tmp213 = kaitai.BytesTerminate(tmp213, 0, false)
+	this.Name = string(tmp213)
+	tmp214 := NewAre_Point()
+	err = tmp214.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Coord = tmp216
-	tmp217, err := this._io.ReadU2le()
+	this.Coord = tmp214
+	tmp215, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ContainerType = Are_Container_ContainerType(tmp217)
-	tmp218, err := this._io.ReadU2le()
+	this.ContainerType = Are_Container_ContainerType(tmp215)
+	tmp216, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.LockDifficulty = uint16(tmp218)
-	tmp219, err := this._io.ReadBytes(int(4))
+	this.LockDifficulty = uint16(tmp216)
+	tmp217, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	tmp219 = tmp219
-	this._raw_Flags = tmp219
+	tmp217 = tmp217
+	this._raw_Flags = tmp217
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp220 := NewAre_Container_Flags()
-	err = tmp220.Read(_io__raw_Flags, this, this._root)
+	tmp218 := NewAre_Container_Flags()
+	err = tmp218.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp220
-	tmp221, err := this._io.ReadU2le()
+	this.Flags = tmp218
+	tmp219, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.TrapDetectionDifficulty = uint16(tmp221)
-	tmp222, err := this._io.ReadU2le()
+	this.TrapDetectionDifficulty = uint16(tmp219)
+	tmp220, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.TrapRemovalDifficulty = uint16(tmp222)
-	tmp223 := NewAre_Bool2()
+	this.TrapRemovalDifficulty = uint16(tmp220)
+	tmp221 := NewAre_Bool2()
+	err = tmp221.Read(this._io, this, this._root)
+	if err != nil {
+		return err
+	}
+	this.IsTrapped = tmp221
+	tmp222 := NewAre_Bool2()
+	err = tmp222.Read(this._io, this, this._root)
+	if err != nil {
+		return err
+	}
+	this.IsTrapDetected = tmp222
+	tmp223 := NewAre_Point()
 	err = tmp223.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.IsTrapped = tmp223
-	tmp224 := NewAre_Bool2()
+	this.TrapLaunchCoord = tmp223
+	tmp224 := NewAre_BoundingBox()
 	err = tmp224.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.IsTrapDetected = tmp224
-	tmp225 := NewAre_Point()
-	err = tmp225.Read(this._io, this, this._root)
+	this.BoundingBox = tmp224
+	tmp225, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.TrapLaunchCoord = tmp225
-	tmp226 := NewAre_BoundingBox()
-	err = tmp226.Read(this._io, this, this._root)
+	this.FirstItemIndex = uint32(tmp225)
+	tmp226, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.BoundingBox = tmp226
-	tmp227, err := this._io.ReadU4le()
+	this.NumItems = uint32(tmp226)
+	tmp227, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.FirstItemIndex = uint32(tmp227)
+	tmp227 = kaitai.BytesTerminate(tmp227, 0, false)
+	this.TrapScriptBcs = string(tmp227)
 	tmp228, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumItems = uint32(tmp228)
-	tmp229, err := this._io.ReadBytes(int(8))
+	this.FirstVertexIndex = uint32(tmp228)
+	tmp229, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	tmp229 = kaitai.BytesTerminate(tmp229, 0, false)
-	this.TrapScriptBcs = string(tmp229)
-	tmp230, err := this._io.ReadU4le()
+	this.NumVertices = uint16(tmp229)
+	tmp230, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.FirstVertexIndex = uint32(tmp230)
-	tmp231, err := this._io.ReadU2le()
+	this.TriggerRange = uint16(tmp230)
+	tmp231, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	this.NumVertices = uint16(tmp231)
-	tmp232, err := this._io.ReadU2le()
+	tmp231 = kaitai.BytesTerminate(tmp231, 0, false)
+	this.Owner = string(tmp231)
+	tmp232, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.TriggerRange = uint16(tmp232)
-	tmp233, err := this._io.ReadBytes(int(32))
+	tmp232 = kaitai.BytesTerminate(tmp232, 0, false)
+	this.KeyItm = string(tmp232)
+	tmp233, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp233 = kaitai.BytesTerminate(tmp233, 0, false)
-	this.Owner = string(tmp233)
-	tmp234, err := this._io.ReadBytes(int(8))
+	this.BreakDifficulty = uint32(tmp233)
+	tmp234, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp234 = kaitai.BytesTerminate(tmp234, 0, false)
-	this.KeyItm = string(tmp234)
-	tmp235, err := this._io.ReadU4le()
+	this.LockpickRef = uint32(tmp234)
+	tmp235, err := this._io.ReadBytes(int(56))
 	if err != nil {
 		return err
 	}
-	this.BreakDifficulty = uint32(tmp235)
-	tmp236, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.LockpickRef = uint32(tmp236)
-	tmp237, err := this._io.ReadBytes(int(56))
-	if err != nil {
-		return err
-	}
-	tmp237 = tmp237
-	this._unnamed21 = tmp237
+	tmp235 = tmp235
+	this._unnamed21 = tmp235
 	return err
 }
 func (this *Are_Container) Items() (v []*Are_Item, err error) {
@@ -2585,19 +2551,19 @@ func (this *Are_Container) Items() (v []*Are_Item, err error) {
 	}
 	for i := 0; i < int(this.NumItems); i++ {
 		_ = i
-		tmp238, err := thisIo.ReadBytes(int(20))
+		tmp236, err := thisIo.ReadBytes(int(20))
 		if err != nil {
 			return nil, err
 		}
-		tmp238 = tmp238
-		this._raw_items = append(this._raw_items, tmp238)
+		tmp236 = tmp236
+		this._raw_items = append(this._raw_items, tmp236)
 		_io__raw_items := kaitai.NewStream(bytes.NewReader(this._raw_items[i]))
-		tmp239 := NewAre_Item()
-		err = tmp239.Read(_io__raw_items, this, this._root)
+		tmp237 := NewAre_Item()
+		err = tmp237.Read(_io__raw_items, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.items = append(this.items, tmp239)
+		this.items = append(this.items, tmp237)
 	}
 	_, err = thisIo.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -2621,19 +2587,19 @@ func (this *Are_Container) Vertices() (v []*Are_Point, err error) {
 	}
 	for i := 0; i < int(this.NumVertices); i++ {
 		_ = i
-		tmp240, err := thisIo.ReadBytes(int(4))
+		tmp238, err := thisIo.ReadBytes(int(4))
 		if err != nil {
 			return nil, err
 		}
-		tmp240 = tmp240
-		this._raw_vertices = append(this._raw_vertices, tmp240)
+		tmp238 = tmp238
+		this._raw_vertices = append(this._raw_vertices, tmp238)
 		_io__raw_vertices := kaitai.NewStream(bytes.NewReader(this._raw_vertices[i]))
-		tmp241 := NewAre_Point()
-		err = tmp241.Read(_io__raw_vertices, this, this._root)
+		tmp239 := NewAre_Point()
+		err = tmp239.Read(_io__raw_vertices, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.vertices = append(this.vertices, tmp241)
+		this.vertices = append(this.vertices, tmp239)
 	}
 	_, err = thisIo.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -2667,41 +2633,41 @@ func (this *Are_Container_Flags) Read(io *kaitai.Stream, parent *Are_Container, 
 	this._parent = parent
 	this._root = root
 
+	tmp240, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Locked = tmp240 != 0
+	tmp241, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.DisableIfNoOwner = tmp241 != 0
 	tmp242, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Locked = tmp242 != 0
+	this.MagicallyLocked = tmp242 != 0
 	tmp243, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DisableIfNoOwner = tmp243 != 0
+	this.TrapResets = tmp243 != 0
 	tmp244, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.MagicallyLocked = tmp244 != 0
+	this.RemoveOnly = tmp244 != 0
 	tmp245, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.TrapResets = tmp245 != 0
+	this.Disabled = tmp245 != 0
 	tmp246, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.RemoveOnly = tmp246 != 0
-	tmp247, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Disabled = tmp247 != 0
-	tmp248, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.DontClear = tmp248 != 0
+	this.DontClear = tmp246 != 0
 	return err
 }
 type Are_Door struct {
@@ -2758,200 +2724,200 @@ func (this *Are_Door) Read(io *kaitai.Stream, parent *Are, root *Are) (err error
 	this._parent = parent
 	this._root = root
 
-	tmp249, err := this._io.ReadBytes(int(32))
+	tmp247, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp249 = kaitai.BytesTerminate(tmp249, 0, false)
-	this.Name = string(tmp249)
-	tmp250, err := this._io.ReadBytes(int(8))
+	tmp247 = kaitai.BytesTerminate(tmp247, 0, false)
+	this.Name = string(tmp247)
+	tmp248, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp250 = kaitai.BytesTerminate(tmp250, 0, false)
-	this.DoorId = string(tmp250)
-	tmp251, err := this._io.ReadBytes(int(4))
+	tmp248 = kaitai.BytesTerminate(tmp248, 0, false)
+	this.DoorId = string(tmp248)
+	tmp249, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	tmp251 = tmp251
-	this._raw_Flags = tmp251
+	tmp249 = tmp249
+	this._raw_Flags = tmp249
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp252 := NewAre_Door_Flags()
-	err = tmp252.Read(_io__raw_Flags, this, this._root)
+	tmp250 := NewAre_Door_Flags()
+	err = tmp250.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp252
-	tmp253, err := this._io.ReadU4le()
+	this.Flags = tmp250
+	tmp251, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.FirstVertexIndexOpenDoor = uint32(tmp253)
-	tmp254, err := this._io.ReadU2le()
+	this.FirstVertexIndexOpenDoor = uint32(tmp251)
+	tmp252, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumVerticesOpenDoor = uint16(tmp254)
-	tmp255, err := this._io.ReadU2le()
+	this.NumVerticesOpenDoor = uint16(tmp252)
+	tmp253, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumVerticesClosedDoor = uint16(tmp255)
-	tmp256, err := this._io.ReadU4le()
+	this.NumVerticesClosedDoor = uint16(tmp253)
+	tmp254, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.FirstVertexIndexClosedDoor = uint32(tmp256)
-	tmp257 := NewAre_BoundingBox()
-	err = tmp257.Read(this._io, this, this._root)
+	this.FirstVertexIndexClosedDoor = uint32(tmp254)
+	tmp255 := NewAre_BoundingBox()
+	err = tmp255.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.MinimumBbOpenDoor = tmp257
-	tmp258 := NewAre_BoundingBox()
-	err = tmp258.Read(this._io, this, this._root)
+	this.MinimumBbOpenDoor = tmp255
+	tmp256 := NewAre_BoundingBox()
+	err = tmp256.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.MinimmumBbClosedDoor = tmp258
-	tmp259, err := this._io.ReadU4le()
+	this.MinimmumBbClosedDoor = tmp256
+	tmp257, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.FirstImpededCellIndexOpenDoor = uint32(tmp259)
-	tmp260, err := this._io.ReadU2le()
+	this.FirstImpededCellIndexOpenDoor = uint32(tmp257)
+	tmp258, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumImpededCellsOpenDoor = uint16(tmp260)
+	this.NumImpededCellsOpenDoor = uint16(tmp258)
+	tmp259, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.NumImpededCellsClosedDoor = uint16(tmp259)
+	tmp260, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.FirstImpededCellIndexClosedDoor = uint32(tmp260)
 	tmp261, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumImpededCellsClosedDoor = uint16(tmp261)
-	tmp262, err := this._io.ReadU4le()
+	this.HitPoints = uint16(tmp261)
+	tmp262, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.FirstImpededCellIndexClosedDoor = uint32(tmp262)
-	tmp263, err := this._io.ReadU2le()
+	this.ArmorClass = uint16(tmp262)
+	tmp263, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.HitPoints = uint16(tmp263)
-	tmp264, err := this._io.ReadU2le()
+	tmp263 = kaitai.BytesTerminate(tmp263, 0, false)
+	this.DoorOpenSoundWav = string(tmp263)
+	tmp264, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.ArmorClass = uint16(tmp264)
-	tmp265, err := this._io.ReadBytes(int(8))
+	tmp264 = kaitai.BytesTerminate(tmp264, 0, false)
+	this.DoorCloseSoundWav = string(tmp264)
+	tmp265, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp265 = kaitai.BytesTerminate(tmp265, 0, false)
-	this.DoorOpenSoundWav = string(tmp265)
-	tmp266, err := this._io.ReadBytes(int(8))
+	this.CursorIndex = uint32(tmp265)
+	tmp266, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	tmp266 = kaitai.BytesTerminate(tmp266, 0, false)
-	this.DoorCloseSoundWav = string(tmp266)
-	tmp267, err := this._io.ReadU4le()
+	this.TrapDetectionDifficulty = uint16(tmp266)
+	tmp267, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.CursorIndex = uint32(tmp267)
-	tmp268, err := this._io.ReadU2le()
+	this.TrapRemovalDifficulty = uint16(tmp267)
+	tmp268 := NewAre_Bool2()
+	err = tmp268.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.TrapDetectionDifficulty = uint16(tmp268)
-	tmp269, err := this._io.ReadU2le()
+	this.IsTrapped = tmp268
+	tmp269 := NewAre_Bool2()
+	err = tmp269.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.TrapRemovalDifficulty = uint16(tmp269)
-	tmp270 := NewAre_Bool2()
+	this.TrapDetected = tmp269
+	tmp270 := NewAre_Point()
 	err = tmp270.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.IsTrapped = tmp270
-	tmp271 := NewAre_Bool2()
-	err = tmp271.Read(this._io, this, this._root)
+	this.TrapLaunchPoint = tmp270
+	tmp271, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.TrapDetected = tmp271
-	tmp272 := NewAre_Point()
-	err = tmp272.Read(this._io, this, this._root)
+	tmp271 = kaitai.BytesTerminate(tmp271, 0, false)
+	this.KeyItm = string(tmp271)
+	tmp272, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.TrapLaunchPoint = tmp272
-	tmp273, err := this._io.ReadBytes(int(8))
+	tmp272 = kaitai.BytesTerminate(tmp272, 0, false)
+	this.ScriptBcs = string(tmp272)
+	tmp273, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp273 = kaitai.BytesTerminate(tmp273, 0, false)
-	this.KeyItm = string(tmp273)
-	tmp274, err := this._io.ReadBytes(int(8))
+	this.DetectionDifficulty = uint32(tmp273)
+	tmp274, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp274 = kaitai.BytesTerminate(tmp274, 0, false)
-	this.ScriptBcs = string(tmp274)
-	tmp275, err := this._io.ReadU4le()
+	this.LockDifficulty = uint32(tmp274)
+	tmp275 := NewAre_Point()
+	err = tmp275.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.DetectionDifficulty = uint32(tmp275)
-	tmp276, err := this._io.ReadU4le()
+	this.OpenLocation = tmp275
+	tmp276 := NewAre_Point()
+	err = tmp276.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.LockDifficulty = uint32(tmp276)
-	tmp277 := NewAre_Point()
-	err = tmp277.Read(this._io, this, this._root)
+	this.CloseLocation = tmp276
+	tmp277, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OpenLocation = tmp277
-	tmp278 := NewAre_Point()
-	err = tmp278.Read(this._io, this, this._root)
+	this.UnlockMessageRef = uint32(tmp277)
+	tmp278, err := this._io.ReadBytes(int(24))
 	if err != nil {
 		return err
 	}
-	this.CloseLocation = tmp278
+	tmp278 = kaitai.BytesTerminate(tmp278, 0, false)
+	this.TravelTriggerName = string(tmp278)
 	tmp279, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.UnlockMessageRef = uint32(tmp279)
-	tmp280, err := this._io.ReadBytes(int(24))
+	this.SpeakerNameRef = uint32(tmp279)
+	tmp280, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
 	tmp280 = kaitai.BytesTerminate(tmp280, 0, false)
-	this.TravelTriggerName = string(tmp280)
-	tmp281, err := this._io.ReadU4le()
+	this.DialogDlg = string(tmp280)
+	tmp281, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.SpeakerNameRef = uint32(tmp281)
-	tmp282, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp282 = kaitai.BytesTerminate(tmp282, 0, false)
-	this.DialogDlg = string(tmp282)
-	tmp283, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp283 = tmp283
-	this._unnamed33 = tmp283
+	tmp281 = tmp281
+	this._unnamed33 = tmp281
 	return err
 }
 
@@ -2989,66 +2955,66 @@ func (this *Are_Door_Flags) Read(io *kaitai.Stream, parent *Are_Door, root *Are)
 	this._parent = parent
 	this._root = root
 
+	tmp282, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.DoorOpen = tmp282 != 0
+	tmp283, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.DoorLocked = tmp283 != 0
 	tmp284, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DoorOpen = tmp284 != 0
+	this.ResetTrap = tmp284 != 0
 	tmp285, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DoorLocked = tmp285 != 0
+	this.TrapDetectable = tmp285 != 0
 	tmp286, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ResetTrap = tmp286 != 0
+	this.Broken = tmp286 != 0
 	tmp287, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.TrapDetectable = tmp287 != 0
+	this.CantClose = tmp287 != 0
 	tmp288, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Broken = tmp288 != 0
+	this.Linked = tmp288 != 0
 	tmp289, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.CantClose = tmp289 != 0
+	this.DoorHidden = tmp289 != 0
 	tmp290, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Linked = tmp290 != 0
+	this.DoorFound = tmp290 != 0
 	tmp291, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DoorHidden = tmp291 != 0
+	this.CanBeLookedThrough = tmp291 != 0
 	tmp292, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.DoorFound = tmp292 != 0
+	this.ConsumesKey = tmp292 != 0
 	tmp293, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.CanBeLookedThrough = tmp293 != 0
-	tmp294, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.ConsumesKey = tmp294 != 0
-	tmp295, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.IgnoreObstaclesWhenClosing = tmp295 != 0
+	this.IgnoreObstaclesWhenClosing = tmp293 != 0
 	return err
 }
 type Are_Entrance struct {
@@ -3074,36 +3040,36 @@ func (this *Are_Entrance) Read(io *kaitai.Stream, parent *Are, root *Are) (err e
 	this._parent = parent
 	this._root = root
 
-	tmp296, err := this._io.ReadBytes(int(32))
+	tmp294, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp296 = kaitai.BytesTerminate(tmp296, 0, false)
-	this.Name = string(tmp296)
-	tmp297 := NewAre_Point()
-	err = tmp297.Read(this._io, this, this._root)
+	tmp294 = kaitai.BytesTerminate(tmp294, 0, false)
+	this.Name = string(tmp294)
+	tmp295 := NewAre_Point()
+	err = tmp295.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Coord = tmp297
-	tmp298, err := this._io.ReadU2le()
+	this.Coord = tmp295
+	tmp296, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Orientation = Are_Orientation(tmp298)
-	tmp299, err := this._io.ReadBytes(int(66))
+	this.Orientation = Are_Orientation(tmp296)
+	tmp297, err := this._io.ReadBytes(int(66))
 	if err != nil {
 		return err
 	}
-	tmp299 = tmp299
-	this._unnamed3 = tmp299
+	tmp297 = tmp297
+	this._unnamed3 = tmp297
 	return err
 }
 type Are_Flags struct {
 	SaveNotAllowed bool
 	_io *kaitai.Stream
 	_root *Are
-	_parent kaitai.Struct
+	_parent *Are
 }
 func NewAre_Flags() *Are_Flags {
 	return &Are_Flags{
@@ -3114,16 +3080,16 @@ func (this Are_Flags) IO_() *kaitai.Stream {
 	return this._io
 }
 
-func (this *Are_Flags) Read(io *kaitai.Stream, parent kaitai.Struct, root *Are) (err error) {
+func (this *Are_Flags) Read(io *kaitai.Stream, parent *Are, root *Are) (err error) {
 	this._io = io
 	this._parent = parent
 	this._root = root
 
-	tmp300, err := this._io.ReadBitsIntLe(1)
+	tmp298, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.SaveNotAllowed = tmp300 != 0
+	this.SaveNotAllowed = tmp298 != 0
 	return err
 }
 type Are_Item struct {
@@ -3150,38 +3116,38 @@ func (this *Are_Item) Read(io *kaitai.Stream, parent kaitai.Struct, root *Are) (
 	this._parent = parent
 	this._root = root
 
-	tmp301, err := this._io.ReadBytes(int(8))
+	tmp299, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp301 = kaitai.BytesTerminate(tmp301, 0, false)
-	this.ItemItm = string(tmp301)
-	tmp302, err := this._io.ReadU2le()
+	tmp299 = kaitai.BytesTerminate(tmp299, 0, false)
+	this.ItemItm = string(tmp299)
+	tmp300, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ExpiryTime = uint16(tmp302)
+	this.ExpiryTime = uint16(tmp300)
 	for i := 0; i < int(3); i++ {
 		_ = i
-		tmp303, err := this._io.ReadU2le()
+		tmp301, err := this._io.ReadU2le()
 		if err != nil {
 			return err
 		}
-		this.QuantityCharges = append(this.QuantityCharges, tmp303)
+		this.QuantityCharges = append(this.QuantityCharges, tmp301)
 	}
-	tmp304, err := this._io.ReadBytes(int(4))
+	tmp302, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	tmp304 = tmp304
-	this._raw_Flags = tmp304
+	tmp302 = tmp302
+	this._raw_Flags = tmp302
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp305 := NewAre_Item_Flags()
-	err = tmp305.Read(_io__raw_Flags, this, this._root)
+	tmp303 := NewAre_Item_Flags()
+	err = tmp303.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp305
+	this.Flags = tmp303
 	return err
 }
 type Are_Item_Flags struct {
@@ -3207,26 +3173,26 @@ func (this *Are_Item_Flags) Read(io *kaitai.Stream, parent *Are_Item, root *Are)
 	this._parent = parent
 	this._root = root
 
+	tmp304, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Identified = tmp304 != 0
+	tmp305, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.Unstealable = tmp305 != 0
 	tmp306, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Identified = tmp306 != 0
+	this.Stolen = tmp306 != 0
 	tmp307, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Unstealable = tmp307 != 0
-	tmp308, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Stolen = tmp308 != 0
-	tmp309, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.Undroppable = tmp309 != 0
+	this.Undroppable = tmp307 != 0
 	return err
 }
 type Are_NeighboringAreaFlags struct {
@@ -3250,16 +3216,16 @@ func (this *Are_NeighboringAreaFlags) Read(io *kaitai.Stream, parent *Are, root 
 	this._parent = parent
 	this._root = root
 
-	tmp310, err := this._io.ReadBitsIntLe(1)
+	tmp308, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.PartyRequired = tmp310 != 0
-	tmp311, err := this._io.ReadBitsIntLe(1)
+	this.PartyRequired = tmp308 != 0
+	tmp309, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.PartyEnabled = tmp311 != 0
+	this.PartyEnabled = tmp309 != 0
 	return err
 }
 type Are_OtherOffsets struct {
@@ -3294,21 +3260,21 @@ func (this *Are_OtherOffsets) Read(io *kaitai.Stream, parent *Are, root *Are) (e
 	this._parent = parent
 	this._root = root
 
+	tmp310, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.First = uint32(tmp310)
+	tmp311, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.Second = uint32(tmp311)
 	tmp312, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.First = uint32(tmp312)
-	tmp313, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.Second = uint32(tmp313)
-	tmp314, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.Third = uint32(tmp314)
+	this.Third = uint32(tmp312)
 	return err
 }
 func (this *Are_OtherOffsets) NumBgAutomapNotes() (v uint32, err error) {
@@ -3372,16 +3338,16 @@ func (this *Are_Point) Read(io *kaitai.Stream, parent kaitai.Struct, root *Are) 
 	this._parent = parent
 	this._root = root
 
-	tmp315, err := this._io.ReadU2le()
+	tmp313, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.X = uint16(tmp315)
-	tmp316, err := this._io.ReadU2le()
+	this.X = uint16(tmp313)
+	tmp314, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Y = uint16(tmp316)
+	this.Y = uint16(tmp314)
 	return err
 }
 
@@ -3419,33 +3385,33 @@ func (this *Are_PstAutomapNote) Read(io *kaitai.Stream, parent *Are, root *Are) 
 	this._parent = parent
 	this._root = root
 
-	tmp317, err := this._io.ReadU4le()
+	tmp315, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.X = uint32(tmp317)
+	this.X = uint32(tmp315)
+	tmp316, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.Y = uint32(tmp316)
+	tmp317, err := this._io.ReadBytes(int(500))
+	if err != nil {
+		return err
+	}
+	tmp317 = kaitai.BytesTerminate(tmp317, 0, false)
+	this.Text = string(tmp317)
 	tmp318, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.Y = uint32(tmp318)
-	tmp319, err := this._io.ReadBytes(int(500))
+	this.NoteColor = Are_PstAutomapNote_NoteColor(tmp318)
+	tmp319, err := this._io.ReadBytes(int(20))
 	if err != nil {
 		return err
 	}
-	tmp319 = kaitai.BytesTerminate(tmp319, 0, false)
-	this.Text = string(tmp319)
-	tmp320, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.NoteColor = Are_PstAutomapNote_NoteColor(tmp320)
-	tmp321, err := this._io.ReadBytes(int(20))
-	if err != nil {
-		return err
-	}
-	tmp321 = tmp321
-	this._unnamed4 = tmp321
+	tmp319 = tmp319
+	this._unnamed4 = tmp319
 	return err
 }
 
@@ -3508,154 +3474,154 @@ func (this *Are_Region) Read(io *kaitai.Stream, parent *Are, root *Are) (err err
 	this._parent = parent
 	this._root = root
 
-	tmp322, err := this._io.ReadBytes(int(32))
+	tmp320, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp322 = kaitai.BytesTerminate(tmp322, 0, false)
-	this.Name = string(tmp322)
+	tmp320 = kaitai.BytesTerminate(tmp320, 0, false)
+	this.Name = string(tmp320)
+	tmp321, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.RegionType = Are_Region_RegionType(tmp321)
+	tmp322 := NewAre_BoundingBox()
+	err = tmp322.Read(this._io, this, this._root)
+	if err != nil {
+		return err
+	}
+	this.BoundingBox = tmp322
 	tmp323, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.RegionType = Are_Region_RegionType(tmp323)
-	tmp324 := NewAre_BoundingBox()
-	err = tmp324.Read(this._io, this, this._root)
+	this.NumVertices = uint16(tmp323)
+	tmp324, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.BoundingBox = tmp324
-	tmp325, err := this._io.ReadU2le()
+	this.FirstVertexIndex = uint32(tmp324)
+	tmp325, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NumVertices = uint16(tmp325)
+	this.TriggerValue = uint32(tmp325)
 	tmp326, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.FirstVertexIndex = uint32(tmp326)
-	tmp327, err := this._io.ReadU4le()
+	this.CursorIndex = uint32(tmp326)
+	tmp327, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.TriggerValue = uint32(tmp327)
-	tmp328, err := this._io.ReadU4le()
+	tmp327 = kaitai.BytesTerminate(tmp327, 0, false)
+	this.DestinationArea = string(tmp327)
+	tmp328, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	this.CursorIndex = uint32(tmp328)
-	tmp329, err := this._io.ReadBytes(int(8))
+	tmp328 = kaitai.BytesTerminate(tmp328, 0, false)
+	this.EntranceName = string(tmp328)
+	tmp329, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	tmp329 = kaitai.BytesTerminate(tmp329, 0, false)
-	this.DestinationArea = string(tmp329)
-	tmp330, err := this._io.ReadBytes(int(32))
-	if err != nil {
-		return err
-	}
-	tmp330 = kaitai.BytesTerminate(tmp330, 0, false)
-	this.EntranceName = string(tmp330)
-	tmp331, err := this._io.ReadBytes(int(4))
-	if err != nil {
-		return err
-	}
-	tmp331 = tmp331
-	this._raw_Flags = tmp331
+	tmp329 = tmp329
+	this._raw_Flags = tmp329
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp332 := NewAre_Region_Flags()
-	err = tmp332.Read(_io__raw_Flags, this, this._root)
+	tmp330 := NewAre_Region_Flags()
+	err = tmp330.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp332
-	tmp333, err := this._io.ReadU4le()
+	this.Flags = tmp330
+	tmp331, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.InfoRef = uint32(tmp333)
-	tmp334, err := this._io.ReadU2le()
+	this.InfoRef = uint32(tmp331)
+	tmp332, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.TrapDetectionDifficulty = uint16(tmp334)
-	tmp335, err := this._io.ReadU2le()
+	this.TrapDetectionDifficulty = uint16(tmp332)
+	tmp333, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.TrapRemovalDifficulty = uint16(tmp335)
-	tmp336 := NewAre_Bool2()
+	this.TrapRemovalDifficulty = uint16(tmp333)
+	tmp334 := NewAre_Bool2()
+	err = tmp334.Read(this._io, this, this._root)
+	if err != nil {
+		return err
+	}
+	this.IsTrapped = tmp334
+	tmp335 := NewAre_Bool2()
+	err = tmp335.Read(this._io, this, this._root)
+	if err != nil {
+		return err
+	}
+	this.IsTrapDetected = tmp335
+	tmp336 := NewAre_Point()
 	err = tmp336.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.IsTrapped = tmp336
-	tmp337 := NewAre_Bool2()
-	err = tmp337.Read(this._io, this, this._root)
+	this.TrapLaunchLocation = tmp336
+	tmp337, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.IsTrapDetected = tmp337
-	tmp338 := NewAre_Point()
-	err = tmp338.Read(this._io, this, this._root)
+	tmp337 = kaitai.BytesTerminate(tmp337, 0, false)
+	this.KeyItm = string(tmp337)
+	tmp338, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.TrapLaunchLocation = tmp338
-	tmp339, err := this._io.ReadBytes(int(8))
+	tmp338 = kaitai.BytesTerminate(tmp338, 0, false)
+	this.ScriptBcs = string(tmp338)
+	tmp339 := NewAre_Point()
+	err = tmp339.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	tmp339 = kaitai.BytesTerminate(tmp339, 0, false)
-	this.KeyItm = string(tmp339)
-	tmp340, err := this._io.ReadBytes(int(8))
+	this.AlternativePoint = tmp339
+	tmp340, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	tmp340 = kaitai.BytesTerminate(tmp340, 0, false)
-	this.ScriptBcs = string(tmp340)
-	tmp341 := NewAre_Point()
-	err = tmp341.Read(this._io, this, this._root)
+	tmp340 = tmp340
+	this._unnamed19 = tmp340
+	tmp341, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	this.AlternativePoint = tmp341
-	tmp342, err := this._io.ReadBytes(int(4))
+	tmp341 = tmp341
+	this._unnamed20 = tmp341
+	tmp342, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp342 = tmp342
-	this._unnamed19 = tmp342
-	tmp343, err := this._io.ReadBytes(int(32))
+	tmp342 = kaitai.BytesTerminate(tmp342, 0, false)
+	this.PstSound = string(tmp342)
+	tmp343 := NewAre_Point()
+	err = tmp343.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	tmp343 = tmp343
-	this._unnamed20 = tmp343
-	tmp344, err := this._io.ReadBytes(int(8))
+	this.PstTalkLocation = tmp343
+	tmp344, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	tmp344 = kaitai.BytesTerminate(tmp344, 0, false)
-	this.PstSound = string(tmp344)
-	tmp345 := NewAre_Point()
-	err = tmp345.Read(this._io, this, this._root)
+	this.PstSpeakerNameRef = uint32(tmp344)
+	tmp345, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	this.PstTalkLocation = tmp345
-	tmp346, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.PstSpeakerNameRef = uint32(tmp346)
-	tmp347, err := this._io.ReadBytes(int(8))
-	if err != nil {
-		return err
-	}
-	tmp347 = kaitai.BytesTerminate(tmp347, 0, false)
-	this.PstDialogDlg = string(tmp347)
+	tmp345 = kaitai.BytesTerminate(tmp345, 0, false)
+	this.PstDialogDlg = string(tmp345)
 	return err
 }
 func (this *Are_Region) Vertices() (v []*Are_Point, err error) {
@@ -3674,19 +3640,19 @@ func (this *Are_Region) Vertices() (v []*Are_Point, err error) {
 	}
 	for i := 0; i < int(this.NumVertices); i++ {
 		_ = i
-		tmp348, err := thisIo.ReadBytes(int(4))
+		tmp346, err := thisIo.ReadBytes(int(4))
 		if err != nil {
 			return nil, err
 		}
-		tmp348 = tmp348
-		this._raw_vertices = append(this._raw_vertices, tmp348)
+		tmp346 = tmp346
+		this._raw_vertices = append(this._raw_vertices, tmp346)
 		_io__raw_vertices := kaitai.NewStream(bytes.NewReader(this._raw_vertices[i]))
-		tmp349 := NewAre_Point()
-		err = tmp349.Read(_io__raw_vertices, this, this._root)
+		tmp347 := NewAre_Point()
+		err = tmp347.Read(_io__raw_vertices, this, this._root)
 		if err != nil {
 			return nil, err
 		}
-		this.vertices = append(this.vertices, tmp349)
+		this.vertices = append(this.vertices, tmp347)
 	}
 	_, err = thisIo.Seek(_pos, io.SeekStart)
 	if err != nil {
@@ -3729,66 +3695,66 @@ func (this *Are_Region_Flags) Read(io *kaitai.Stream, parent *Are_Region, root *
 	this._parent = parent
 	this._root = root
 
+	tmp348, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.KeyRequired = tmp348 != 0
+	tmp349, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.ResetTrap = tmp349 != 0
 	tmp350, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.KeyRequired = tmp350 != 0
+	this.PartyRequired = tmp350 != 0
 	tmp351, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ResetTrap = tmp351 != 0
+	this.Detectable = tmp351 != 0
 	tmp352, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.PartyRequired = tmp352 != 0
+	this.NpcActivates = tmp352 != 0
 	tmp353, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Detectable = tmp353 != 0
+	this.ActiveInTutorialAreaOnly = tmp353 != 0
 	tmp354, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.NpcActivates = tmp354 != 0
+	this.AnyoneActivates = tmp354 != 0
 	tmp355, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.ActiveInTutorialAreaOnly = tmp355 != 0
+	this.Silent = tmp355 != 0
 	tmp356, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.AnyoneActivates = tmp356 != 0
+	this.Deactivated = tmp356 != 0
 	tmp357, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Silent = tmp357 != 0
+	this.PartyOnly = tmp357 != 0
 	tmp358, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.Deactivated = tmp358 != 0
+	this.UseAlternativePoint = tmp358 != 0
 	tmp359, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.PartyOnly = tmp359 != 0
-	tmp360, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.UseAlternativePoint = tmp360 != 0
-	tmp361, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.ConnectedToDoor = tmp361 != 0
+	this.ConnectedToDoor = tmp359 != 0
 	return err
 }
 type Are_RestEncounters struct {
@@ -3823,81 +3789,81 @@ func (this *Are_RestEncounters) Read(io *kaitai.Stream, parent *Are, root *Are) 
 	this._parent = parent
 	this._root = root
 
-	tmp362, err := this._io.ReadBytes(int(32))
+	tmp360, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp362 = kaitai.BytesTerminate(tmp362, 0, false)
-	this.Name = string(tmp362)
+	tmp360 = kaitai.BytesTerminate(tmp360, 0, false)
+	this.Name = string(tmp360)
 	for i := 0; i < int(10); i++ {
 		_ = i
-		tmp363, err := this._io.ReadU4le()
+		tmp361, err := this._io.ReadU4le()
 		if err != nil {
 			return err
 		}
-		this.CreatureTextRef = append(this.CreatureTextRef, tmp363)
+		this.CreatureTextRef = append(this.CreatureTextRef, tmp361)
 	}
 	for i := 0; i < int(10); i++ {
 		_ = i
-		tmp364, err := this._io.ReadBytes(int(8))
+		tmp362, err := this._io.ReadBytes(int(8))
 		if err != nil {
 			return err
 		}
-		tmp364 = kaitai.BytesTerminate(tmp364, 0, false)
-		this.CreatureToSpawn = append(this.CreatureToSpawn, string(tmp364))
+		tmp362 = kaitai.BytesTerminate(tmp362, 0, false)
+		this.CreatureToSpawn = append(this.CreatureToSpawn, string(tmp362))
 	}
-	tmp365, err := this._io.ReadU2le()
+	tmp363, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumCreatures = uint16(tmp365)
+	this.NumCreatures = uint16(tmp363)
+	tmp364, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.Difficulty = uint16(tmp364)
+	tmp365, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.ExpiryTime = uint32(tmp365)
 	tmp366, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Difficulty = uint16(tmp366)
-	tmp367, err := this._io.ReadU4le()
+	this.CreatureWanderDistance = uint16(tmp366)
+	tmp367, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.ExpiryTime = uint32(tmp367)
+	this.CreatureFollowDistance = uint16(tmp367)
 	tmp368, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.CreatureWanderDistance = uint16(tmp368)
-	tmp369, err := this._io.ReadU2le()
+	this.MaximumCreatures = uint16(tmp368)
+	tmp369 := NewAre_Bool2()
+	err = tmp369.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.CreatureFollowDistance = uint16(tmp369)
+	this.Active = tmp369
 	tmp370, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.MaximumCreatures = uint16(tmp370)
-	tmp371 := NewAre_Bool2()
-	err = tmp371.Read(this._io, this, this._root)
+	this.HourlyProbabilityDay = uint16(tmp370)
+	tmp371, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Active = tmp371
-	tmp372, err := this._io.ReadU2le()
+	this.HourlyProbabilityNight = uint16(tmp371)
+	tmp372, err := this._io.ReadBytes(int(56))
 	if err != nil {
 		return err
 	}
-	this.HourlyProbabilityDay = uint16(tmp372)
-	tmp373, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.HourlyProbabilityNight = uint16(tmp373)
-	tmp374, err := this._io.ReadBytes(int(56))
-	if err != nil {
-		return err
-	}
-	tmp374 = tmp374
-	this._unnamed12 = tmp374
+	tmp372 = tmp372
+	this._unnamed12 = tmp372
 	return err
 }
 
@@ -3948,133 +3914,133 @@ func (this *Are_Schedule) Read(io *kaitai.Stream, parent kaitai.Struct, root *Ar
 	this._parent = parent
 	this._root = root
 
+	tmp373, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.From0030Till0129 = tmp373 != 0
+	tmp374, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.From0130Till0229 = tmp374 != 0
 	tmp375, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From0030Till0129 = tmp375 != 0
+	this.From0230Till0329 = tmp375 != 0
 	tmp376, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From0130Till0229 = tmp376 != 0
+	this.From0330Till0429 = tmp376 != 0
 	tmp377, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From0230Till0329 = tmp377 != 0
+	this.From0430Till0529 = tmp377 != 0
 	tmp378, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From0330Till0429 = tmp378 != 0
+	this.From0530Till0629 = tmp378 != 0
 	tmp379, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From0430Till0529 = tmp379 != 0
+	this.From0630Till0729 = tmp379 != 0
 	tmp380, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From0530Till0629 = tmp380 != 0
+	this.From0730Till0829 = tmp380 != 0
 	tmp381, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From0630Till0729 = tmp381 != 0
+	this.From0830Till0929 = tmp381 != 0
 	tmp382, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From0730Till0829 = tmp382 != 0
+	this.From0930Till1029 = tmp382 != 0
 	tmp383, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From0830Till0929 = tmp383 != 0
+	this.From1030Till1129 = tmp383 != 0
 	tmp384, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From0930Till1029 = tmp384 != 0
+	this.From1130Till1229 = tmp384 != 0
 	tmp385, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From1030Till1129 = tmp385 != 0
+	this.From1230Till1329 = tmp385 != 0
 	tmp386, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From1130Till1229 = tmp386 != 0
+	this.From1330Till1429 = tmp386 != 0
 	tmp387, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From1230Till1329 = tmp387 != 0
+	this.From1430Till1529 = tmp387 != 0
 	tmp388, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From1330Till1429 = tmp388 != 0
+	this.From1530Till1629 = tmp388 != 0
 	tmp389, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From1430Till1529 = tmp389 != 0
+	this.From1630Till1729 = tmp389 != 0
 	tmp390, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From1530Till1629 = tmp390 != 0
+	this.From1730Till1829 = tmp390 != 0
 	tmp391, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From1630Till1729 = tmp391 != 0
+	this.From1830Till1929 = tmp391 != 0
 	tmp392, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From1730Till1829 = tmp392 != 0
+	this.From1930Till2029 = tmp392 != 0
 	tmp393, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From1830Till1929 = tmp393 != 0
+	this.From2030Till2129 = tmp393 != 0
 	tmp394, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From1930Till2029 = tmp394 != 0
+	this.From2130Till2229 = tmp394 != 0
 	tmp395, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From2030Till2129 = tmp395 != 0
+	this.From2230Till2329 = tmp395 != 0
 	tmp396, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.From2130Till2229 = tmp396 != 0
-	tmp397, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.From2230Till2329 = tmp397 != 0
-	tmp398, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.From2330Till0029 = tmp398 != 0
+	this.From2330Till0029 = tmp396 != 0
 	this._io.AlignToByte()
-	tmp399, err := this._io.ReadBytes(int(1))
+	tmp397, err := this._io.ReadBytes(int(1))
 	if err != nil {
 		return err
 	}
-	tmp399 = tmp399
-	this._unnamed24 = tmp399
+	tmp397 = tmp397
+	this._unnamed24 = tmp397
 	return err
 }
 
@@ -4112,39 +4078,53 @@ func (this *Are_Songs) Read(io *kaitai.Stream, parent *Are, root *Are) (err erro
 	this._parent = parent
 	this._root = root
 
+	tmp398, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.DaySong = uint32(tmp398)
+	tmp399, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.NightSong = uint32(tmp399)
 	tmp400, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.DaySong = uint32(tmp400)
+	this.WinSong = uint32(tmp400)
 	tmp401, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.NightSong = uint32(tmp401)
+	this.BattleSong = uint32(tmp401)
 	tmp402, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.WinSong = uint32(tmp402)
-	tmp403, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.BattleSong = uint32(tmp403)
-	tmp404, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.LoseSong = uint32(tmp404)
+	this.LoseSong = uint32(tmp402)
 	for i := 0; i < int(5); i++ {
 		_ = i
-		tmp405, err := this._io.ReadU4le()
+		tmp403, err := this._io.ReadU4le()
 		if err != nil {
 			return err
 		}
-		this.AltMusic = append(this.AltMusic, tmp405)
+		this.AltMusic = append(this.AltMusic, tmp403)
 	}
+	for i := 0; i < int(2); i++ {
+		_ = i
+		tmp404, err := this._io.ReadBytes(int(8))
+		if err != nil {
+			return err
+		}
+		tmp404 = kaitai.BytesTerminate(tmp404, 0, false)
+		this.MainDayAmbientWav = append(this.MainDayAmbientWav, string(tmp404))
+	}
+	tmp405, err := this._io.ReadU4le()
+	if err != nil {
+		return err
+	}
+	this.MainDayAmbientVolume = uint32(tmp405)
 	for i := 0; i < int(2); i++ {
 		_ = i
 		tmp406, err := this._io.ReadBytes(int(8))
@@ -4152,38 +4132,24 @@ func (this *Are_Songs) Read(io *kaitai.Stream, parent *Are, root *Are) (err erro
 			return err
 		}
 		tmp406 = kaitai.BytesTerminate(tmp406, 0, false)
-		this.MainDayAmbientWav = append(this.MainDayAmbientWav, string(tmp406))
+		this.MainNightAmbientWav = append(this.MainNightAmbientWav, string(tmp406))
 	}
 	tmp407, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.MainDayAmbientVolume = uint32(tmp407)
-	for i := 0; i < int(2); i++ {
-		_ = i
-		tmp408, err := this._io.ReadBytes(int(8))
-		if err != nil {
-			return err
-		}
-		tmp408 = kaitai.BytesTerminate(tmp408, 0, false)
-		this.MainNightAmbientWav = append(this.MainNightAmbientWav, string(tmp408))
-	}
-	tmp409, err := this._io.ReadU4le()
+	this.MainNightAmbientVolume = uint32(tmp407)
+	tmp408, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.MainNightAmbientVolume = uint32(tmp409)
-	tmp410, err := this._io.ReadU4le()
+	this.Reverb = uint32(tmp408)
+	tmp409, err := this._io.ReadBytes(int(60))
 	if err != nil {
 		return err
 	}
-	this.Reverb = uint32(tmp410)
-	tmp411, err := this._io.ReadBytes(int(60))
-	if err != nil {
-		return err
-	}
-	tmp411 = tmp411
-	this._unnamed11 = tmp411
+	tmp409 = tmp409
+	this._unnamed11 = tmp409
 	return err
 }
 
@@ -4229,121 +4195,121 @@ func (this *Are_SpawnPoint) Read(io *kaitai.Stream, parent *Are, root *Are) (err
 	this._parent = parent
 	this._root = root
 
-	tmp412, err := this._io.ReadBytes(int(32))
+	tmp410, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp412 = kaitai.BytesTerminate(tmp412, 0, false)
-	this.Name = string(tmp412)
-	tmp413 := NewAre_Point()
-	err = tmp413.Read(this._io, this, this._root)
+	tmp410 = kaitai.BytesTerminate(tmp410, 0, false)
+	this.Name = string(tmp410)
+	tmp411 := NewAre_Point()
+	err = tmp411.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Coord = tmp413
+	this.Coord = tmp411
 	for i := 0; i < int(10); i++ {
 		_ = i
-		tmp414, err := this._io.ReadBytes(int(8))
+		tmp412, err := this._io.ReadBytes(int(8))
 		if err != nil {
 			return err
 		}
-		tmp414 = kaitai.BytesTerminate(tmp414, 0, false)
-		this.CreatureCre = append(this.CreatureCre, string(tmp414))
+		tmp412 = kaitai.BytesTerminate(tmp412, 0, false)
+		this.CreatureCre = append(this.CreatureCre, string(tmp412))
 	}
+	tmp413, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.NumCreatures = uint16(tmp413)
+	tmp414, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.EncounterDifficulty = uint16(tmp414)
 	tmp415, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumCreatures = uint16(tmp415)
-	tmp416, err := this._io.ReadU2le()
+	this.SpawnRate = uint16(tmp415)
+	tmp416, err := this._io.ReadBytes(int(2))
 	if err != nil {
 		return err
 	}
-	this.EncounterDifficulty = uint16(tmp416)
-	tmp417, err := this._io.ReadU2le()
-	if err != nil {
-		return err
-	}
-	this.SpawnRate = uint16(tmp417)
-	tmp418, err := this._io.ReadBytes(int(2))
-	if err != nil {
-		return err
-	}
-	tmp418 = tmp418
-	this._raw_SpawnMethod = tmp418
+	tmp416 = tmp416
+	this._raw_SpawnMethod = tmp416
 	_io__raw_SpawnMethod := kaitai.NewStream(bytes.NewReader(this._raw_SpawnMethod))
-	tmp419 := NewAre_SpawnPoint_SpawnMethod()
-	err = tmp419.Read(_io__raw_SpawnMethod, this, this._root)
+	tmp417 := NewAre_SpawnPoint_SpawnMethod()
+	err = tmp417.Read(_io__raw_SpawnMethod, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.SpawnMethod = tmp419
-	tmp420, err := this._io.ReadU4le()
+	this.SpawnMethod = tmp417
+	tmp418, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.ExpiryTime = uint32(tmp420)
+	this.ExpiryTime = uint32(tmp418)
+	tmp419, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.WanderDistance = uint16(tmp419)
+	tmp420, err := this._io.ReadU2le()
+	if err != nil {
+		return err
+	}
+	this.FollowDistance = uint16(tmp420)
 	tmp421, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.WanderDistance = uint16(tmp421)
-	tmp422, err := this._io.ReadU2le()
+	this.MaximumNumCreatures = uint16(tmp421)
+	tmp422 := NewAre_Bool2()
+	err = tmp422.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.FollowDistance = uint16(tmp422)
-	tmp423, err := this._io.ReadU2le()
+	this.Enabled = tmp422
+	tmp423 := NewAre_Schedule()
+	err = tmp423.Read(this._io, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.MaximumNumCreatures = uint16(tmp423)
-	tmp424 := NewAre_Bool2()
-	err = tmp424.Read(this._io, this, this._root)
+	this.AppearanceSchedule = tmp423
+	tmp424, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.Enabled = tmp424
-	tmp425 := NewAre_Schedule()
-	err = tmp425.Read(this._io, this, this._root)
+	this.ProbabilityDay = uint16(tmp424)
+	tmp425, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.AppearanceSchedule = tmp425
-	tmp426, err := this._io.ReadU2le()
+	this.ProbabilityNight = uint16(tmp425)
+	tmp426, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.ProbabilityDay = uint16(tmp426)
-	tmp427, err := this._io.ReadU2le()
+	this.SpawnFrequency = uint32(tmp426)
+	tmp427, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.ProbabilityNight = uint16(tmp427)
-	tmp428, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.SpawnFrequency = uint32(tmp428)
-	tmp429, err := this._io.ReadU4le()
-	if err != nil {
-		return err
-	}
-	this.Countdown = uint32(tmp429)
+	this.Countdown = uint32(tmp427)
 	for i := 0; i < int(10); i++ {
 		_ = i
-		tmp430, err := this._io.ReadU1()
+		tmp428, err := this._io.ReadU1()
 		if err != nil {
 			return err
 		}
-		this.SpawnWeight = append(this.SpawnWeight, tmp430)
+		this.SpawnWeight = append(this.SpawnWeight, tmp428)
 	}
-	tmp431, err := this._io.ReadBytes(int(38))
+	tmp429, err := this._io.ReadBytes(int(38))
 	if err != nil {
 		return err
 	}
-	tmp431 = tmp431
-	this._unnamed18 = tmp431
+	tmp429 = tmp429
+	this._unnamed18 = tmp429
 	return err
 }
 type Are_SpawnPoint_SpawnMethod struct {
@@ -4368,27 +4334,27 @@ func (this *Are_SpawnPoint_SpawnMethod) Read(io *kaitai.Stream, parent *Are_Spaw
 	this._parent = parent
 	this._root = root
 
+	tmp430, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.SpawnUntilPaused = tmp430 != 0
+	tmp431, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.SingleShot = tmp431 != 0
 	tmp432, err := this._io.ReadBitsIntLe(1)
 	if err != nil {
 		return err
 	}
-	this.SpawnUntilPaused = tmp432 != 0
-	tmp433, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.SingleShot = tmp433 != 0
-	tmp434, err := this._io.ReadBitsIntLe(1)
-	if err != nil {
-		return err
-	}
-	this.SpawnPaused = tmp434 != 0
+	this.SpawnPaused = tmp432 != 0
 	return err
 }
 type Are_TiledObject struct {
 	Name string
 	TileId string
-	Flags *Are_Flags
+	Flags *Are_TiledObject_Flags
 	OfsOpenSearchSquares uint32
 	NumOpenSearchSquares uint16
 	NumClosedSearchSquares uint16
@@ -4413,57 +4379,90 @@ func (this *Are_TiledObject) Read(io *kaitai.Stream, parent *Are, root *Are) (er
 	this._parent = parent
 	this._root = root
 
-	tmp435, err := this._io.ReadBytes(int(32))
+	tmp433, err := this._io.ReadBytes(int(32))
 	if err != nil {
 		return err
 	}
-	tmp435 = kaitai.BytesTerminate(tmp435, 0, false)
-	this.Name = string(tmp435)
-	tmp436, err := this._io.ReadBytes(int(8))
+	tmp433 = kaitai.BytesTerminate(tmp433, 0, false)
+	this.Name = string(tmp433)
+	tmp434, err := this._io.ReadBytes(int(8))
 	if err != nil {
 		return err
 	}
-	tmp436 = kaitai.BytesTerminate(tmp436, 0, false)
-	this.TileId = string(tmp436)
-	tmp437, err := this._io.ReadBytes(int(4))
+	tmp434 = kaitai.BytesTerminate(tmp434, 0, false)
+	this.TileId = string(tmp434)
+	tmp435, err := this._io.ReadBytes(int(4))
 	if err != nil {
 		return err
 	}
-	tmp437 = tmp437
-	this._raw_Flags = tmp437
+	tmp435 = tmp435
+	this._raw_Flags = tmp435
 	_io__raw_Flags := kaitai.NewStream(bytes.NewReader(this._raw_Flags))
-	tmp438 := NewAre_Flags()
-	err = tmp438.Read(_io__raw_Flags, this, this._root)
+	tmp436 := NewAre_TiledObject_Flags()
+	err = tmp436.Read(_io__raw_Flags, this, this._root)
 	if err != nil {
 		return err
 	}
-	this.Flags = tmp438
-	tmp439, err := this._io.ReadU4le()
+	this.Flags = tmp436
+	tmp437, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsOpenSearchSquares = uint32(tmp439)
-	tmp440, err := this._io.ReadU2le()
+	this.OfsOpenSearchSquares = uint32(tmp437)
+	tmp438, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumOpenSearchSquares = uint16(tmp440)
-	tmp441, err := this._io.ReadU2le()
+	this.NumOpenSearchSquares = uint16(tmp438)
+	tmp439, err := this._io.ReadU2le()
 	if err != nil {
 		return err
 	}
-	this.NumClosedSearchSquares = uint16(tmp441)
-	tmp442, err := this._io.ReadU4le()
+	this.NumClosedSearchSquares = uint16(tmp439)
+	tmp440, err := this._io.ReadU4le()
 	if err != nil {
 		return err
 	}
-	this.OfsClosedSearchSquares = uint32(tmp442)
-	tmp443, err := this._io.ReadBytes(int(48))
+	this.OfsClosedSearchSquares = uint32(tmp440)
+	tmp441, err := this._io.ReadBytes(int(48))
 	if err != nil {
 		return err
 	}
-	tmp443 = tmp443
-	this._unnamed7 = tmp443
+	tmp441 = tmp441
+	this._unnamed7 = tmp441
+	return err
+}
+type Are_TiledObject_Flags struct {
+	InSecondaryState bool
+	CanBeLookedThrough bool
+	_io *kaitai.Stream
+	_root *Are
+	_parent *Are_TiledObject
+}
+func NewAre_TiledObject_Flags() *Are_TiledObject_Flags {
+	return &Are_TiledObject_Flags{
+	}
+}
+
+func (this Are_TiledObject_Flags) IO_() *kaitai.Stream {
+	return this._io
+}
+
+func (this *Are_TiledObject_Flags) Read(io *kaitai.Stream, parent *Are_TiledObject, root *Are) (err error) {
+	this._io = io
+	this._parent = parent
+	this._root = root
+
+	tmp442, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.InSecondaryState = tmp442 != 0
+	tmp443, err := this._io.ReadBitsIntLe(1)
+	if err != nil {
+		return err
+	}
+	this.CanBeLookedThrough = tmp443 != 0
 	return err
 }
 
@@ -4483,7 +4482,7 @@ func (v Are_Variable_VarType) isDefined() bool {
 }
 type Are_Variable struct {
 	Name string
-	VarType uint16
+	VarType Are_Variable_VarType
 	RefValue uint16
 	DwordValue uint32
 	IntValue int32
@@ -4517,7 +4516,7 @@ func (this *Are_Variable) Read(io *kaitai.Stream, parent *Are, root *Are) (err e
 	if err != nil {
 		return err
 	}
-	this.VarType = uint16(tmp445)
+	this.VarType = Are_Variable_VarType(tmp445)
 	tmp446, err := this._io.ReadU2le()
 	if err != nil {
 		return err
