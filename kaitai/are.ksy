@@ -88,8 +88,7 @@ seq:
   - id: lightning_probability
     type: u2
   - id: overlay_transparency
-    type: b1
-  - size: 1
+    type: bool2
   - id: ofs_actors
     type: u4
   - id: num_actors
@@ -218,7 +217,7 @@ instances:
     repeat-expr: num_ambients
   variables:
     pos: ofs_variables
-    size: 0x50
+    size: 0x54
     type: variable
     repeat: expr
     repeat-expr: num_variables
@@ -429,10 +428,6 @@ types:
           - id: invulnerable
             type: b1
           - id: override_script_name
-            type: b1
-      spawn_flags:
-        seq:
-          - id: is_random_monster
             type: b1
   region:
     seq:
@@ -774,8 +769,7 @@ types:
       - id: flags
         type: flags
         size: 4
-      - id: reserved
-        size: 64
+      - size: 64
     types:
       flags:
         seq:
@@ -869,6 +863,7 @@ types:
         encoding: ASCII
       - id: var_type
         type: u2
+        enum: var_type
       - id: ref_value
         type: u2
       - id: dword_value
@@ -1149,6 +1144,13 @@ types:
       - id: ofs_closed_search_squares
         type: u4
       - size: 48
+    types:
+      flags:
+        seq:
+          - id: in_secondary_state
+            type: b1
+          - id: can_be_looked_through
+            type: b1
   bg_projectile_trap:
     seq:
       - id: projectile_pro
