@@ -37,6 +37,7 @@ const (
 	ContextWorldMap
 	ContextArea
 	ContextItem
+	ContextProjectile
 )
 
 type TextCollection struct {
@@ -346,6 +347,15 @@ func (c *TextCollection) LoadContextFromItem(itmFilename string, itm *p.Itm) err
 	if identDescRef := int(itm.IdentifiedDescriptionRef); identDescRef != 0 && identDescRef != 0xFFFFFFFF {
 		c.AddLabel(identDescRef, "item")
 		c.AddContext(identDescRef, ContextItem, "Identified item description", itmFilename)
+	}
+
+	return nil
+}
+
+func (c *TextCollection) LoadContextFromProjectile(proFilename string, pro *p.Pro) error {
+	if messageRef := int(pro.MessageRef); messageRef != 0 && messageRef != 0xFFFFFFFF {
+		c.AddLabel(messageRef, "projectile")
+		c.AddContext(messageRef, ContextProjectile, "Projectile's message", proFilename)
 	}
 
 	return nil

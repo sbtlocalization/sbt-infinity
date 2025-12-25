@@ -166,5 +166,11 @@ func joinContext(entry *TextEntry) string {
 		parts = append(parts, "Items:\n"+strings.Join(items, "\n"))
 	}
 
+	if projContexts, ok := contexts[ContextProjectile]; ok && len(projContexts) > 0 {
+		projectiles := lo.MapToSlice(projContexts, toAutoList)
+		slices.Sort(projectiles)
+		parts = append(parts, "Projectiles:\n"+strings.Join(projectiles, "\n"))
+	}
+
 	return strings.Join(parts, "\n\n")
 }

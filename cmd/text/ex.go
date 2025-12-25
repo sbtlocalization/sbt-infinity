@@ -94,6 +94,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 		fs.FileType_CRE,
 		fs.FileType_DLG,
 		fs.FileType_ITM,
+		fs.FileType_PRO,
 		fs.FileType_WMP,
 	}
 	if !slices.Contains(contextFrom, "all") {
@@ -128,6 +129,11 @@ func runEx(cmd *cobra.Command, args []string) error {
 			err = processItems(collection, infFs, verbose)
 			if err != nil {
 				fmt.Println("warning: unable to process items:", err)
+			}
+		case fs.FileType_PRO:
+			err = processProjectiles(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process projectiles:", err)
 			}
 		case fs.FileType_WMP:
 			err = processWorldMaps(collection, infFs, verbose)
@@ -317,5 +323,15 @@ func processItems(collection *text.TextCollection, infFs afero.Fs, verbose bool)
 	})
 }
 
+func processProjectiles(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	return processFiles(infFs, verbose, "PRO", "projectiles", func(filename string, stream *kaitai.Stream) error {
+		pro := p.NewPro()
+		if err := pro.Read(stream, nil, pro); err != nil {
+			return err
+		}
+		collection.LoadContextFromProjectile(filename, pro)
+		return nil
+	})
+}
 
 }
