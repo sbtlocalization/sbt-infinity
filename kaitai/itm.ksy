@@ -106,11 +106,11 @@ seq:
     type: u4
   - id: num_extended_headers
     type: u2
-  - id: ofs_feature_blocks
+  - id: ofs_effects
     type: u4
-  - id: idx_equipping_feature_blocks
+  - id: idx_global_effects
     type: u2
-  - id: num_equipping_feature_blocks
+  - id: num_global_effects
     type: u2
 instances:
   extended_headers:
@@ -118,11 +118,12 @@ instances:
     pos: ofs_extended_headers
     repeat: expr
     repeat-expr: num_extended_headers
-  equipping_feature_blocks:
+  global_effects:
+    pos: ofs_effects + idx_global_effects * 48  # eff::header_v1 size
+    size: 48
     type: eff::header_v1
-    pos: ofs_feature_blocks + idx_equipping_feature_blocks * 48  # feature block size
     repeat: expr
-    repeat-expr: num_equipping_feature_blocks
+    repeat-expr: num_global_effects
 
 types:
   item_or_sound:
@@ -373,9 +374,9 @@ types:
       - id: damage_type
         type: u2
         enum: damage_type
-      - id: num_feature_blocks
+      - id: num_effects
         type: u2
-      - id: idx_feature_blocks
+      - id: idx_effects
         type: u2
       - id: max_charges
         type: u2
@@ -406,11 +407,12 @@ types:
           - id: value
             type: b1
     instances:
-      feature_blocks:
+      effects:
+        pos: _root.ofs_effects + idx_effects * 48  # eff::header_v1 size
+        size: 48
         type: eff::header_v1
-        pos: _root.ofs_feature_blocks + idx_feature_blocks * 48  # feature block size
         repeat: expr
-        repeat-expr: num_feature_blocks
+        repeat-expr: num_effects
 
   id_requirement:
     seq:
