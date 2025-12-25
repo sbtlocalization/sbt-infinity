@@ -154,9 +154,6 @@ func runEx(cmd *cobra.Command, args []string) error {
 }
 
 func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl string, verbose bool) error {
-	if verbose {
-		fmt.Print("extracting context from dialogs... ")
-	}
 	dlgBuilder := dialog.NewDialogBuilder(infFs, nil, false, verbose)
 	dir, err := infFs.Open("DLG")
 	if err != nil {
@@ -166,6 +163,12 @@ func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl str
 	dialogFiles, err := dir.Readdirnames(0)
 	if err != nil {
 		return fmt.Errorf("unable to read dialog directory names: %v", err)
+	}
+
+	total := len(dialogFiles)
+
+	if verbose {
+		fmt.Print("extracting context from dialogs...")
 	}
 
 	for _, df := range dialogFiles {
@@ -178,17 +181,13 @@ func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl str
 	}
 
 	if verbose {
-		fmt.Println("done.")
+		fmt.Printf(" done (%d files).\n", total)
 	}
 
 	return nil
 }
 
 func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
-	if verbose {
-		fmt.Print("extracting context from creatures... ")
-	}
-
 	dir, err := infFs.Open("CRE")
 	if err != nil {
 		return fmt.Errorf("unable to list existing CRE files: %v", err)
@@ -213,6 +212,12 @@ func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose b
 		}
 	}
 
+	total := len(creFiles)
+
+	if verbose {
+		fmt.Print("extracting context from creatures...")
+	}
+
 	for _, cf := range creFiles {
 		creFile, err := infFs.Open(cf)
 		if err != nil {
@@ -231,7 +236,7 @@ func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose b
 	}
 
 	if verbose {
-		fmt.Println("done.")
+		fmt.Printf(" done (%d files).\n", total)
 	}
 
 	return nil
@@ -244,10 +249,6 @@ func processFiles(
 	entityName string,
 	processFile func(filename string, stream *kaitai.Stream) error,
 ) error {
-	if verbose {
-		fmt.Printf("extracting context from %s... ", entityName)
-	}
-
 	dir, err := infFs.Open(dirName)
 	if err != nil {
 		return fmt.Errorf("unable to list existing %s files: %v", dirName, err)
@@ -259,21 +260,48 @@ func processFiles(
 		return fmt.Errorf("unable to read %s directory names: %v", dirName, err)
 	}
 
+	total := len(files)
+	processed := 0
+	hasWarnings := false
+
+	if verbose {
+		fmt.Printf("extracting context from %s...", entityName)
+	}
+
 	for _, f := range files {
 		file, err := infFs.Open(f)
 		if err != nil {
-			return fmt.Errorf("unable to open %s file %q: %v", dirName, f, err)
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to open %s file %q: %v. skipping...\n", dirName, f, err)
+			}
+			continue
 		}
-		defer file.Close()
 
 		stream := kaitai.NewStream(file)
 		if err := processFile(f, stream); err != nil {
-			return fmt.Errorf("unable to parse %s file %q: %v", dirName, f, err)
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to parse %s file %q: %v. skipping...\n", dirName, f, err)
+			}
+		} else {
+			processed++
 		}
+		file.Close()
 	}
 
 	if verbose {
-		fmt.Println("done.")
+		if processed == total {
+			fmt.Printf(" done (%d files).\n", total)
+		} else {
+			fmt.Printf("done (%d/%d files).\n", processed, total)
+		}
 	}
 
 	return nil
