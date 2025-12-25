@@ -160,5 +160,11 @@ func joinContext(entry *TextEntry) string {
 		parts = append(parts, "Areas:\n"+strings.Join(areas, "\n"))
 	}
 
+	if itemContexts, ok := contexts[ContextItem]; ok && len(itemContexts) > 0 {
+		items := lo.MapToSlice(itemContexts, toAutoList)
+		slices.Sort(items)
+		parts = append(parts, "Items:\n"+strings.Join(items, "\n"))
+	}
+
 	return strings.Join(parts, "\n\n")
 }

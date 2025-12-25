@@ -93,6 +93,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 		fs.FileType_CHU,
 		fs.FileType_CRE,
 		fs.FileType_DLG,
+		fs.FileType_ITM,
 		fs.FileType_WMP,
 	}
 	if !slices.Contains(contextFrom, "all") {
@@ -122,6 +123,11 @@ func runEx(cmd *cobra.Command, args []string) error {
 			err = processDialogs(collection, infFs, baseUrl, verbose)
 			if err != nil {
 				fmt.Println("warning: unable to process dialogs:", err)
+			}
+		case fs.FileType_ITM:
+			err = processItems(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process items:", err)
 			}
 		case fs.FileType_WMP:
 			err = processWorldMaps(collection, infFs, verbose)
@@ -336,6 +342,46 @@ func processAreas(collection *text.TextCollection, infFs afero.Fs, verbose bool)
 		}
 
 		collection.LoadContextFromAreas(af, are)
+	}
+
+	if verbose {
+		fmt.Println("done.")
+	}
+
+	return nil
+}
+
+func processItems(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	if verbose {
+		fmt.Print("extracting context from items... ")
+	}
+
+	dir, err := infFs.Open("ITM")
+	if err != nil {
+		return fmt.Errorf("unable to list existing ITM files: %v", err)
+	}
+	defer dir.Close()
+
+	itmFiles, err := dir.Readdirnames(0)
+	if err != nil {
+		return fmt.Errorf("unable to read ITM directory names: %v", err)
+	}
+
+	for _, itf := range itmFiles {
+		itmFile, err := infFs.Open(itf)
+		if err != nil {
+			return fmt.Errorf("unable to open ITM file %q: %v", itf, err)
+		}
+		defer itmFile.Close()
+
+		itm := p.NewItm()
+		stream := kaitai.NewStream(itmFile)
+		err = itm.Read(stream, nil, itm)
+		if err != nil {
+			return fmt.Errorf("unable to parse ITM file %q: %v", itf, err)
+		}
+
+		collection.LoadContextFromItem(itf, itm)
 	}
 
 	if verbose {

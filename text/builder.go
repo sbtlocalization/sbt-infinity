@@ -36,6 +36,7 @@ const (
 	ContextCreatureSound
 	ContextWorldMap
 	ContextArea
+	ContextItem
 )
 
 type TextCollection struct {
@@ -321,6 +322,30 @@ func (c *TextCollection) LoadContextFromAreas(areFilename string, are *p.Are) er
 				c.AddContext(creatureTextRef, ContextArea, "Rest encounter message", areFilename)
 			}
 		}
+	}
+
+	return nil
+}
+
+func (c *TextCollection) LoadContextFromItem(itmFilename string, itm *p.Itm) error {
+	if unidentNameRef := int(itm.UnidentifiedNameRef); unidentNameRef != 0 && unidentNameRef != 0xFFFFFFFF {
+		c.AddLabel(unidentNameRef, "item")
+		c.AddContext(unidentNameRef, ContextItem, "General (unidentified) item name", itmFilename)
+	}
+
+	if identNameRef := int(itm.IdentifiedNameRef); identNameRef != 0 && identNameRef != 0xFFFFFFFF {
+		c.AddLabel(identNameRef, "item")
+		c.AddContext(identNameRef, ContextItem, "Identified item name", itmFilename)
+	}
+
+	if unidentDescRef := int(itm.UnidentifiedDescriptionRef); unidentDescRef != 0 && unidentDescRef != 0xFFFFFFFF {
+		c.AddLabel(unidentDescRef, "item")
+		c.AddContext(unidentDescRef, ContextItem, "General (unidentified) item description", itmFilename)
+	}
+
+	if identDescRef := int(itm.IdentifiedDescriptionRef); identDescRef != 0 && identDescRef != 0xFFFFFFFF {
+		c.AddLabel(identDescRef, "item")
+		c.AddContext(identDescRef, ContextItem, "Identified item description", itmFilename)
 	}
 
 	return nil
