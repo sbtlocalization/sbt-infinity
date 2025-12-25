@@ -252,7 +252,7 @@ instances:
     repeat-expr: other_offsets.num_pst_automap_notes
   tiled_objects:
     pos: ofs_tiled_objects
-    size: 0x6c
+    size: 0x68
     type: tiled_object
     repeat: expr
     repeat-expr: num_tiled_objects
