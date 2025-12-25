@@ -9,9 +9,6 @@ meta:
   file-extension: pro
   endian: le
   bit-endian: le
-  imports:
-    - itm
-    - eff
 
 doc: |
   This file format describes projectiles, and the files are referenced spells and projectile weapons.
