@@ -172,5 +172,11 @@ func joinContext(entry *TextEntry) string {
 		parts = append(parts, "Projectiles:\n"+strings.Join(projectiles, "\n"))
 	}
 
+	if spellContexts, ok := contexts[ContextSpell]; ok && len(spellContexts) > 0 {
+		spells := lo.MapToSlice(spellContexts, toAutoList)
+		slices.Sort(spells)
+		parts = append(parts, "Spells:\n"+strings.Join(spells, "\n"))
+	}
+
 	return strings.Join(parts, "\n\n")
 }

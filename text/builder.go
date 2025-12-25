@@ -38,6 +38,7 @@ const (
 	ContextArea
 	ContextItem
 	ContextProjectile
+	ContextSpell
 )
 
 type TextCollection struct {
@@ -356,6 +357,30 @@ func (c *TextCollection) LoadContextFromProjectile(proFilename string, pro *p.Pr
 	if messageRef := int(pro.MessageRef); messageRef != 0 && messageRef != 0xFFFFFFFF {
 		c.AddLabel(messageRef, "projectile")
 		c.AddContext(messageRef, ContextProjectile, "Projectile's message", proFilename)
+	}
+
+	return nil
+}
+
+func (c *TextCollection) LoadContextFromSpell(splFilename string, spl *p.Spl) error {
+	if unidentNameRef := int(spl.UnidentifiedNameRef); unidentNameRef != 0 && unidentNameRef != 0xFFFFFFFF {
+		c.AddLabel(unidentNameRef, "spell")
+		c.AddContext(unidentNameRef, ContextSpell, "General (unidentified) spell name", splFilename)
+	}
+
+	if identNameRef := int(spl.IdentifiedNameRef); identNameRef != 0 && identNameRef != 9_999_999 && identNameRef != 0xFFFFFFFF {
+		c.AddLabel(identNameRef, "spell")
+		c.AddContext(identNameRef, ContextSpell, "Identified spell name", splFilename)
+	}
+
+	if unidentDescRef := int(spl.UnidentifiedDescriptionRef); unidentDescRef != 0 && unidentDescRef != 0xFFFFFFFF {
+		c.AddLabel(unidentDescRef, "spell")
+		c.AddContext(unidentDescRef, ContextSpell, "General (unidentified) spell description", splFilename)
+	}
+
+	if identDescRef := int(spl.IdentifiedDescriptionRef); identDescRef != 0 && identDescRef != 9_999_999 && identDescRef != 0xFFFFFFFF {
+		c.AddLabel(identDescRef, "spell")
+		c.AddContext(identDescRef, ContextSpell, "Identified spell description", splFilename)
 	}
 
 	return nil
