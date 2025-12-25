@@ -259,7 +259,7 @@ func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp
 	return nil
 }
 
-func (c *TextCollection) LoadContextFromAreas(areFilename string, are *p.Are) error {
+func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are) error {
 	if regions, err := are.Regions(); err == nil {		
 		for i, region := range regions {
 			if infoRef := int(region.InfoRef); infoRef != 0 && infoRef != 0xFFFFFFFF {

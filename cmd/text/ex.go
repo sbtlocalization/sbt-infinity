@@ -231,37 +231,39 @@ func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose b
 	return nil
 }
 
-func processUiScreens(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+func processFiles(
+	infFs afero.Fs,
+	verbose bool,
+	dirName string,
+	entityName string,
+	processFile func(filename string, stream *kaitai.Stream) error,
+) error {
 	if verbose {
-		fmt.Print("extracting context from UI screens... ")
+		fmt.Printf("extracting context from %s... ", entityName)
 	}
 
-	dir, err := infFs.Open("CHU")
+	dir, err := infFs.Open(dirName)
 	if err != nil {
-		return fmt.Errorf("unable to list existing CHU files: %v", err)
+		return fmt.Errorf("unable to list existing %s files: %v", dirName, err)
 	}
 	defer dir.Close()
 
-	uiFiles, err := dir.Readdirnames(0)
+	files, err := dir.Readdirnames(0)
 	if err != nil {
-		return fmt.Errorf("unable to read CHU directory names: %v", err)
+		return fmt.Errorf("unable to read %s directory names: %v", dirName, err)
 	}
 
-	for _, uf := range uiFiles {
-		uiFile, err := infFs.Open(uf)
+	for _, f := range files {
+		file, err := infFs.Open(f)
 		if err != nil {
-			return fmt.Errorf("unable to open CHU file %q: %v", uf, err)
+			return fmt.Errorf("unable to open %s file %q: %v", dirName, f, err)
 		}
-		defer uiFile.Close()
+		defer file.Close()
 
-		chu := p.NewChu()
-		stream := kaitai.NewStream(uiFile)
-		err = chu.Read(stream, nil, chu)
-		if err != nil {
-			return fmt.Errorf("unable to parse CHU file %q: %v", uf, err)
+		stream := kaitai.NewStream(file)
+		if err := processFile(f, stream); err != nil {
+			return fmt.Errorf("unable to parse %s file %q: %v", dirName, f, err)
 		}
-
-		collection.LoadContextFromUiScreens(uf, chu)
 	}
 
 	if verbose {
@@ -269,124 +271,51 @@ func processUiScreens(collection *text.TextCollection, infFs afero.Fs, verbose b
 	}
 
 	return nil
+}
+
+func processUiScreens(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	return processFiles(infFs, verbose, "CHU", "UI screens", func(filename string, stream *kaitai.Stream) error {
+		chu := p.NewChu()
+		if err := chu.Read(stream, nil, chu); err != nil {
+			return err
+		}
+		collection.LoadContextFromUiScreens(filename, chu)
+		return nil
+	})
 }
 
 func processWorldMaps(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
-	if verbose {
-		fmt.Print("extracting context from world maps... ")
-	}
-
-	dir, err := infFs.Open("WMP")
-	if err != nil {
-		return fmt.Errorf("unable to list existing WMP files: %v", err)
-	}
-	defer dir.Close()
-
-	wmpFiles, err := dir.Readdirnames(0)
-	if err != nil {
-		return fmt.Errorf("unable to read WMP directory names: %v", err)
-	}
-
-	for _, wf := range wmpFiles {
-		wmpFile, err := infFs.Open(wf)
-		if err != nil {
-			return fmt.Errorf("unable to open WMP file %q: %v", wf, err)
-		}
-		defer wmpFile.Close()
-
+	return processFiles(infFs, verbose, "WMP", "world maps", func(filename string, stream *kaitai.Stream) error {
 		wmp := p.NewWmp()
-		stream := kaitai.NewStream(wmpFile)
-		err = wmp.Read(stream, nil, wmp)
-		if err != nil {
-			return fmt.Errorf("unable to parse WMP file %q: %v", wf, err)
+		if err := wmp.Read(stream, nil, wmp); err != nil {
+			return err
 		}
-
-		collection.LoadContextFromWorldMaps(wf, wmp)
-	}
-
-	if verbose {
-		fmt.Println("done.")
-	}
-
-	return nil
+		collection.LoadContextFromWorldMaps(filename, wmp)
+		return nil
+	})
 }
 
 func processAreas(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
-	if verbose {
-		fmt.Print("extracting context from areas... ")
-	}
-
-	dir, err := infFs.Open("ARE")
-	if err != nil {
-		return fmt.Errorf("unable to list existing ARE files: %v", err)
-	}
-	defer dir.Close()
-
-	areFiles, err := dir.Readdirnames(0)
-	if err != nil {
-		return fmt.Errorf("unable to read ARE directory names: %v", err)
-	}
-
-	for _, af := range areFiles {
-		areFile, err := infFs.Open(af)
-		if err != nil {
-			return fmt.Errorf("unable to open ARE file %q: %v", af, err)
-		}
-		defer areFile.Close()
-
+	return processFiles(infFs, verbose, "ARE", "areas", func(filename string, stream *kaitai.Stream) error {
 		are := p.NewAre()
-		stream := kaitai.NewStream(areFile)
-		err = are.Read(stream, nil, are)
-		if err != nil {
-			return fmt.Errorf("unable to parse ARE file %q: %v", af, err)
+		if err := are.Read(stream, nil, are); err != nil {
+			return err
 		}
-
-		collection.LoadContextFromAreas(af, are)
-	}
-
-	if verbose {
-		fmt.Println("done.")
-	}
-
-	return nil
+		collection.LoadContextFromArea(filename, are)
+		return nil
+	})
 }
 
 func processItems(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
-	if verbose {
-		fmt.Print("extracting context from items... ")
-	}
-
-	dir, err := infFs.Open("ITM")
-	if err != nil {
-		return fmt.Errorf("unable to list existing ITM files: %v", err)
-	}
-	defer dir.Close()
-
-	itmFiles, err := dir.Readdirnames(0)
-	if err != nil {
-		return fmt.Errorf("unable to read ITM directory names: %v", err)
-	}
-
-	for _, itf := range itmFiles {
-		itmFile, err := infFs.Open(itf)
-		if err != nil {
-			return fmt.Errorf("unable to open ITM file %q: %v", itf, err)
-		}
-		defer itmFile.Close()
-
+	return processFiles(infFs, verbose, "ITM", "items", func(filename string, stream *kaitai.Stream) error {
 		itm := p.NewItm()
-		stream := kaitai.NewStream(itmFile)
-		err = itm.Read(stream, nil, itm)
-		if err != nil {
-			return fmt.Errorf("unable to parse ITM file %q: %v", itf, err)
+		if err := itm.Read(stream, nil, itm); err != nil {
+			return err
 		}
+		collection.LoadContextFromItem(filename, itm)
+		return nil
+	})
+}
 
-		collection.LoadContextFromItem(itf, itm)
-	}
 
-	if verbose {
-		fmt.Println("done.")
-	}
-
-	return nil
 }
