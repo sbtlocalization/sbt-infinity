@@ -93,6 +93,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 		fs.FileType_CHU,
 		fs.FileType_CRE,
 		fs.FileType_DLG,
+		fs.FileType_EFF,
 		fs.FileType_ITM,
 		fs.FileType_PRO,
 		fs.FileType_SPL,
@@ -127,6 +128,11 @@ func runEx(cmd *cobra.Command, args []string) error {
 			if err != nil {
 				fmt.Println("warning: unable to process dialogs:", err)
 			}
+		case fs.FileType_EFF:
+			err = processEffects(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process effects:", err)
+			}
 		case fs.FileType_ITM:
 			err = processItems(collection, infFs, verbose)
 			if err != nil {
@@ -156,6 +162,8 @@ func runEx(cmd *cobra.Command, args []string) error {
 			continue
 		}
 	}
+
+	collection.FillKnownContext()
 
 	err = collection.ExportToXlsx(outputPath)
 	if err != nil {
@@ -392,6 +400,17 @@ func processStores(collection *text.TextCollection, infFs afero.Fs, verbose bool
 			return err
 		}
 		collection.LoadContextFromStore(filename, sto)
+		return nil
+	})
+}
+
+func processEffects(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	return processFiles(infFs, verbose, "EFF", "effects", func(filename string, stream *kaitai.Stream) error {
+		eff := p.NewEff()
+		if err := eff.Read(stream, nil, eff); err != nil {
+			return err
+		}
+		collection.LoadContextFromEffect(filename, eff)
 		return nil
 	})
 }

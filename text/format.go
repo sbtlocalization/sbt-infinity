@@ -44,7 +44,7 @@ func (c *TextCollection) ExportToXlsx(outputPath string) error {
 		row := sheet.AddRow()
 
 		idCell := row.AddCell()
-		idCell.SetInt(id)
+		idCell.SetInt(int(id))
 
 		textCell := row.AddCell()
 		textCell.SetString(entry.Text)
@@ -125,19 +125,19 @@ func joinContext(entry *TextEntry) string {
 	if dlgContexts, ok := contexts[ContextDialog]; ok && len(dlgContexts) > 0 {
 		dialogs := lo.MapToSlice(dlgContexts, toList)
 		slices.Sort(dialogs)
-		parts = append(parts, "Dialogs:\n"+strings.Join(dialogs, "\n"))
+		parts = append(parts, "DIALOGS: ----------\n"+strings.Join(dialogs, "\n"))
 	}
 
 	if uiContexts, ok := contexts[ContextUI]; ok && len(uiContexts) > 0 {
 		screens := lo.MapToSlice(uiContexts, toList)
 		slices.Sort(screens)
-		parts = append(parts, "UI:\n"+strings.Join(screens, "\n"))
+		parts = append(parts, "UI: ----------\n"+strings.Join(screens, "\n"))
 	}
 
 	if creContexts, ok := contexts[ContextCreature]; ok && len(creContexts) > 0 {
 		creatures := lo.MapToSlice(creContexts, toAutoList)
 		slices.Sort(creatures)
-		parts = append(parts, "Creatures:\n"+strings.Join(creatures, "\n"))
+		parts = append(parts, "CREATURES: ----------\n"+strings.Join(creatures, "\n"))
 	}
 
 	if soundContexts, ok := contexts[ContextCreatureSound]; ok && len(soundContexts) > 0 {
@@ -145,43 +145,49 @@ func joinContext(entry *TextEntry) string {
 			return fmt.Sprintf("- %s ← %s", soundType, strings.Join(files, ", "))
 		})
 		slices.Sort(groups)
-		parts = append(parts, "Used for:\n"+strings.Join(groups, "\n"))
+		parts = append(parts, "USED FOR: ----------\n"+strings.Join(groups, "\n"))
 	}
 
 	if wmContexts, ok := contexts[ContextWorldMap]; ok && len(wmContexts) > 0 {
 		maps := lo.MapToSlice(wmContexts, toAutoList)
 		slices.Sort(maps)
-		parts = append(parts, "World maps:\n"+strings.Join(maps, "\n"))
+		parts = append(parts, "WORLD MAPS: ----------\n"+strings.Join(maps, "\n"))
 	}
 
 	if areContexts, ok := contexts[ContextArea]; ok && len(areContexts) > 0 {
 		areas := lo.MapToSlice(areContexts, toAutoList)
 		slices.Sort(areas)
-		parts = append(parts, "Areas:\n"+strings.Join(areas, "\n"))
+		parts = append(parts, "AREAS: ----------\n"+strings.Join(areas, "\n"))
 	}
 
 	if itemContexts, ok := contexts[ContextItem]; ok && len(itemContexts) > 0 {
 		items := lo.MapToSlice(itemContexts, toAutoList)
 		slices.Sort(items)
-		parts = append(parts, "Items:\n"+strings.Join(items, "\n"))
+		parts = append(parts, "ITEMS: ----------\n"+strings.Join(items, "\n"))
 	}
 
 	if projContexts, ok := contexts[ContextProjectile]; ok && len(projContexts) > 0 {
 		projectiles := lo.MapToSlice(projContexts, toAutoList)
 		slices.Sort(projectiles)
-		parts = append(parts, "Projectiles:\n"+strings.Join(projectiles, "\n"))
+		parts = append(parts, "PROJECTILES: ----------\n"+strings.Join(projectiles, "\n"))
 	}
 
 	if spellContexts, ok := contexts[ContextSpell]; ok && len(spellContexts) > 0 {
 		spells := lo.MapToSlice(spellContexts, toAutoList)
 		slices.Sort(spells)
-		parts = append(parts, "Spells:\n"+strings.Join(spells, "\n"))
+		parts = append(parts, "SPELLS: ----------\n"+strings.Join(spells, "\n"))
 	}
 
 	if storeContexts, ok := contexts[ContextStore]; ok && len(storeContexts) > 0 {
 		stores := lo.MapToSlice(storeContexts, toAutoList)
 		slices.Sort(stores)
-		parts = append(parts, "Stores:\n"+strings.Join(stores, "\n"))
+		parts = append(parts, "STORES: ----------\n"+strings.Join(stores, "\n"))
+	}
+
+	if effectContexts, ok := contexts[ContextEffect]; ok && len(effectContexts) > 0 {
+		effects := lo.MapToSlice(effectContexts, toAutoList)
+		slices.Sort(effects)
+		parts = append(parts, "EFFECTS: ----------\n"+strings.Join(effects, "\n"))
 	}
 
 	return strings.Join(parts, "\n\n")

@@ -6,7 +6,7 @@
 
 meta:
   id: eff
-  title: EFF v2.0
+  title: EFF v1 and v2
   file-extension: eff
   ks-version: "0.11"
   endian: le
@@ -21,7 +21,7 @@ seq:
   - id: body
     type: body_v2(false)
 types:
-  header_v1:
+  body_v1:
     doc: |
       This file format describes an effect (opcode) and its parameters.
       The format is only ever found embedded in other files (e.g. ITM or SPL).
@@ -31,7 +31,7 @@ types:
       https://gibberlings3.github.io/iesdp/file_formats/ie_formats/eff_v1.htm
 
     seq:
-      - id: effect_type
+      - id: opcode
         type: u2
       - id: target_type
         type: u1
@@ -83,18 +83,25 @@ types:
       - id: embedded
         type: bool
     seq:
-      - id: magic
-        contents: "EFF "
-        if: not embedded
-      - id: version
-        contents: "V2.0"
-        if: not embedded
-      - id: magic2
-        contents: [0, 0, 0, 0]
-        if: embedded
-      - id: version2
-        contents: [0, 0, 0, 0]
-        if: embedded
+      # [HACK] @GooRoo: This is implemented according to “the specification”,
+      # but in reality you may encounter zeroes even if the file is not embedded.
+
+      # - id: magic
+      #   contents: "EFF "
+      #   if: not embedded
+      # - id: version
+      #   contents: "V2.0"
+      #   if: not embedded
+      # - id: magic2
+      #   contents: [0, 0, 0, 0]
+      #   if: embedded
+      # - id: version2
+      #   contents: [0, 0, 0, 0]
+      #   if: embedded
+
+      # So instead we do this:
+      - size: 8
+      # [HACK] End.
       - id: opcode
         type: u4
       - id: target_type

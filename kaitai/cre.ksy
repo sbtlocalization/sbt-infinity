@@ -66,6 +66,7 @@ types:
         type:
           switch-on: header.eff_version
           cases:
+            header::eff_version::version1: eff::body_v1
             header::eff_version::version2: eff::body_v2(true)
         repeat: expr
         repeat-expr: header.num_effects
