@@ -60,14 +60,14 @@ const (
 	lb_dialog_question     = "question"
 	lb_effect              = "used in effect"
 	lb_item                = "item"
-	lb_no_text             = "no text"
 	lb_projectile          = "projectile"
 	lb_spell               = "spell"
 	lb_store               = "store"
 	lb_store_drink         = "store drink"
+	lb_tlk_no_text         = "no text"
+	lb_tlk_with_sound      = "with sound"
+	lb_tlk_with_token      = "with token"
 	lb_ui                  = "UI label"
-	lb_with_sound          = "with sound"
-	lb_with_token          = "with token"
 	lb_world_map           = "world map"
 )
 
@@ -102,16 +102,16 @@ func NewTextCollection(tlk *p.Tlk) *TextCollection {
 		collection.Entries[id] = tEntry
 
 		if entry.Flags.SoundExists {
-			collection.AddLabel(id, lb_with_sound)
+			collection.AddLabel(id, lb_tlk_with_sound)
 			collection.AddContext(id, ContextSound, entry.AudioName, "")
 		}
 
 		if entry.Flags.TokenExists {
-			collection.AddLabel(id, lb_with_token)
+			collection.AddLabel(id, lb_tlk_with_token)
 		}
 
 		if !entry.Flags.TextExists && text == "" {
-			collection.AddLabel(id, lb_no_text)
+			collection.AddLabel(id, lb_tlk_no_text)
 		}
 
 		collection.Entries[id] = tEntry
