@@ -10,7 +10,8 @@ import (
 
 
 /**
- * These files contain a description of the types of items and services available for sale in a given store, inn, tavern, or temple.
+ * These files contain a description of the types of items and services available for sale in a given store, inn, tavern,
+ * or temple.
  * @see <a href="https://gibberlings3.github.io/iesdp/file_formats/ie_formats/sto_v1.htm
  * ">Source</a>
  */

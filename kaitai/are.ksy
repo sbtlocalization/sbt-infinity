@@ -48,28 +48,28 @@ seq:
   - id: flags
     type: flags
     size: 4
-  - id: north_area
+  - id: north_area_are
     type: strz
     size: 8
     encoding: ASCII
   - id: north_area_flags
     size: 4
     type: neighboring_area_flags
-  - id: east_area
+  - id: east_area_are
     type: strz
     size: 8
     encoding: ASCII
   - id: east_area_flags
     size: 4
     type: neighboring_area_flags
-  - id: south_area
+  - id: south_area_are
     type: strz
     size: 8
     encoding: ASCII
   - id: south_area_flags
     size: 4
     type: neighboring_area_flags
-  - id: west_area
+  - id: west_area_are
     type: strz
     size: 8
     encoding: ASCII
@@ -449,7 +449,7 @@ types:
       - id: cursor_index
         doc: cursors.bam
         type: u4
-      - id: destination_area
+      - id: destination_area_are
         type: strz
         size: 8
         encoding: ASCII
