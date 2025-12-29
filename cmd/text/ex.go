@@ -89,6 +89,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 	}
 
 	contextTypes := []fs.FileType{
+		fs.FileType_2DA,
 		fs.FileType_ARE,
 		fs.FileType_CHU,
 		fs.FileType_CRE,
@@ -108,6 +109,11 @@ func runEx(cmd *cobra.Command, args []string) error {
 
 	for _, t := range contextTypes {
 		switch t {
+		case fs.FileType_2DA:
+			err = process2daFiles(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process 2DA files:", err)
+			}
 		case fs.FileType_ARE:
 			err = processAreas(collection, infFs, verbose)
 			if err != nil {
@@ -413,4 +419,72 @@ func processEffects(collection *text.TextCollection, infFs afero.Fs, verbose boo
 		collection.LoadContextFromEffect(filename, eff)
 		return nil
 	})
+}
+
+func process2daFiles(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	type twodaProcessor struct {
+		filename string
+		loadFunc func(*text.TextCollection, string, *p.TwoDA) error
+	}
+
+	processors := []twodaProcessor{
+		{"25ECRED.2DA", (*text.TextCollection).LoadContextFrom25ECred2DA},
+		{"25STWEAP.2DA", (*text.TextCollection).LoadContextFrom25StWeap2DA},
+		{"7eyes.2DA", (*text.TextCollection).LoadContextFrom7Eyes2DA},
+		{"BDSTWEAP.2DA", (*text.TextCollection).LoadContextFrom25StWeap2DA},
+		{"CHARSND.2DA", (*text.TextCollection).LoadContextFromCharSnd2DA},
+		{"EFFTEXT.2DA", (*text.TextCollection).LoadContextFromEffText2DA},
+		{"ENGINEST.2DA", (*text.TextCollection).LoadContextFromEngineSt2DA},
+		{"MSCHOOL.2DA", (*text.TextCollection).LoadContextFromMSchool2DA},
+		{"MSECTYPE.2DA", (*text.TextCollection).LoadContextFromMSecType2DA},
+		{"TRACKING.2DA", (*text.TextCollection).LoadContextFromTracking2DA},
+	}
+
+	total := len(processors)
+	processed := 0
+	hasWarnings := false
+
+	if verbose {
+		fmt.Print("extracting context from 2DA files...")
+	}
+
+	for _, proc := range processors {
+		file, err := infFs.Open(proc.filename)
+		if err != nil {
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to open %s: %v. skipping...\n", proc.filename, err)
+			}
+			continue
+		}
+
+		twoda, err := p.ParseTwoDA(file)
+		file.Close()
+		if err != nil {
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to parse %s: %v. skipping...\n", proc.filename, err)
+			}
+			continue
+		}
+
+		proc.loadFunc(collection, proc.filename, twoda)
+		processed++
+	}
+
+	if verbose {
+		if processed == total {
+			fmt.Printf(" done (%d files).\n", total)
+		} else {
+			fmt.Printf("done (%d/%d files).\n", processed, total)
+		}
+	}
+
+	return nil
 }

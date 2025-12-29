@@ -190,5 +190,11 @@ func joinContext(entry *TextEntry) string {
 		parts = append(parts, "EFFECTS: ----------\n"+strings.Join(effects, "\n"))
 	}
 
+	if tracking2DAContexts, ok := contexts[ContextTracking2DA]; ok && len(tracking2DAContexts) > 0 {
+		trackings := lo.MapToSlice(tracking2DAContexts, toAutoList)
+		slices.Sort(trackings)
+		parts = append(parts, "TRACKING.2DA: ----------\n"+strings.Join(trackings, "\n"))
+	}
+
 	return strings.Join(parts, "\n\n")
 }

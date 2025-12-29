@@ -125,3 +125,11 @@ func (t *TwoDA) GetOrDefault(rowKey, column string) string {
 	}
 	return val
 }
+
+func (t *TwoDA) GetByIndexOrDefault(rowKey string, colIndex int) string {
+	val, ok := t.GetByIndex(rowKey, colIndex)
+	if !ok {
+		return t.DefaultValue
+	}
+	return val
+}

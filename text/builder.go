@@ -7,6 +7,7 @@ package text
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/sbtlocalization/sbt-infinity/dialog"
@@ -39,6 +40,7 @@ const (
 	ContextSound
 	ContextSpell
 	ContextStore
+	ContextTracking2DA
 	ContextUI
 	ContextWorldMap
 )
@@ -61,6 +63,7 @@ const (
 	lb_effect              = "used in effect"
 	lb_item                = "item"
 	lb_projectile          = "projectile"
+	lb_ranger_tracking     = "tracking.2da"
 	lb_spell               = "spell"
 	lb_store               = "store"
 	lb_store_drink         = "store drink"
@@ -559,4 +562,226 @@ func (c *TextCollection) FillKnownContext() {
 		c.AddLabel(i, lb_effect)
 		c.AddContext(i, ContextEffect, "Show floating text", "common cynicism quotes")
 	}
+}
+
+// Effect state names
+func (c *TextCollection) LoadContextFromEffText2DA(_ string, twoda *p.TwoDA) error {
+	for _, rowKey := range twoda.RowKeys {
+		effName, ok := twoda.Get(rowKey, "EFFECT_NAME")
+		if !ok {
+			continue
+		}
+
+		strrefStr, ok := twoda.Get(rowKey, "STRREF")
+		if !ok {
+			continue
+		}
+
+		strrefSigned, err := strconv.ParseInt(strrefStr, 10, 32)
+		if err != nil {
+			continue
+		}
+
+		if strref := uint32(strrefSigned); strref != 0 && strref != 0xFFFFFFFF {
+			c.AddLabel(strref, lb_effect)
+			c.AddContext(strref, ContextEffect, "EFFTEXT.2DA (state name shown in the game message window)", effName)
+		}
+	}
+	return nil
+}
+
+// Engine's standard text references
+func (c *TextCollection) LoadContextFromEngineSt2DA(_ string, twoda *p.TwoDA) error {
+	for _, rowKey := range twoda.RowKeys {
+		strrefStr, ok := twoda.Get(rowKey, "StrRef")
+		if !ok {
+			continue
+		}
+
+		strrefSigned, err := strconv.ParseInt(strrefStr, 10, 32)
+		if err != nil {
+			continue
+		}
+
+		if strref := uint32(strrefSigned); strref != 0 && strref != 0xFFFFFFFF {
+			c.AddLabel(strref, lb_ui)
+			c.AddContext(strref, ContextUI, "ENGINEST.2DA (used in UI)", rowKey)
+		}
+	}
+	return nil
+}
+
+// Magic dispel primary type
+func (c *TextCollection) LoadContextFromMSchool2DA(_ string, twoda *p.TwoDA) error {
+	for _, rowKey := range twoda.RowKeys {
+		strrefStr, ok := twoda.Get(rowKey, "RES_REF")
+		if !ok {
+			continue
+		}
+
+		strref, err := strconv.ParseUint(strrefStr, 10, 32)
+		if err != nil {
+			continue
+		}
+
+		if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
+			c.AddLabel(strref, lb_spell)
+			c.AddContext(strref, ContextSpell, "MSCHOOL.2DA (the text that appears when magic is dispelled based on its primary type)", rowKey)
+		}
+	}
+	return nil
+}
+
+// Magic dispel secondary type
+func (c *TextCollection) LoadContextFromMSecType2DA(_ string, twoda *p.TwoDA) error {
+	for _, rowKey := range twoda.RowKeys {
+		strrefStr, ok := twoda.Get(rowKey, "RES_REF")
+		if !ok {
+			continue
+		}
+
+		strref, err := strconv.ParseUint(strrefStr, 10, 32)
+		if err != nil {
+			continue
+		}
+
+		if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
+			c.AddLabel(strref, lb_spell)
+			c.AddContext(strref, ContextSpell, "MSECTYPE.2DA (the text that appears when magic is dispelled based on its secondary type)", rowKey)
+		}
+	}
+	return nil
+}
+
+func parseStrrefWithPrefix(s string) (uint32, bool, error) {
+	isStandalone := strings.HasPrefix(s, "O_")
+	if isStandalone {
+		s = strings.TrimPrefix(s, "O_")
+	}
+	strref, err := strconv.ParseUint(s, 10, 32)
+	if err != nil {
+		return 0, false, err
+	}
+	return uint32(strref), isStandalone, nil
+}
+
+// Ranger's Tracking skill
+func (c *TextCollection) LoadContextFromTracking2DA(_ string, twoda *p.TwoDA) error {
+	for _, rowKey := range twoda.RowKeys {
+		strrefStr, ok := twoda.Get(rowKey, "STRREF")
+		if !ok {
+			continue
+		}
+
+		strref, isStandalone, err := parseStrrefWithPrefix(strrefStr)
+		if err != nil {
+			continue
+		}
+
+		if strref != 0 && strref != 0xFFFFFFFF {
+			c.AddLabel(strref, lb_ranger_tracking)
+			if isStandalone {
+				c.AddContext(strref, ContextTracking2DA, "The text displayed by the rangers Tracking skill", fmt.Sprintf("Area %s", rowKey))
+			} else {
+				c.AddLabel(67807, lb_ranger_tracking)
+				c.AddContext(67807, ContextTracking2DA, "The default text displayed by the rangers Tracking skill. (See the tag). Possible variables to embed", strrefStr)
+
+				c.AddContext(strref, ContextTracking2DA, "Used to embed into #67807 when the area is", rowKey)
+			}
+		}
+	}
+	return nil
+}
+
+// Starting equipment
+func (c *TextCollection) LoadContextFrom25StWeap2DA(filename string, twoda *p.TwoDA) error {
+	for _, rowKey := range twoda.RowKeys {
+		if namerefStr, ok := twoda.Get(rowKey, "NAME_REF"); ok {
+			if nameref, err := strconv.ParseUint(namerefStr, 10, 32); err == nil {
+				nameref := uint32(nameref)
+				if nameref != 0 && nameref != 0xFFFFFFFF {
+					c.AddLabel(nameref, lb_item)
+					c.AddContext(nameref, ContextItem, fmt.Sprintf("%s (starting equipment name) for slots", filename), rowKey)
+				}
+			}
+		}
+
+		if descrefStr, ok := twoda.Get(rowKey, "DESC_REF"); ok {
+			if descref, err := strconv.ParseUint(descrefStr, 10, 32); err == nil {
+				descref := uint32(descref)
+				if descref != 0 && descref != 0xFFFFFFFF {
+					c.AddLabel(descref, lb_item)
+					c.AddContext(descref, ContextItem, fmt.Sprintf("%s (starting equipment description) for slots", filename), rowKey)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// Credits
+func (c *TextCollection) LoadContextFrom25ECred2DA(_ string, twoda *p.TwoDA) error {
+	if row, ok := twoda.Row("DEFAULT"); ok {
+		for i, strrefStr := range row {
+			strref, err := strconv.ParseUint(strrefStr, 10, 32)
+			if err != nil {
+				continue
+			}
+
+			if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
+				c.AddLabel(strref, lb_ui)
+				c.AddContext(strref, ContextUI, "25ECRED.2DA (credits text)", fmt.Sprintf("%s.BMP", twoda.GetByIndexOrDefault("BMP", i)))
+			}
+		}
+		return nil
+	} else {
+		return fmt.Errorf("DEFAULT row not found in 25ECRED.2DA")
+	}
+}
+
+// 7 eyes
+func (c *TextCollection) LoadContextFrom7Eyes2DA(_ string, twoda *p.TwoDA) error {
+	for _, rowKey := range twoda.RowKeys {
+		strrefStr, ok := twoda.Get(rowKey, "STRREF")
+		if !ok {
+			continue
+		}
+
+		strref, err := strconv.ParseUint(strrefStr, 10, 32)
+		if err != nil {
+			continue
+		}
+
+		if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
+			c.AddLabel(strref, lb_spell)
+			c.AddContext(strref, ContextSpell, "7EYES.2DA (Spell Effect: Seven Eyes). The text is shown when an effect is blocked by an active spellstate", rowKey)
+		}
+	}
+	return nil
+}
+
+// Subtitles
+func (c *TextCollection) LoadContextFromCharSnd2DA(_ string, twoda *p.TwoDA) error {
+	// for _, rowKey := range twoda.RowKeys {
+	// 	row, ok := twoda.Row(rowKey)
+	// 	if !ok {
+	// 		continue
+	// 	}
+		
+	// 	for _, strrefStr := range row {
+	// 		strref, err := strconv.ParseUint(strrefStr, 10, 32)
+	// 		if err != nil {
+	// 			continue
+	// 		}
+
+	// 		if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
+	// 			c.AddLabel(strref, lb_ui)
+	// 			c.AddContext(strref, ContextUI, "CHARSND.2DA (subtitles)", rowKey)
+	// 		}
+	// 	}
+	// }
+	
+	// [TODO] @GooRoo: Parse `SNDSLOT.IDS` to enrich the context with sound slot names.
+	return nil
 }
