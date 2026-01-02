@@ -57,13 +57,6 @@ func (fm *FrontMatter) SetCharacter(name, portrait string) {
 	}
 }
 
-func isEmptyTransitionNode(node *Node) bool {
-	return node.Type == TransitionNodeType &&
-		!node.Transition.IsDialogEnd &&
-		!node.Transition.HasText &&
-		!node.Transition.HasJournalText &&
-		!node.Transition.HasAction
-}
 
 func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 	c := canvas.NewCanvas()
@@ -77,7 +70,7 @@ func (d *Dialog) ToJsonCanvas() *canvas.Canvas {
 	nodes := make(map[string]*canvas.Node)
 	layoutEdges := make([][]string, 0)
 	for _, dNode := range d.All() {
-		if isEmptyTransitionNode(dNode) {
+		if dNode.IsEmptyTransition() {
 			continue
 		} else {
 			// Build color mapping on-demand for StateNodeType
@@ -243,7 +236,7 @@ func newEdge(node *Node) (*canvas.Edge, bool) {
 		triggerText = strings.TrimSpace(node.Transition.Trigger)
 	}
 
-	if isEmptyTransitionNode(node.Parent) && node.Parent.Parent != nil {
+	if node.Parent.IsEmptyTransition() && node.Parent.Parent != nil {
 		// skip empty transition nodes, connect parent state to next state directly
 		fromNode = node.Parent.Parent.String()
 
