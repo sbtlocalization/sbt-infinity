@@ -31,7 +31,7 @@ Additional filter may be passed to unpack only specific resources.`,
 
       sbt-inf bif ex -k 'D:\Games\Baldur''s Gate - Enhanced Edition\chitin.key' -f "(?i)pdialog" -o tmp
 
-  Extract only LUA and DLG files into 'tmp' folder (the path to chitin.key is taken from .sbt-inf.toml):
+  Extract only LUA and DLG files into 'tmp' folder (the path to chitin.key is taken from sbt-inf.toml):
   
       sbt-inf bif ex -t LUA,DLG -o tmp
 

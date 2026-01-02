@@ -48,7 +48,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("profile", "p", false, "Enable profiling")
 	rootCmd.PersistentFlags().MarkHidden("profile")
 
-	rootCmd.PersistentFlags().StringP("config", "c", ".sbt-inf.toml", "`path` to config file")
+	rootCmd.PersistentFlags().StringP("config", "c", "sbt-inf.toml", "`path` to config file")
 	rootCmd.PersistentFlags().StringP("game", "g", "", "game `name` from config to use (default - first one in A-Z order)")
 	rootCmd.PersistentFlags().StringP("key", "k", "", "`path` to chitin.key file")
 	rootCmd.MarkFlagsMutuallyExclusive("config", "key")
