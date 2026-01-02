@@ -43,6 +43,8 @@ Creates a visual representation of dialog structures.`,
 	cmd.Flags().BoolP("speakers", "s", true, "Load and export information about characters from CRE files")
 	cmd.Flags().StringSliceP("exclude", "x", []string{}, "Exclude specific dialog files (e.g., ABISHAB.DLG)")
 
+	cmd.MarkFlagDirname("output")
+
 	return cmd
 }
 

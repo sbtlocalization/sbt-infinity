@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 	Long: `SBT Infinity Tools is a collection of utilities designed to assist with the localization and 
 modification of games based on the Infinity Engine, such as Baldur's Gate, Baldur's Gate II, 
 and Planescape: Torment.`,
-	Version: "0.1.0",
+	Version: "2",
 
 	PersistentPreRunE:  startProfiling,
 	PersistentPostRunE: stopProfiling,
@@ -48,7 +48,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("profile", "p", false, "Enable profiling")
 	rootCmd.PersistentFlags().MarkHidden("profile")
 
-	rootCmd.PersistentFlags().StringP("config", "c", ".sbt-inf.toml", "`path` to config file")
+	rootCmd.PersistentFlags().StringP("config", "c", "sbt-inf.toml", "`path` to config file")
 	rootCmd.PersistentFlags().StringP("game", "g", "", "game `name` from config to use (default - first one in A-Z order)")
 	rootCmd.PersistentFlags().StringP("key", "k", "", "`path` to chitin.key file")
 	rootCmd.MarkFlagsMutuallyExclusive("config", "key")

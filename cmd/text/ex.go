@@ -6,9 +6,12 @@
 package text
 
 import (
+	"encoding/csv"
 	"fmt"
+	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
@@ -39,6 +42,10 @@ text IDs (e.g., 1234, 5678).`,
 	cmd.Flags().BoolP("verbose", "v", false, "enable verbose output")
 	cmd.Flags().String("dlg-base-url", "", "base `URL` for dialog references (overrides config)")
 	cmd.Flags().StringSlice("context-from", []string{}, "load context from types of files. Use 'all' to include all types.\nUse 'bif `types`' command to see all types.")
+	cmd.Flags().String("timestamps-from", "", "CSV file `path` containing timestamps to include in the export")
+
+	cmd.MarkFlagFilename("output", "xlsx")
+	cmd.MarkFlagFilename("timestamps-from", "csv")
 
 	return cmd
 }
@@ -50,6 +57,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	baseUrl, _ := config.ResolveDialogBaseUrl(cmd)
 	contextFrom, _ := cmd.Flags().GetStringSlice("context-from")
+	timestampsFrom, _ := cmd.Flags().GetString("timestamps-from")
 
 	outputPath, _ := cmd.Flags().GetString("output")
 	if cmd.Flags().Changed("output") && !strings.HasSuffix(strings.ToLower(outputPath), ".xlsx") {
@@ -171,7 +179,49 @@ func runEx(cmd *cobra.Command, args []string) error {
 
 	collection.FillKnownContext()
 
-	err = collection.ExportToXlsx(outputPath)
+	// Load timestamps from CSV if provided
+	var timestamps map[uint32]int64
+	if timestampsFrom != "" {
+		if verbose {
+			fmt.Print("loading timestamps from CSV... ")
+		}
+
+		timestampEntries, err := loadTimestamps(timestampsFrom)
+		if err != nil {
+			return err
+		}
+
+		if verbose {
+			fmt.Printf("done (%d entries).\n", len(timestampEntries))
+		}
+
+		// Validate and extract timestamps
+		timestamps = make(map[uint32]int64)
+		csvIds := make(map[uint32]struct{})
+
+		for id, entry := range timestampEntries {
+			csvIds[id] = struct{}{}
+			timestamps[id] = entry.Timestamp
+
+			// Check if ID exists in collection and text matches
+			if tlkEntry, ok := collection.Entries[id]; ok {
+				if tlkEntry.Text != entry.Text {
+					fmt.Printf("warning: ID %d text mismatch - TLK: %q, CSV: %q\n", id, tlkEntry.Text, entry.Text)
+				}
+			} else {
+				fmt.Printf("warning: CSV contains ID %d which is not in the TLK file\n", id)
+			}
+		}
+
+		// Check for IDs in collection that are not in CSV
+		for id := range collection.Entries {
+			if _, ok := csvIds[id]; !ok {
+				fmt.Printf("warning: ID %d not found in timestamps CSV\n", id)
+			}
+		}
+	}
+
+	err = collection.ExportToXlsx(outputPath, timestamps)
 	if err != nil {
 		return err
 	}
@@ -497,4 +547,65 @@ func process2daFiles(collection *text.TextCollection, infFs afero.Fs, verbose bo
 	}
 
 	return nil
+}
+
+type TimestampEntry struct {
+	Text      string
+	Timestamp int64
+}
+
+func loadTimestamps(csvPath string) (map[uint32]TimestampEntry, error) {
+	file, err := os.Open(csvPath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open timestamps CSV file: %w", err)
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse timestamps CSV file: %w", err)
+	}
+
+	if len(records) == 0 {
+		return nil, fmt.Errorf("timestamps CSV file is empty")
+	}
+
+	// Find column indices from header
+	header := records[0]
+	idIdx, textIdx, timestampIdx := -1, -1, -1
+	for i, col := range header {
+		switch col {
+		case "id":
+			idIdx = i
+		case "text":
+			textIdx = i
+		case "timestamp":
+			timestampIdx = i
+		}
+	}
+
+	if idIdx == -1 || textIdx == -1 || timestampIdx == -1 {
+		return nil, fmt.Errorf("timestamps CSV file must have 'id', 'text', and 'timestamp' columns")
+	}
+
+	timestamps := make(map[uint32]TimestampEntry)
+	for _, record := range records[1:] {
+		if len(record) <= idIdx || len(record) <= textIdx || len(record) <= timestampIdx {
+			continue
+		}
+
+		id, err := strconv.ParseUint(record[idIdx], 10, 32)
+		if err != nil {
+			continue
+		}
+
+		timestamp, _ := strconv.ParseInt(record[timestampIdx], 10, 64)
+		timestamps[uint32(id)] = TimestampEntry{
+			Text:      record[textIdx],
+			Timestamp: timestamp,
+		}
+	}
+
+	return timestamps, nil
 }

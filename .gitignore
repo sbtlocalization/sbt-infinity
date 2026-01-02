@@ -5,7 +5,7 @@
 
 sbt-inf
 sbt-infinity
-.sbt-inf.toml
+sbt-inf.toml
 override
 dist/
 

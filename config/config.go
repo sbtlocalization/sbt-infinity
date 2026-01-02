@@ -14,8 +14,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const ConfigFileName = ".sbt-inf.toml"
-
 // Config represents the full configuration structure with game paths and per-game settings
 type Config struct {
 	Games       map[string]string     `toml:"Games"`

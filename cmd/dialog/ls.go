@@ -31,12 +31,14 @@ only specified dialog files (e.g., ABISHAB.DLG, DMORTE.DLG with or without exten
 	}
 
 	cmd.Flags().BoolP("json", "j", false, "Output in JSON format")
+	cmd.Flags().BoolP("with-length", "l", false, "Include number of nodes for each dialog (much slower)")
 
 	return cmd
 }
 
 func runLs(cmd *cobra.Command, args []string) error {
 	jsonOutput, _ := cmd.Flags().GetBool("json")
+	withLength, _ := cmd.Flags().GetBool("with-length")
 	tlkPath, _ := cmd.Flags().GetString("tlk")
 
 	// Resolve the key path and parse other files using the common helper
@@ -76,7 +78,13 @@ func runLs(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, df := range dialogFiles {
-		dlg, err := dc.LoadAllRootStates(df)
+		var dlg *dialog.DialogCollection
+		var err error
+		if withLength {
+			dlg, err = dc.LoadAllDialogs(tlkPath, df)
+		} else {
+			dlg, err = dc.LoadAllRootStates(df)
+		}
 		if err != nil {
 			return fmt.Errorf("error loading dialogs: %v", err)
 		}
@@ -102,10 +110,15 @@ func runLs(cmd *cobra.Command, args []string) error {
 					State uint32 `json:"root_state"`
 					File  string `json:"file"`
 					Bif   string `json:"bif"`
+					Nodes *int   `json:"nodes,omitempty"`
 				}{
 					State: d.Id.Index,
 					File:  fullDlgName,
 					Bif:   bifPath,
+				}
+				if withLength {
+					nodeCount := d.NodeCount()
+					output.Nodes = &nodeCount
 				}
 				jsonData, err := json.Marshal(output)
 				if err != nil {
@@ -113,7 +126,11 @@ func runLs(cmd *cobra.Command, args []string) error {
 				}
 				fmt.Println(string(jsonData))
 			} else {
-				fmt.Println(d.Id)
+				if withLength {
+					fmt.Printf("%s\t%d\n", d.Id, d.NodeCount())
+				} else {
+					fmt.Println(d.Id)
+				}
 			}
 		}
 	}

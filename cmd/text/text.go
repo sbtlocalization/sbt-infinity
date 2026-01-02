@@ -23,6 +23,8 @@ func NewCommand() *cobra.Command {
 	cmd.MarkFlagsMutuallyExclusive("tlk", "lang")
 	cmd.MarkFlagsMutuallyExclusive("tlk", "feminine")
 
+	cmd.MarkFlagFilename("tlk", "tlk")
+
 	cmd.AddCommand(NewLsCommand())
 	cmd.AddCommand(NewExCommand())
 

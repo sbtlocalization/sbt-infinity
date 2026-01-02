@@ -17,7 +17,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func (c *TextCollection) ExportToXlsx(outputPath string) error {
+func (c *TextCollection) ExportToXlsx(outputPath string, timestamps map[uint32]int64) error {
 	xlsxFile := xlsx.NewFile()
 	sheet, err := xlsxFile.AddSheet("Sheet1")
 	if err != nil {
@@ -35,6 +35,7 @@ func (c *TextCollection) ExportToXlsx(outputPath string) error {
 	headerRow.AddCell().Value = "sound file"
 	headerRow.AddCell().Value = "volume variance"
 	headerRow.AddCell().Value = "pitch variance"
+	headerRow.AddCell().Value = "timestamp"
 
 	ids := slices.Sorted(maps.Keys(c.Entries))
 
@@ -72,6 +73,13 @@ func (c *TextCollection) ExportToXlsx(outputPath string) error {
 
 		pitchVariance := row.AddCell()
 		pitchVariance.SetInt64(int64(entry.PitchVariance))
+
+		timestampCell := row.AddCell()
+		if timestamps != nil {
+			if ts, ok := timestamps[id]; ok {
+				timestampCell.SetInt64(ts)
+			}
+		}
 	}
 
 	outputDir := filepath.Dir(outputPath)
