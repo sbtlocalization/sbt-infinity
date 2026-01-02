@@ -85,6 +85,14 @@ func (n *Node) String() string {
 	return fmt.Sprintf("%s-%s", n.Type, n.Origin)
 }
 
+func (n *Node) IsEmptyTransition() bool {
+	return n.Type == TransitionNodeType &&
+		!n.Transition.IsDialogEnd &&
+		!n.Transition.HasText &&
+		!n.Transition.HasJournalText &&
+		!n.Transition.HasAction
+}
+
 type DialogID = NodeOrigin
 
 type Dialog struct {
@@ -104,7 +112,14 @@ func NewDialog(id DialogID) *Dialog {
 }
 
 func (d *Dialog) NodeCount() int {
-	return len(d.AllStates)
+	count := 0
+	for _, node := range d.All() {
+		if node.Type == LoopNodeType || node.IsEmptyTransition() {
+			continue
+		}
+		count++
+	}
+	return count
 }
 
 type DialogCollection struct {
