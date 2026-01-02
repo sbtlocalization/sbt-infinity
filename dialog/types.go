@@ -103,6 +103,10 @@ func NewDialog(id DialogID) *Dialog {
 	}
 }
 
+func (d *Dialog) NodeCount() int {
+	return len(d.AllStates)
+}
+
 type DialogCollection struct {
 	Dialogs []*Dialog
 }
