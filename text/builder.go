@@ -37,9 +37,10 @@ const (
 	ContextEffect
 	ContextItem
 	ContextProjectile
-	ContextSound
+	ContextSubtitles
 	ContextSpell
 	ContextStore
+	ContextTlkSound
 	ContextTracking2DA
 	ContextUI
 	ContextWorldMap
@@ -67,6 +68,7 @@ const (
 	lb_spell               = "spell"
 	lb_store               = "store"
 	lb_store_drink         = "store drink"
+	lb_sound_subtitles     = "subtitles"
 	lb_tlk_no_text         = "no text"
 	lb_tlk_with_sound      = "with sound"
 	lb_tlk_with_token      = "with token"
@@ -106,7 +108,7 @@ func NewTextCollection(tlk *p.Tlk) *TextCollection {
 
 		if entry.Flags.SoundExists {
 			collection.AddLabel(id, lb_tlk_with_sound)
-			collection.AddContext(id, ContextSound, entry.AudioName, "")
+			collection.AddContext(id, ContextTlkSound, entry.AudioName, "")
 		}
 
 		if entry.Flags.TokenExists {
@@ -762,26 +764,41 @@ func (c *TextCollection) LoadContextFrom7Eyes2DA(_ string, twoda *p.TwoDA) error
 }
 
 // Subtitles
-func (c *TextCollection) LoadContextFromCharSnd2DA(_ string, twoda *p.TwoDA) error {
-	// for _, rowKey := range twoda.RowKeys {
-	// 	row, ok := twoda.Row(rowKey)
-	// 	if !ok {
-	// 		continue
-	// 	}
-		
-	// 	for _, strrefStr := range row {
-	// 		strref, err := strconv.ParseUint(strrefStr, 10, 32)
-	// 		if err != nil {
-	// 			continue
-	// 		}
+func (c *TextCollection) LoadContextFromCharSnd2DA(_ string, twoda *p.TwoDA, ids *p.Ids) error {
+	columns := twoda.Columns
+	for _, rowKey := range twoda.RowKeys {
+		var slotName string
 
-	// 		if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
-	// 			c.AddLabel(strref, lb_ui)
-	// 			c.AddContext(strref, ContextUI, "CHARSND.2DA (subtitles)", rowKey)
-	// 		}
-	// 	}
-	// }
-	
-	// [TODO] @GooRoo: Parse `SNDSLOT.IDS` to enrich the context with sound slot names.
+		rowKeyUint, err := strconv.ParseInt(rowKey, 10, 32)
+		if err != nil {
+			slotName = rowKey
+		} else {
+			sndSlot, ok := ids.Entries[int32(rowKeyUint)]
+			if !ok {
+				slotName = rowKey
+			} else {
+				slotName = sndSlot
+			}
+		}
+
+
+		row, ok := twoda.Row(rowKey)
+		if !ok {
+			continue
+		}
+
+		for col, strrefStr := range row {
+			strref, err := strconv.ParseUint(strrefStr, 10, 32)
+			if err != nil {
+				continue
+			}
+
+			if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
+				c.AddLabel(strref, lb_sound_subtitles)
+				c.AddContext(strref, ContextSubtitles, "CHARSND.2DA (subtitles; M* – male, F* – female)", fmt.Sprintf("%s → %s", columns[col], slotName))
+			}
+		}
+	}
+
 	return nil
 }

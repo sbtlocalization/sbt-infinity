@@ -422,6 +422,14 @@ func processEffects(collection *text.TextCollection, infFs afero.Fs, verbose boo
 }
 
 func process2daFiles(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	// Parse SNDSLOT.IDS for CHARSND.2DA context
+	var sndslotIds *p.Ids
+	sndslot, err := infFs.Open("SNDSLOT.IDS")
+	if err == nil {
+		sndslotIds, _ = p.ParseIds(sndslot)
+		sndslot.Close()
+	}
+
 	type twodaProcessor struct {
 		filename string
 		loadFunc func(*text.TextCollection, string, *p.TwoDA) error
@@ -432,7 +440,9 @@ func process2daFiles(collection *text.TextCollection, infFs afero.Fs, verbose bo
 		{"25STWEAP.2DA", (*text.TextCollection).LoadContextFrom25StWeap2DA},
 		{"7eyes.2DA", (*text.TextCollection).LoadContextFrom7Eyes2DA},
 		{"BDSTWEAP.2DA", (*text.TextCollection).LoadContextFrom25StWeap2DA},
-		{"CHARSND.2DA", (*text.TextCollection).LoadContextFromCharSnd2DA},
+		{"CHARSND.2DA", func(c *text.TextCollection, f string, t *p.TwoDA) error {
+			return c.LoadContextFromCharSnd2DA(f, t, sndslotIds)
+		}},
 		{"EFFTEXT.2DA", (*text.TextCollection).LoadContextFromEffText2DA},
 		{"ENGINEST.2DA", (*text.TextCollection).LoadContextFromEngineSt2DA},
 		{"MSCHOOL.2DA", (*text.TextCollection).LoadContextFromMSchool2DA},

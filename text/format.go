@@ -117,9 +117,9 @@ func joinContext(entry *TextEntry) string {
 	contexts := entry.Context
 	var parts []string
 
-	if sndContexts, ok := contexts[ContextSound]; ok && len(sndContexts) > 0 {
+	if sndContexts, ok := contexts[ContextTlkSound]; ok && len(sndContexts) > 0 {
 		files := lo.MapToSlice(sndContexts, func(file string, _ []string) string { return file })
-		parts = append(parts, "Sound: "+strings.Join(files, "\n"))
+		parts = append(parts, "SOUND: "+strings.Join(files, "\n"))
 	}
 
 	if dlgContexts, ok := contexts[ContextDialog]; ok && len(dlgContexts) > 0 {
@@ -145,7 +145,7 @@ func joinContext(entry *TextEntry) string {
 			return fmt.Sprintf("- %s ← %s", soundType, strings.Join(files, ", "))
 		})
 		slices.Sort(groups)
-		parts = append(parts, "USED FOR: ----------\n"+strings.Join(groups, "\n"))
+		parts = append(parts, "USED BY CREATURE: ----------\n"+strings.Join(groups, "\n"))
 	}
 
 	if wmContexts, ok := contexts[ContextWorldMap]; ok && len(wmContexts) > 0 {
@@ -194,6 +194,12 @@ func joinContext(entry *TextEntry) string {
 		trackings := lo.MapToSlice(tracking2DAContexts, toAutoList)
 		slices.Sort(trackings)
 		parts = append(parts, "TRACKING.2DA: ----------\n"+strings.Join(trackings, "\n"))
+	}
+
+	if subtitleContexts, ok := contexts[ContextSubtitles]; ok && len(subtitleContexts) > 0 {
+		sounds := lo.MapToSlice(subtitleContexts, toList)
+		slices.Sort(sounds)
+		parts = append(parts, "SUBTITLES: ----------\n"+strings.Join(sounds, "\n"))
 	}
 
 	return strings.Join(parts, "\n\n")
