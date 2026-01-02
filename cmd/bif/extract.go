@@ -45,6 +45,8 @@ Additional filter may be passed to unpack only specific resources.`,
 	cmd.Flags().StringP("output", "o", ".", "Output directory for resource files (default: current directory)")
 	cmd.Flags().Bool("folders", false, "Create a separate folder for each type")
 
+	cmd.MarkFlagDirname("output")
+
 	return cmd
 }
 

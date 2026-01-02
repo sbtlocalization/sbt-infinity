@@ -31,7 +31,7 @@ only specified dialog files (e.g., ABISHAB.DLG, DMORTE.DLG with or without exten
 	}
 
 	cmd.Flags().BoolP("json", "j", false, "Output in JSON format")
-	cmd.Flags().BoolP("with-length", "l", false, "Include number of nodes for each dialog (slower)")
+	cmd.Flags().BoolP("with-length", "l", false, "Include number of nodes for each dialog (much slower)")
 
 	return cmd
 }

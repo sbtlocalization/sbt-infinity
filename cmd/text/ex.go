@@ -44,6 +44,9 @@ text IDs (e.g., 1234, 5678).`,
 	cmd.Flags().StringSlice("context-from", []string{}, "load context from types of files. Use 'all' to include all types.\nUse 'bif `types`' command to see all types.")
 	cmd.Flags().String("timestamps-from", "", "CSV file `path` containing timestamps to include in the export")
 
+	cmd.MarkFlagFilename("output", "xlsx")
+	cmd.MarkFlagFilename("timestamps-from", "csv")
+
 	return cmd
 }
 
