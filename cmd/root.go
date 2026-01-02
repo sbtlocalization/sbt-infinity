@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime/pprof"
 
+	twoda "github.com/sbtlocalization/sbt-infinity/cmd/2da"
 	"github.com/sbtlocalization/sbt-infinity/cmd/bif"
 	"github.com/sbtlocalization/sbt-infinity/cmd/dialog"
 	"github.com/sbtlocalization/sbt-infinity/cmd/text"
@@ -39,6 +40,7 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.AddCommand(twoda.NewCommand())
 	rootCmd.AddCommand(dialog.NewCommand())
 	rootCmd.AddCommand(text.NewCommand())
 	rootCmd.AddCommand(bif.NewCommand())

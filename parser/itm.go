@@ -224,7 +224,7 @@ type Itm struct {
 	_f_extendedHeaders bool
 	extendedHeaders []*Itm_ExtendedHeader
 	_f_globalEffects bool
-	globalEffects []*Eff_HeaderV1
+	globalEffects []*Eff_BodyV1
 }
 func NewItm() *Itm {
 	return &Itm{
@@ -516,7 +516,7 @@ func (this *Itm) ExtendedHeaders() (v []*Itm_ExtendedHeader, err error) {
 	}
 	return this.extendedHeaders, nil
 }
-func (this *Itm) GlobalEffects() (v []*Eff_HeaderV1, err error) {
+func (this *Itm) GlobalEffects() (v []*Eff_BodyV1, err error) {
 	if (this._f_globalEffects) {
 		return this.globalEffects, nil
 	}
@@ -525,7 +525,7 @@ func (this *Itm) GlobalEffects() (v []*Eff_HeaderV1, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this.OfsEffects + this.IdxGlobalEffects * 48), io.SeekStart)
+	_, err = this._io.Seek(int64(this.OfsEffects + uint32(this.IdxGlobalEffects) * 48), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
@@ -538,7 +538,7 @@ func (this *Itm) GlobalEffects() (v []*Eff_HeaderV1, err error) {
 		tmp45 = tmp45
 		this._raw_globalEffects = append(this._raw_globalEffects, tmp45)
 		_io__raw_globalEffects := kaitai.NewStream(bytes.NewReader(this._raw_globalEffects[i]))
-		tmp46 := NewEff_HeaderV1()
+		tmp46 := NewEff_BodyV1()
 		err = tmp46.Read(_io__raw_globalEffects, nil, nil)
 		if err != nil {
 			return nil, err
@@ -591,7 +591,7 @@ type Itm_ExtendedHeader struct {
 	_raw_IsBullet []byte
 	_raw_effects [][]byte
 	_f_effects bool
-	effects []*Eff_HeaderV1
+	effects []*Eff_BodyV1
 }
 func NewItm_ExtendedHeader() *Itm_ExtendedHeader {
 	return &Itm_ExtendedHeader{
@@ -796,7 +796,7 @@ func (this *Itm_ExtendedHeader) Read(io *kaitai.Stream, parent *Itm, root *Itm) 
 	this.IsBullet = tmp80
 	return err
 }
-func (this *Itm_ExtendedHeader) Effects() (v []*Eff_HeaderV1, err error) {
+func (this *Itm_ExtendedHeader) Effects() (v []*Eff_BodyV1, err error) {
 	if (this._f_effects) {
 		return this.effects, nil
 	}
@@ -805,7 +805,7 @@ func (this *Itm_ExtendedHeader) Effects() (v []*Eff_HeaderV1, err error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = this._io.Seek(int64(this._root.OfsEffects + this.IdxEffects * 48), io.SeekStart)
+	_, err = this._io.Seek(int64(this._root.OfsEffects + uint32(this.IdxEffects) * 48), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
@@ -818,7 +818,7 @@ func (this *Itm_ExtendedHeader) Effects() (v []*Eff_HeaderV1, err error) {
 		tmp81 = tmp81
 		this._raw_effects = append(this._raw_effects, tmp81)
 		_io__raw_effects := kaitai.NewStream(bytes.NewReader(this._raw_effects[i]))
-		tmp82 := NewEff_HeaderV1()
+		tmp82 := NewEff_BodyV1()
 		err = tmp82.Read(_io__raw_effects, nil, nil)
 		if err != nil {
 			return nil, err

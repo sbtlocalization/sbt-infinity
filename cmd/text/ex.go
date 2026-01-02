@@ -89,9 +89,16 @@ func runEx(cmd *cobra.Command, args []string) error {
 	}
 
 	contextTypes := []fs.FileType{
-		fs.FileType_DLG,
-		fs.FileType_CRE,
+		fs.FileType_2DA,
+		fs.FileType_ARE,
 		fs.FileType_CHU,
+		fs.FileType_CRE,
+		fs.FileType_DLG,
+		fs.FileType_EFF,
+		fs.FileType_ITM,
+		fs.FileType_PRO,
+		fs.FileType_SPL,
+		fs.FileType_STO,
 		fs.FileType_WMP,
 	}
 	if !slices.Contains(contextFrom, "all") {
@@ -102,6 +109,16 @@ func runEx(cmd *cobra.Command, args []string) error {
 
 	for _, t := range contextTypes {
 		switch t {
+		case fs.FileType_2DA:
+			err = process2daFiles(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process 2DA files:", err)
+			}
+		case fs.FileType_ARE:
+			err = processAreas(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process areas:", err)
+			}
 		case fs.FileType_CHU:
 			err = processUiScreens(collection, infFs, verbose)
 			if err != nil {
@@ -117,6 +134,31 @@ func runEx(cmd *cobra.Command, args []string) error {
 			if err != nil {
 				fmt.Println("warning: unable to process dialogs:", err)
 			}
+		case fs.FileType_EFF:
+			err = processEffects(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process effects:", err)
+			}
+		case fs.FileType_ITM:
+			err = processItems(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process items:", err)
+			}
+		case fs.FileType_PRO:
+			err = processProjectiles(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process projectiles:", err)
+			}
+		case fs.FileType_SPL:
+			err = processSpells(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process spells:", err)
+			}
+		case fs.FileType_STO:
+			err = processStores(collection, infFs, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process stores:", err)
+			}
 		case fs.FileType_WMP:
 			err = processWorldMaps(collection, infFs, verbose)
 			if err != nil {
@@ -127,6 +169,8 @@ func runEx(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	collection.FillKnownContext()
+
 	err = collection.ExportToXlsx(outputPath)
 	if err != nil {
 		return err
@@ -136,9 +180,6 @@ func runEx(cmd *cobra.Command, args []string) error {
 }
 
 func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl string, verbose bool) error {
-	if verbose {
-		fmt.Print("extracting context from dialogs... ")
-	}
 	dlgBuilder := dialog.NewDialogBuilder(infFs, nil, false, verbose)
 	dir, err := infFs.Open("DLG")
 	if err != nil {
@@ -148,6 +189,12 @@ func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl str
 	dialogFiles, err := dir.Readdirnames(0)
 	if err != nil {
 		return fmt.Errorf("unable to read dialog directory names: %v", err)
+	}
+
+	total := len(dialogFiles)
+
+	if verbose {
+		fmt.Print("extracting context from dialogs...")
 	}
 
 	for _, df := range dialogFiles {
@@ -160,17 +207,13 @@ func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl str
 	}
 
 	if verbose {
-		fmt.Println("done.")
+		fmt.Printf(" done (%d files).\n", total)
 	}
 
 	return nil
 }
 
 func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
-	if verbose {
-		fmt.Print("extracting context from creatures... ")
-	}
-
 	dir, err := infFs.Open("CRE")
 	if err != nil {
 		return fmt.Errorf("unable to list existing CRE files: %v", err)
@@ -195,6 +238,12 @@ func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose b
 		}
 	}
 
+	total := len(creFiles)
+
+	if verbose {
+		fmt.Print("extracting context from creatures...")
+	}
+
 	for _, cf := range creFiles {
 		creFile, err := infFs.Open(cf)
 		if err != nil {
@@ -213,87 +262,238 @@ func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose b
 	}
 
 	if verbose {
-		fmt.Println("done.")
+		fmt.Printf(" done (%d files).\n", total)
+	}
+
+	return nil
+}
+
+func processFiles(
+	infFs afero.Fs,
+	verbose bool,
+	dirName string,
+	entityName string,
+	processFile func(filename string, stream *kaitai.Stream) error,
+) error {
+	dir, err := infFs.Open(dirName)
+	if err != nil {
+		return fmt.Errorf("unable to list existing %s files: %v", dirName, err)
+	}
+	defer dir.Close()
+
+	files, err := dir.Readdirnames(0)
+	if err != nil {
+		return fmt.Errorf("unable to read %s directory names: %v", dirName, err)
+	}
+
+	total := len(files)
+	processed := 0
+	hasWarnings := false
+
+	if verbose {
+		fmt.Printf("extracting context from %s...", entityName)
+	}
+
+	for _, f := range files {
+		file, err := infFs.Open(f)
+		if err != nil {
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to open %s file %q: %v. skipping...\n", dirName, f, err)
+			}
+			continue
+		}
+
+		stream := kaitai.NewStream(file)
+		if err := processFile(f, stream); err != nil {
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to parse %s file %q: %v. skipping...\n", dirName, f, err)
+			}
+		} else {
+			processed++
+		}
+		file.Close()
+	}
+
+	if verbose {
+		if processed == total {
+			fmt.Printf(" done (%d files).\n", total)
+		} else {
+			fmt.Printf("done (%d/%d files).\n", processed, total)
+		}
 	}
 
 	return nil
 }
 
 func processUiScreens(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
-	if verbose {
-		fmt.Print("extracting context from UI screens... ")
-	}
-
-	dir, err := infFs.Open("CHU")
-	if err != nil {
-		return fmt.Errorf("unable to list existing CHU files: %v", err)
-	}
-	defer dir.Close()
-
-	uiFiles, err := dir.Readdirnames(0)
-	if err != nil {
-		return fmt.Errorf("unable to read CHU directory names: %v", err)
-	}
-
-	for _, uf := range uiFiles {
-		uiFile, err := infFs.Open(uf)
-		if err != nil {
-			return fmt.Errorf("unable to open CHU file %q: %v", uf, err)
-		}
-		defer uiFile.Close()
-
+	return processFiles(infFs, verbose, "CHU", "UI screens", func(filename string, stream *kaitai.Stream) error {
 		chu := p.NewChu()
-		stream := kaitai.NewStream(uiFile)
-		err = chu.Read(stream, nil, chu)
-		if err != nil {
-			return fmt.Errorf("unable to parse CHU file %q: %v", uf, err)
+		if err := chu.Read(stream, nil, chu); err != nil {
+			return err
 		}
-
-		collection.LoadContextFromUiScreens(uf, chu)
-	}
-
-	if verbose {
-		fmt.Println("done.")
-	}
-
-	return nil
+		collection.LoadContextFromUiScreens(filename, chu)
+		return nil
+	})
 }
 
 func processWorldMaps(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
-	if verbose {
-		fmt.Print("extracting context from world maps... ")
-	}
-
-	dir, err := infFs.Open("WMP")
-	if err != nil {
-		return fmt.Errorf("unable to list existing WMP files: %v", err)
-	}
-	defer dir.Close()
-
-	wmpFiles, err := dir.Readdirnames(0)
-	if err != nil {
-		return fmt.Errorf("unable to read WMP directory names: %v", err)
-	}
-
-	for _, wf := range wmpFiles {
-		wmpFile, err := infFs.Open(wf)
-		if err != nil {
-			return fmt.Errorf("unable to open WMP file %q: %v", wf, err)
-		}
-		defer wmpFile.Close()
-
+	return processFiles(infFs, verbose, "WMP", "world maps", func(filename string, stream *kaitai.Stream) error {
 		wmp := p.NewWmp()
-		stream := kaitai.NewStream(wmpFile)
-		err = wmp.Read(stream, nil, wmp)
+		if err := wmp.Read(stream, nil, wmp); err != nil {
+			return err
+		}
+		collection.LoadContextFromWorldMaps(filename, wmp)
+		return nil
+	})
+}
+
+func processAreas(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	return processFiles(infFs, verbose, "ARE", "areas", func(filename string, stream *kaitai.Stream) error {
+		are := p.NewAre()
+		if err := are.Read(stream, nil, are); err != nil {
+			return err
+		}
+		collection.LoadContextFromArea(filename, are)
+		return nil
+	})
+}
+
+func processItems(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	return processFiles(infFs, verbose, "ITM", "items", func(filename string, stream *kaitai.Stream) error {
+		itm := p.NewItm()
+		if err := itm.Read(stream, nil, itm); err != nil {
+			return err
+		}
+		collection.LoadContextFromItem(filename, itm)
+		return nil
+	})
+}
+
+func processProjectiles(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	return processFiles(infFs, verbose, "PRO", "projectiles", func(filename string, stream *kaitai.Stream) error {
+		pro := p.NewPro()
+		if err := pro.Read(stream, nil, pro); err != nil {
+			return err
+		}
+		collection.LoadContextFromProjectile(filename, pro)
+		return nil
+	})
+}
+
+func processSpells(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	return processFiles(infFs, verbose, "SPL", "spells", func(filename string, stream *kaitai.Stream) error {
+		spl := p.NewSpl()
+		if err := spl.Read(stream, nil, spl); err != nil {
+			return err
+		}
+		collection.LoadContextFromSpell(filename, spl)
+		return nil
+	})
+}
+
+func processStores(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	return processFiles(infFs, verbose, "STO", "stores", func(filename string, stream *kaitai.Stream) error {
+		sto := p.NewSto()
+		if err := sto.Read(stream, nil, sto); err != nil {
+			return err
+		}
+		collection.LoadContextFromStore(filename, sto)
+		return nil
+	})
+}
+
+func processEffects(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	return processFiles(infFs, verbose, "EFF", "effects", func(filename string, stream *kaitai.Stream) error {
+		eff := p.NewEff()
+		if err := eff.Read(stream, nil, eff); err != nil {
+			return err
+		}
+		collection.LoadContextFromEffect(filename, eff)
+		return nil
+	})
+}
+
+func process2daFiles(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+	// Parse SNDSLOT.IDS for CHARSND.2DA context
+	var sndslotIds *p.Ids
+	sndslot, err := infFs.Open("SNDSLOT.IDS")
+	if err == nil {
+		sndslotIds, _ = p.ParseIds(sndslot)
+		sndslot.Close()
+	}
+
+	type twodaProcessor struct {
+		filename string
+		loadFunc func(*text.TextCollection, string, *p.TwoDA) error
+	}
+
+	processors := []twodaProcessor{
+		{"25ECRED.2DA", (*text.TextCollection).LoadContextFrom25ECred2DA},
+		{"25STWEAP.2DA", (*text.TextCollection).LoadContextFrom25StWeap2DA},
+		{"7eyes.2DA", (*text.TextCollection).LoadContextFrom7Eyes2DA},
+		{"BDSTWEAP.2DA", (*text.TextCollection).LoadContextFrom25StWeap2DA},
+		{"CHARSND.2DA", func(c *text.TextCollection, f string, t *p.TwoDA) error {
+			return c.LoadContextFromCharSnd2DA(f, t, sndslotIds)
+		}},
+		{"EFFTEXT.2DA", (*text.TextCollection).LoadContextFromEffText2DA},
+		{"ENGINEST.2DA", (*text.TextCollection).LoadContextFromEngineSt2DA},
+		{"MSCHOOL.2DA", (*text.TextCollection).LoadContextFromMSchool2DA},
+		{"MSECTYPE.2DA", (*text.TextCollection).LoadContextFromMSecType2DA},
+		{"TRACKING.2DA", (*text.TextCollection).LoadContextFromTracking2DA},
+	}
+
+	total := len(processors)
+	processed := 0
+	hasWarnings := false
+
+	if verbose {
+		fmt.Print("extracting context from 2DA files...")
+	}
+
+	for _, proc := range processors {
+		file, err := infFs.Open(proc.filename)
 		if err != nil {
-			return fmt.Errorf("unable to parse WMP file %q: %v", wf, err)
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to open %s: %v. skipping...\n", proc.filename, err)
+			}
+			continue
 		}
 
-		collection.LoadContextFromWorldMaps(wf, wmp)
+		twoda, err := p.ParseTwoDA(file)
+		file.Close()
+		if err != nil {
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to parse %s: %v. skipping...\n", proc.filename, err)
+			}
+			continue
+		}
+
+		proc.loadFunc(collection, proc.filename, twoda)
+		processed++
 	}
 
 	if verbose {
-		fmt.Println("done.")
+		if processed == total {
+			fmt.Printf(" done (%d files).\n", total)
+		} else {
+			fmt.Printf("done (%d/%d files).\n", processed, total)
+		}
 	}
 
 	return nil
