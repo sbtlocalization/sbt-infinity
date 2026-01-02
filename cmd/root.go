@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 	Long: `SBT Infinity Tools is a collection of utilities designed to assist with the localization and 
 modification of games based on the Infinity Engine, such as Baldur's Gate, Baldur's Gate II, 
 and Planescape: Torment.`,
-	Version: "0.1.0",
+	Version: "2",
 
 	PersistentPreRunE:  startProfiling,
 	PersistentPostRunE: stopProfiling,
