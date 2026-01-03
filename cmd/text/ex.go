@@ -30,7 +30,7 @@ func NewExCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "export [ID...]",
 		Aliases: []string{"ex"},
-		Short:   "Export textual resources from the game as xlsx",
+		Short:   "Export textual resources from the game as XLSX",
 		Long: `Export all textual resources or specific IDs from the game.
 Reads the texts from dialog.tlk file, and optionally extracts only specified
 text IDs (e.g., 1234, 5678).`,
@@ -38,10 +38,10 @@ text IDs (e.g., 1234, 5678).`,
 		RunE: runEx,
 	}
 
-	cmd.Flags().StringP("output", "o", "dialog.xlsx", "output xlsx file `path`")
+	cmd.Flags().StringP("output", "o", "dialog.xlsx", "output XLSX file `path`")
 	cmd.Flags().BoolP("verbose", "v", false, "enable verbose output")
 	cmd.Flags().String("dlg-base-url", "", "base `URL` for dialog references (overrides config)")
-	cmd.Flags().StringSlice("context-from", []string{}, "load context from types of files. Use 'all' to include all types.\nUse 'bif `types`' command to see all types.")
+	cmd.Flags().StringSlice("context-from", []string{}, "load context from `types` of files. Use 'all' to include all types.\nUse 'bif types' command to see all types.")
 	cmd.Flags().String("timestamps-from", "", "CSV file `path` containing timestamps to include in the export")
 
 	cmd.MarkFlagFilename("output", "xlsx")
