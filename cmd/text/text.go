@@ -27,7 +27,6 @@ func NewCommand() *cobra.Command {
 
 	cmd.AddCommand(NewLsCommand())
 	cmd.AddCommand(NewExCommand())
-	cmd.AddCommand(NewConvertCommand())
 
 	return cmd
 }

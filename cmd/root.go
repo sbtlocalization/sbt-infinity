@@ -11,8 +11,10 @@ import (
 
 	twoda "github.com/sbtlocalization/sbt-infinity/cmd/2da"
 	"github.com/sbtlocalization/sbt-infinity/cmd/bif"
+	"github.com/sbtlocalization/sbt-infinity/cmd/csv"
 	"github.com/sbtlocalization/sbt-infinity/cmd/dialog"
 	"github.com/sbtlocalization/sbt-infinity/cmd/text"
+	"github.com/sbtlocalization/sbt-infinity/cmd/tra"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +24,7 @@ var rootCmd = &cobra.Command{
 	Long: `SBT Infinity Tools is a collection of utilities designed to assist with the localization and 
 modification of games based on the Infinity Engine, such as Baldur's Gate, Baldur's Gate II, 
 and Planescape: Torment.`,
-	Version: "4",
+	Version: "5",
 
 	PersistentPreRunE:  startProfiling,
 	PersistentPostRunE: stopProfiling,
@@ -41,9 +43,11 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(twoda.NewCommand())
+	rootCmd.AddCommand(bif.NewCommand())
+	rootCmd.AddCommand(csv.NewCommand())
 	rootCmd.AddCommand(dialog.NewCommand())
 	rootCmd.AddCommand(text.NewCommand())
-	rootCmd.AddCommand(bif.NewCommand())
+	rootCmd.AddCommand(tra.NewCommand())
 
 	rootCmd.PersistentFlags().BoolP("profile", "p", false, "Enable profiling")
 	rootCmd.PersistentFlags().MarkHidden("profile")

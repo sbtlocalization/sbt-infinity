@@ -3,37 +3,38 @@
 //
 // SPDX-License-Identifier: GPL-3.0-only
 
-package text
+package tra
 
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
 	"codeberg.org/tealeg/xlsx/v4"
+	"github.com/sbtlocalization/sbt-infinity/parser"
+	"github.com/sbtlocalization/sbt-infinity/tra"
 	"github.com/spf13/cobra"
 )
 
-type XlsxRow struct {
+type xlsxRow struct {
 	Key       uint32
 	Text      string
 	SoundFile string
 }
 
-func NewConvertCommand() *cobra.Command {
+func NewImportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "to-tra",
-		Aliases: []string{"convert"},
-		Short:   "Convert XLSX file to TRA file",
-		Long: `Convert an XLSX file (produced by 'text export') to TRA file.
+		Use:     "import",
+		Aliases: []string{"im"},
+		Short:   "Import XLSX file to TRA file",
+		Long: `Import an XLSX file (produced by 'text export') to TRA file.
 
 The TRA format is used by WeiDU and other Infinity Engine modding tools.`,
-		Example: `  Convert dialog.xlsx to dialog.tra:
-    sbt-inf text convert --input dialog.xlsx --output dialog.tra`,
+		Example: `  Import dialog.xlsx to dialog.tra:
+    sbt-inf tra import --input dialog.xlsx --output dialog.tra`,
 		Args: cobra.NoArgs,
-		RunE: runConvert,
+		RunE: runImport,
 	}
 
 	cmd.Flags().StringP("input", "i", "", "input XLSX `file` path")
@@ -49,7 +50,7 @@ The TRA format is used by WeiDU and other Infinity Engine modding tools.`,
 	return cmd
 }
 
-func runConvert(cmd *cobra.Command, args []string) error {
+func runImport(cmd *cobra.Command, args []string) error {
 	inputPath, _ := cmd.Flags().GetString("input")
 	outputPath, _ := cmd.Flags().GetString("output")
 	separator, _ := cmd.Flags().GetString("separator")
@@ -80,7 +81,8 @@ func runConvert(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Found %d entries\n", len(rows))
 	}
 
-	err = writeTraFile(outputPath, rows, separator)
+	entries := xlsxRowsToTraEntries(rows, separator)
+	err = tra.WriteFile(outputPath, entries)
 	if err != nil {
 		return fmt.Errorf("failed to write TRA file: %w", err)
 	}
@@ -92,19 +94,17 @@ func runConvert(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func parseXlsxFile(path string) ([]XlsxRow, error) {
+func parseXlsxFile(path string) ([]xlsxRow, error) {
 	xlsxFile, err := xlsx.OpenFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open xlsx file: %w", err)
 	}
 
-	// Get the first sheet
 	if len(xlsxFile.Sheets) == 0 {
 		return nil, fmt.Errorf("xlsx file has no sheets")
 	}
 	sheet := xlsxFile.Sheets[0]
 
-	// Find column indices from header row
 	headerRow, err := sheet.Row(0)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read header row: %w", err)
@@ -132,7 +132,7 @@ func parseXlsxFile(path string) ([]XlsxRow, error) {
 		return nil, fmt.Errorf("xlsx file missing required 'source or translation' column")
 	}
 
-	var rows []XlsxRow
+	var rows []xlsxRow
 	maxRows := sheet.MaxRow
 	for rowIdx := 1; rowIdx < maxRows; rowIdx++ {
 		row, err := sheet.Row(rowIdx)
@@ -153,7 +153,7 @@ func parseXlsxFile(path string) ([]XlsxRow, error) {
 			soundFile = row.GetCell(soundIdx).Value
 		}
 
-		rows = append(rows, XlsxRow{
+		rows = append(rows, xlsxRow{
 			Key:       uint32(keyVal),
 			Text:      text,
 			SoundFile: soundFile,
@@ -161,19 +161,6 @@ func parseXlsxFile(path string) ([]XlsxRow, error) {
 	}
 
 	return rows, nil
-}
-
-func wrapWithDelimiters(text string) string {
-	switch {
-	case !strings.Contains(text, "~"):
-		return "~" + text + "~"
-	case !strings.Contains(text, "%"):
-		return "%" + text + "%"
-	case !strings.Contains(text, "\""):
-		return "\"" + text + "\""
-	default:
-		return "~~~~~" + text + "~~~~~"
-	}
 }
 
 // Splits "male <sep> female" text into male/female variants
@@ -193,53 +180,16 @@ func splitMaleFemaleText(text string, separator string) (string, string, bool) {
 	return male, female, true
 }
 
-func formatTraText(text string, separator string) string {
-	if male, female, hasSplit := splitMaleFemaleText(text, separator); hasSplit {
-		return wrapWithDelimiters(male) + " " + wrapWithDelimiters(female)
-	} else {
-		return wrapWithDelimiters(text)
-	}
-}
-
-func formatTraEntry(id uint32, text string, soundFile string, maxIdWidth int, separator string) string {
-	entry := fmt.Sprintf("@%-*d = %s", maxIdWidth, id, formatTraText(text, separator))
-	if soundFile != "" {
-		entry += fmt.Sprintf(" [%s]", soundFile)
-	}
-
-	return entry
-}
-
-func writeTraFile(path string, rows []XlsxRow, separator string) error {
-	outputDir := filepath.Dir(path)
-	if outputDir != "" && outputDir != "." {
-		if err := os.MkdirAll(outputDir, 0755); err != nil {
-			return fmt.Errorf("unable to create output directory: %w", err)
+func xlsxRowsToTraEntries(rows []xlsxRow, separator string) []parser.TraEntry {
+	entries := make([]parser.TraEntry, len(rows))
+	for i, row := range rows {
+		male, female, _ := splitMaleFemaleText(row.Text, separator)
+		entries[i] = parser.TraEntry{
+			ID:         row.Key,
+			MaleText:   male,
+			FemaleText: female,
+			SoundFile:  row.SoundFile,
 		}
 	}
-
-	file, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("unable to create output file: %w", err)
-	}
-	defer file.Close()
-
-	// Calculate max ID width for alignment
-	maxId := uint32(0)
-	for _, row := range rows {
-		if row.Key > maxId {
-			maxId = row.Key
-		}
-	}
-	maxIdWidth := len(fmt.Sprintf("%d", maxId))
-
-	for _, row := range rows {
-		line := formatTraEntry(row.Key, row.Text, row.SoundFile, maxIdWidth, separator)
-		_, err := fmt.Fprintln(file, line)
-		if err != nil {
-			return fmt.Errorf("error writing entry %d: %w", row.Key, err)
-		}
-	}
-
-	return nil
+	return entries
 }

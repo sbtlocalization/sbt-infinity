@@ -35,9 +35,15 @@ SPDX-License-Identifier: GPL-3.0-only
 - `text list` — перелік текстових рядків (можна фільтрувати).
 - `text export` — збереження у форматі `.xlsx`.
 
+### Підтримка форматів WeiDU
+
+- `tra import` — створення `TRA`-файла з `XLSX`-таблиці
+- `tra update` — оновлення рядків існуючого `TRA`-файла з `CSV`.
+
 ### Інше
 
 - `2da show` — перегляд `2DA`-таблиць.
+- `csv diff` — генерація `CSV` з різницею між двома іншими `CSV`.
 - `extract-bam` та `update-bam` — робота [з текстурами](docs/BAM-update.md)
 
 ## Ліцензія
