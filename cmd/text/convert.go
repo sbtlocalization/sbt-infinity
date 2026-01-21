@@ -8,11 +8,12 @@ package text
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
 	"codeberg.org/tealeg/xlsx/v4"
+	"github.com/sbtlocalization/sbt-infinity/parser"
+	"github.com/sbtlocalization/sbt-infinity/tra"
 	"github.com/spf13/cobra"
 )
 
@@ -80,7 +81,8 @@ func runConvert(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Found %d entries\n", len(rows))
 	}
 
-	err = writeTraFile(outputPath, rows, separator)
+	entries := xlsxRowsToTraEntries(rows, separator)
+	err = tra.WriteFile(outputPath, entries)
 	if err != nil {
 		return fmt.Errorf("failed to write TRA file: %w", err)
 	}
@@ -163,19 +165,6 @@ func parseXlsxFile(path string) ([]XlsxRow, error) {
 	return rows, nil
 }
 
-func wrapWithDelimiters(text string) string {
-	switch {
-	case !strings.Contains(text, "~"):
-		return "~" + text + "~"
-	case !strings.Contains(text, "%"):
-		return "%" + text + "%"
-	case !strings.Contains(text, "\""):
-		return "\"" + text + "\""
-	default:
-		return "~~~~~" + text + "~~~~~"
-	}
-}
-
 // Splits "male <sep> female" text into male/female variants
 // Returns (male, female, hasSplit)
 func splitMaleFemaleText(text string, separator string) (string, string, bool) {
@@ -193,53 +182,16 @@ func splitMaleFemaleText(text string, separator string) (string, string, bool) {
 	return male, female, true
 }
 
-func formatTraText(text string, separator string) string {
-	if male, female, hasSplit := splitMaleFemaleText(text, separator); hasSplit {
-		return wrapWithDelimiters(male) + " " + wrapWithDelimiters(female)
-	} else {
-		return wrapWithDelimiters(text)
-	}
-}
-
-func formatTraEntry(id uint32, text string, soundFile string, maxIdWidth int, separator string) string {
-	entry := fmt.Sprintf("@%-*d = %s", maxIdWidth, id, formatTraText(text, separator))
-	if soundFile != "" {
-		entry += fmt.Sprintf(" [%s]", soundFile)
-	}
-
-	return entry
-}
-
-func writeTraFile(path string, rows []XlsxRow, separator string) error {
-	outputDir := filepath.Dir(path)
-	if outputDir != "" && outputDir != "." {
-		if err := os.MkdirAll(outputDir, 0755); err != nil {
-			return fmt.Errorf("unable to create output directory: %w", err)
+func xlsxRowsToTraEntries(rows []XlsxRow, separator string) []parser.TraEntry {
+	entries := make([]parser.TraEntry, len(rows))
+	for i, row := range rows {
+		male, female, _ := splitMaleFemaleText(row.Text, separator)
+		entries[i] = parser.TraEntry{
+			ID:         row.Key,
+			MaleText:   male,
+			FemaleText: female,
+			SoundFile:  row.SoundFile,
 		}
 	}
-
-	file, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("unable to create output file: %w", err)
-	}
-	defer file.Close()
-
-	// Calculate max ID width for alignment
-	maxId := uint32(0)
-	for _, row := range rows {
-		if row.Key > maxId {
-			maxId = row.Key
-		}
-	}
-	maxIdWidth := len(fmt.Sprintf("%d", maxId))
-
-	for _, row := range rows {
-		line := formatTraEntry(row.Key, row.Text, row.SoundFile, maxIdWidth, separator)
-		_, err := fmt.Fprintln(file, line)
-		if err != nil {
-			return fmt.Errorf("error writing entry %d: %w", row.Key, err)
-		}
-	}
-
-	return nil
+	return entries
 }
