@@ -50,7 +50,7 @@ Modes:
 
 	cmd.Flags().StringP("output", "o", "", "output file path (default: stdout)")
 	cmd.Flags().StringArrayP("mode", "m", []string{"c"},
-		"diff mode: c=changed, a=added, r=removed (combine with + or repeat flag)")
+		"diff `modes`: c=changed, a=added, r=removed, all=a+c+r")
 
 	return cmd
 }
