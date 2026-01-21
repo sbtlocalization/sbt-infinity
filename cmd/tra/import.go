@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-only
 
-package text
+package tra
 
 import (
 	"fmt"
@@ -17,24 +17,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type XlsxRow struct {
+type xlsxRow struct {
 	Key       uint32
 	Text      string
 	SoundFile string
 }
 
-func NewConvertCommand() *cobra.Command {
+func NewImportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "to-tra",
-		Aliases: []string{"convert"},
-		Short:   "Convert XLSX file to TRA file",
-		Long: `Convert an XLSX file (produced by 'text export') to TRA file.
+		Use:     "import",
+		Aliases: []string{"im"},
+		Short:   "Import XLSX file to TRA file",
+		Long: `Import an XLSX file (produced by 'text export') to TRA file.
 
 The TRA format is used by WeiDU and other Infinity Engine modding tools.`,
-		Example: `  Convert dialog.xlsx to dialog.tra:
-    sbt-inf text convert --input dialog.xlsx --output dialog.tra`,
+		Example: `  Import dialog.xlsx to dialog.tra:
+    sbt-inf tra import --input dialog.xlsx --output dialog.tra`,
 		Args: cobra.NoArgs,
-		RunE: runConvert,
+		RunE: runImport,
 	}
 
 	cmd.Flags().StringP("input", "i", "", "input XLSX `file` path")
@@ -50,7 +50,7 @@ The TRA format is used by WeiDU and other Infinity Engine modding tools.`,
 	return cmd
 }
 
-func runConvert(cmd *cobra.Command, args []string) error {
+func runImport(cmd *cobra.Command, args []string) error {
 	inputPath, _ := cmd.Flags().GetString("input")
 	outputPath, _ := cmd.Flags().GetString("output")
 	separator, _ := cmd.Flags().GetString("separator")
@@ -94,19 +94,17 @@ func runConvert(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func parseXlsxFile(path string) ([]XlsxRow, error) {
+func parseXlsxFile(path string) ([]xlsxRow, error) {
 	xlsxFile, err := xlsx.OpenFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open xlsx file: %w", err)
 	}
 
-	// Get the first sheet
 	if len(xlsxFile.Sheets) == 0 {
 		return nil, fmt.Errorf("xlsx file has no sheets")
 	}
 	sheet := xlsxFile.Sheets[0]
 
-	// Find column indices from header row
 	headerRow, err := sheet.Row(0)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read header row: %w", err)
@@ -134,7 +132,7 @@ func parseXlsxFile(path string) ([]XlsxRow, error) {
 		return nil, fmt.Errorf("xlsx file missing required 'source or translation' column")
 	}
 
-	var rows []XlsxRow
+	var rows []xlsxRow
 	maxRows := sheet.MaxRow
 	for rowIdx := 1; rowIdx < maxRows; rowIdx++ {
 		row, err := sheet.Row(rowIdx)
@@ -155,7 +153,7 @@ func parseXlsxFile(path string) ([]XlsxRow, error) {
 			soundFile = row.GetCell(soundIdx).Value
 		}
 
-		rows = append(rows, XlsxRow{
+		rows = append(rows, xlsxRow{
 			Key:       uint32(keyVal),
 			Text:      text,
 			SoundFile: soundFile,
@@ -182,7 +180,7 @@ func splitMaleFemaleText(text string, separator string) (string, string, bool) {
 	return male, female, true
 }
 
-func xlsxRowsToTraEntries(rows []XlsxRow, separator string) []parser.TraEntry {
+func xlsxRowsToTraEntries(rows []xlsxRow, separator string) []parser.TraEntry {
 	entries := make([]parser.TraEntry, len(rows))
 	for i, row := range rows {
 		male, female, _ := splitMaleFemaleText(row.Text, separator)

@@ -20,8 +20,8 @@ import (
 func NewUpdateCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Update TRA file entries from CSV diff files",
-		Long: `Update TRA file entries using CSV diff files (output of 'csv diff').
+		Short: "Update TRA file entries from CSV files",
+		Long: `Update TRA file entries using CSV files (for example, output of 'csv diff').
 
 The CSV files must have 'id' and 'text' columns. Updates are matched by ID.
 At least one of --male-csv or --female-csv must be provided.`,
