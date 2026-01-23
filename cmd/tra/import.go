@@ -14,6 +14,7 @@ import (
 	"codeberg.org/tealeg/xlsx/v4"
 	"github.com/sbtlocalization/sbt-infinity/parser"
 	"github.com/sbtlocalization/sbt-infinity/tra"
+	"github.com/sbtlocalization/sbt-infinity/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -163,27 +164,10 @@ func parseXlsxFile(path string) ([]xlsxRow, error) {
 	return rows, nil
 }
 
-// Splits "male <sep> female" text into male/female variants
-// Returns (male, female, hasSplit)
-func splitMaleFemaleText(text string, separator string) (string, string, bool) {
-	if separator == "" {
-		return text, "", false
-	}
-
-	idx := strings.Index(text, separator)
-	if idx == -1 {
-		return text, "", false
-	}
-
-	male := strings.TrimSpace(text[:idx])
-	female := strings.TrimSpace(text[idx+len(separator):])
-	return male, female, true
-}
-
 func xlsxRowsToTraEntries(rows []xlsxRow, separator string) []parser.TraEntry {
 	entries := make([]parser.TraEntry, len(rows))
 	for i, row := range rows {
-		male, female, _ := splitMaleFemaleText(row.Text, separator)
+		male, female, _ := utils.SplitMaleFemaleText(row.Text, separator)
 		entries[i] = parser.TraEntry{
 			ID:         row.Key,
 			MaleText:   male,
