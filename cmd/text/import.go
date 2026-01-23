@@ -243,7 +243,7 @@ func parseXlsxForTlk(path string) ([]xlsxTlkRow, error) {
 // Returns (maleEntries, femaleEntries, hasFemaleVariants)
 func buildTlkEntries(rows []xlsxTlkRow, separator string) ([]text.TlkWriteEntry, []text.TlkWriteEntry, bool) {
 	maxKey := lo.MaxBy(rows, func(a, b xlsxTlkRow) bool {
-		return a.Key < b.Key
+		return a.Key > b.Key
 	}).Key
 
 	// Initialize arrays with empty entries
