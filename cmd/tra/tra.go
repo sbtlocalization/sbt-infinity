@@ -16,6 +16,7 @@ func NewCommand() *cobra.Command {
 		Long:  `Utilities for working with TRA (WeiDU translation) files.`,
 	}
 
+	cmd.AddCommand(NewExportCommand())
 	cmd.AddCommand(NewImportCommand())
 	cmd.AddCommand(NewUpdateCommand())
 
