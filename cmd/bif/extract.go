@@ -19,7 +19,7 @@ import (
 
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "extract [-o output-dir] [-t type]... [-f regex]",
+		Use:     "extract [-o output-dir] [-t type]... [-f wildcard][-b wildcard]",
 		Aliases: []string{"ex"},
 		Short:   "Extract game engine resources from BIF files",
 		Long: `Extract game engine resources from BIF files.
@@ -53,6 +53,7 @@ Additional filter may be passed to unpack only specific resources.`,
 // runExtractBif handles the `bif ex` command execution
 func runExtractBif(cmd *cobra.Command, args []string) {
 	typeRawInput, _ := cmd.Flags().GetStringSlice("type")
+	bifFilterRawInput, _ := cmd.Flags().GetString("bif-filter")
 	filterRawInput, _ := cmd.Flags().GetString("filter")
 	outputDir, _ := cmd.Flags().GetString("output")
 	createFolders, _ := cmd.Flags().GetBool("folders")
@@ -62,11 +63,12 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 		log.Fatalf("Error with .key path: %v\n", err)
 	}
 
-	contentFilter := getContentFilter(filterRawInput)
+	bifFilter := fs.CompileFilter(bifFilterRawInput, false, true)
+	contentFilter := fs.CompileFilter(filterRawInput, false, false)
 
 	resFs := fs.NewInfinityFs(keyFilePath, getFileTypeFilter(typeRawInput)...)
 
-	for _, v := range resFs.ListResourses(contentFilter) {
+	for _, v := range resFs.ListResourses(bifFilter, contentFilter) {
 		fullName := v.FullName
 		file, err := resFs.Open(fullName)
 		if err != nil {

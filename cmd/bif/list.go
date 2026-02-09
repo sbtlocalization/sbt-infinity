@@ -17,7 +17,7 @@ import (
 
 func NewLsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "list [-t type]... [-f regex] [-j]",
+		Use:     "list [-t type]... [-f wildcard][-b wildcard] [-j]",
 		Aliases: []string{"ls"},
 		Short:   "List game engine resources contained in BIF files",
 		Long: `List game engine resources contained in BIF files.
@@ -38,6 +38,7 @@ sbt-inf bif ls -k chitin.key -f "(?i)arca" -t dlg`,
 // runListBif handles the `bif ls` command execution
 func runListBif(cmd *cobra.Command, args []string) {
 	typeRawInput, _ := cmd.Flags().GetStringSlice("type")
+	bifFilterRawInput, _ := cmd.Flags().GetString("bif-filter")
 	filterRawInput, _ := cmd.Flags().GetString("filter")
 	isJson, _ := cmd.Flags().GetBool("json")
 
@@ -46,11 +47,12 @@ func runListBif(cmd *cobra.Command, args []string) {
 		log.Fatalf("Error with .key path: %v\n", err)
 	}
 
-	contentFilter := getContentFilter(filterRawInput)
+	bifFilter := fs.CompileFilter(bifFilterRawInput, false, true)
+	contentFilter := fs.CompileFilter(filterRawInput, false, false)
 
 	resFs := fs.NewInfinityFs(keyFilePath, getFileTypeFilter(typeRawInput)...)
 
-	for _, v := range resFs.ListResourses(contentFilter) {
+	for _, v := range resFs.ListResourses(bifFilter, contentFilter) {
 		if isJson {
 			output := struct {
 				Name    string      `json:"name"`

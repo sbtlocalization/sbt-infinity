@@ -12,7 +12,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -453,16 +452,24 @@ func (fs *InfinityFs) GetBifFilePath(name string) (string, error) {
 	return "", os.ErrNotExist
 }
 
-func (fs *InfinityFs) ListResourses(contentFilter *regexp.Regexp) (result []*fileRecord) {
-
-	for _, value := range fs.catalog.byName {
-		if contentFilter != nil {
-			if !(contentFilter.MatchString(value.FullName) ||
-				contentFilter.MatchString(value.BifFile)) {
+func (fs *InfinityFs) ListResourses(bifFilter *CompiledFilter, contentFilter *CompiledFilter) (result []*fileRecord) {
+	// It would be much more logically to add Bif filter into NewInfinityFs, but it's already used everywhere
+	// So filter less effective, but right here
+	for bifName, listOfResources := range fs.catalog.filesByBif {
+		if bifFilter != nil {
+			if !bifFilter.Match(bifName) {
 				continue
 			}
 		}
-		result = append(result, value)
+
+		for _, value := range listOfResources {
+			if contentFilter != nil {
+				if !contentFilter.Match(value.FullName) {
+					continue
+				}
+			}
+			result = append(result, value)
+		}
 	}
 
 	return result
