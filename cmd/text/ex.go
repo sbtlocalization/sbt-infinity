@@ -289,6 +289,8 @@ func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose b
 	}
 
 	total := len(creFiles)
+	processed := 0
+	hasWarnings := false
 
 	if verbose {
 		fmt.Print("extracting context from creatures...")
@@ -297,22 +299,51 @@ func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose b
 	for _, cf := range creFiles {
 		creFile, err := infFs.Open(cf)
 		if err != nil {
-			return fmt.Errorf("unable to open CRE file %q: %v", cf, err)
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to open CRE file %q: %v. skipping...\n", cf, err)
+			}
+			continue
 		}
-		defer creFile.Close()
 
 		cre := p.NewCre()
 		stream := kaitai.NewStream(creFile)
 		err = cre.Read(stream, nil, cre)
+		creFile.Close()
 		if err != nil {
-			return fmt.Errorf("unable to parse CRE file %q: %v", cf, err)
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to parse CRE file %q: %v. skipping...\n", cf, err)
+			}
+			continue
 		}
 
-		collection.LoadContextFromCreature(cf, cre, ids)
+		if err := collection.LoadContextFromCreature(cf, cre, ids); err != nil {
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to parse CRE file %q: %v. skipping...\n", cf, err)
+			}
+			continue
+		}
+
+		processed++
 	}
 
 	if verbose {
-		fmt.Printf(" done (%d files).\n", total)
+		if processed == total {
+			fmt.Printf(" done (%d files).\n", total)
+		} else {
+			fmt.Printf("done (%d/%d files).\n", processed, total)
+		}
 	}
 
 	return nil
