@@ -13,6 +13,7 @@ import (
 	"github.com/sbtlocalization/sbt-infinity/cmd/bif"
 	"github.com/sbtlocalization/sbt-infinity/cmd/csv"
 	"github.com/sbtlocalization/sbt-infinity/cmd/dialog"
+	"github.com/sbtlocalization/sbt-infinity/cmd/sound"
 	"github.com/sbtlocalization/sbt-infinity/cmd/text"
 	"github.com/sbtlocalization/sbt-infinity/cmd/tra"
 	"github.com/spf13/cobra"
@@ -46,6 +47,7 @@ func init() {
 	rootCmd.AddCommand(bif.NewCommand())
 	rootCmd.AddCommand(csv.NewCommand())
 	rootCmd.AddCommand(dialog.NewCommand())
+	rootCmd.AddCommand(sound.NewCommand())
 	rootCmd.AddCommand(text.NewCommand())
 	rootCmd.AddCommand(tra.NewCommand())
 
