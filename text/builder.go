@@ -241,6 +241,10 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 		c.AddContext(shortName, ContextCreature, "Short name (tooltip)", strings.ToLower(creFilename))
 	}
 
+	if cre.Body == nil {
+		return fmt.Errorf("unsupported CRE version %q", cre.Version)
+	}
+
 	soundRefs := cre.Body.Header.StrRefs
 
 	for val, identifier := range ids.Entries {
