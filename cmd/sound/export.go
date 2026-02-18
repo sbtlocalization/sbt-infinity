@@ -11,7 +11,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/sbtlocalization/sbt-infinity/config"
@@ -22,7 +21,7 @@ import (
 
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "export [-o output-dir] [--format wav|flac] [-f regex]",
+		Use:     "export [-o output-dir] [--format wav|flac] [flags]...",
 		Aliases: []string{"ex"},
 		Short:   "Export game audio files as WAV or FLAC",
 		Long: `Export audio resources from BIF files, converting WAVC/ACM format
@@ -53,6 +52,7 @@ via chitin.key.`,
 
 func runExportSound(cmd *cobra.Command, args []string) {
 	filterRawInput, _ := cmd.Flags().GetString("filter")
+	bifFilterRawInput, _ := cmd.Flags().GetString("bif-filter")
 	outputDir, _ := cmd.Flags().GetString("output")
 	format, _ := cmd.Flags().GetString("format")
 	verbose, _ := cmd.Flags().GetBool("verbose")
@@ -67,16 +67,11 @@ func runExportSound(cmd *cobra.Command, args []string) {
 		log.Fatalf("Error with .key path: %v\n", err)
 	}
 
-	var contentFilter *regexp.Regexp
-	if len(filterRawInput) > 0 {
-		compiled, err := regexp.Compile(filterRawInput)
-		if err != nil {
-			log.Fatalf("Value %s is not Regexp: %v\n", filterRawInput, err)
-		}
-		contentFilter = compiled
-	}
-
-	resFs := fs.NewInfinityFs(keyFilePath, fs.FileType_WAV)
+	resFs := fs.NewInfinityFs(keyFilePath,
+		fs.WithTypeFilter(fs.FileType_WAV),
+		fs.WithBifFilter(bifFilterRawInput),
+		fs.WithContentFilter(filterRawInput),
+	)
 
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		log.Fatalf("Error creating output directory: %v\n", err)
@@ -86,7 +81,7 @@ func runExportSound(cmd *cobra.Command, args []string) {
 	skipped := 0
 	failed := 0
 
-	for _, v := range resFs.ListResourses(contentFilter) {
+	for _, v := range resFs.ListResources() {
 		file, err := resFs.Open(v.FullName)
 		if err != nil {
 			log.Printf("Failed to open %s: %v\n", v.FullName, err)

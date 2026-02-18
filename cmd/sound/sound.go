@@ -16,7 +16,8 @@ func NewCommand() *cobra.Command {
 		Long:  `Utilities for converting between Infinity Engine audio formats (WAVC/ACM) and standard WAV/FLAC.`,
 	}
 
-	cmd.PersistentFlags().StringP("filter", "f", "", "Regex for resource name filtering")
+	cmd.PersistentFlags().StringP("filter", "f", "", "Wildcard for resourse name filtering. Case insensitive.")
+	cmd.PersistentFlags().StringP("bif-filter", "b", "", "Wildcard for filtering by BIF names. Case insensitive.")
 
 	cmd.AddCommand(NewExportCommand())
 
