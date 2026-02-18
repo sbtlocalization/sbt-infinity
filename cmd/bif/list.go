@@ -17,15 +17,15 @@ import (
 
 func NewLsCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "list [-t type]... [-f wildcard][-b wildcard] [-j]",
+		Use:     "list [-t type][flags]... [-j]",
 		Aliases: []string{"ls"},
 		Short:   "List game engine resources contained in BIF files",
 		Long: `List game engine resources contained in BIF files.
 
 Additional filter may be passed to list only specific resources.`,
-		Example: `List all resourses which have dialog type and have case insensitive 'arca' part in name:
+		Example: `List all resourses which have dialog type and have 'arca' part in name:
 
-sbt-inf bif ls -k chitin.key -f "(?i)arca" -t dlg`,
+sbt-inf bif ls -k chitin.key -f *arca* -t dlg`,
 		Run:  runListBif,
 		Args: cobra.MaximumNArgs(0),
 	}
@@ -47,8 +47,8 @@ func runListBif(cmd *cobra.Command, args []string) {
 		log.Fatalf("Error with .key path: %v\n", err)
 	}
 
-	bifFilter := fs.CompileFilter(bifFilterRawInput, false, true)
-	contentFilter := fs.CompileFilter(filterRawInput, false, false)
+	bifFilter := fs.CompileFilter(bifFilterRawInput, false, true, true)
+	contentFilter := fs.CompileFilter(filterRawInput, false, false, false)
 
 	resFs := fs.NewInfinityFs(keyFilePath, getFileTypeFilter(typeRawInput)...)
 

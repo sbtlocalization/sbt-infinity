@@ -21,7 +21,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.PersistentFlags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Use `bif types` command to see all types.")
 	cmd.PersistentFlags().StringP("filter", "f", "", "Wildcard for resourse name filtering. Case insensitive")
-	cmd.PersistentFlags().StringP("bif-filter", "b", "", "Wildcard for filtering by BIF relative path (like data/*.bif). Case insensitive. data/ part is ignored if Wildcard has no slashes")
+	cmd.PersistentFlags().StringP("bif-filter", "b", "", "Wildcard for filtering by BIF relative path (like data/*.bif). Case insensitive. data/ part is ignored if Wildcard has no slashes. `.bif` is ignored if Wildcar has no dots.")
 
 	cmd.AddCommand(NewLsCommand())
 	cmd.AddCommand(NewExportCommand())
