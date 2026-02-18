@@ -7,6 +7,7 @@
 package bif
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -19,7 +20,7 @@ import (
 
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "extract [-o output-dir] [-t type]... [-f regex]",
+		Use:     "extract [-o output-dir] [-t type][flags]...",
 		Aliases: []string{"ex"},
 		Short:   "Extract game engine resources from BIF files",
 		Long: `Extract game engine resources from BIF files.
@@ -27,9 +28,9 @@ Structure of resources is read from chitin.key,
 so all related .bif files picked automatically.
 
 Additional filter may be passed to unpack only specific resources.`,
-		Example: `  Extract resourses with 'pdialog' in name into 'tmp' folder:
+		Example: `  Extract resourses with 'ttb' in name into 'tmp' folder from data/ITEMS.BIF file only:
 
-      sbt-inf bif ex -k 'D:\Games\Baldur''s Gate - Enhanced Edition\chitin.key' -f "(?i)pdialog" -o tmp
+      sbt-inf bif ex -k 'D:\Games\Baldur''s Gate - Enhanced Edition\chitin.key' -b items -f ttb* -o tmp
 
   Extract only LUA and DLG files into 'tmp' folder (the path to chitin.key is taken from sbt-inf.toml):
   
@@ -53,6 +54,7 @@ Additional filter may be passed to unpack only specific resources.`,
 // runExtractBif handles the `bif ex` command execution
 func runExtractBif(cmd *cobra.Command, args []string) {
 	typeRawInput, _ := cmd.Flags().GetStringSlice("type")
+	bifFilterRawInput, _ := cmd.Flags().GetString("bif-filter")
 	filterRawInput, _ := cmd.Flags().GetString("filter")
 	outputDir, _ := cmd.Flags().GetString("output")
 	createFolders, _ := cmd.Flags().GetBool("folders")
@@ -62,11 +64,12 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 		log.Fatalf("Error with .key path: %v\n", err)
 	}
 
-	contentFilter := getContentFilter(filterRawInput)
+	bifFilter := fs.CompileFilter(bifFilterRawInput, false, true, true)
+	contentFilter := fs.CompileFilter(filterRawInput, false, false, false)
 
 	resFs := fs.NewInfinityFs(keyFilePath, getFileTypeFilter(typeRawInput)...)
 
-	for _, v := range resFs.ListResourses(contentFilter) {
+	for _, v := range resFs.ListResourses(bifFilter, contentFilter) {
 		fullName := v.FullName
 		file, err := resFs.Open(fullName)
 		if err != nil {
@@ -91,6 +94,7 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 			log.Fatalf("Error saving %s file: %v\n", outputPath, err)
 			return
 		}
+		fmt.Printf("Extracted: %s\n", outputPath)
 	}
 }
 

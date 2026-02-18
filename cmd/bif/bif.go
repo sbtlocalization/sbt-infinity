@@ -7,7 +7,6 @@ package bif
 
 import (
 	"log"
-	"regexp"
 	"strconv"
 
 	"github.com/sbtlocalization/sbt-infinity/fs"
@@ -21,7 +20,8 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.PersistentFlags().StringSliceP("type", "t", nil, "Resourse type filter. Comma separated integers (dec or hex) or extension names (like DLG). Use `bif types` command to see all types.")
-	cmd.PersistentFlags().StringP("filter", "f", "", "Regex for resourse name filtering")
+	cmd.PersistentFlags().StringP("filter", "f", "", "Wildcard for resourse name filtering. Case insensitive")
+	cmd.PersistentFlags().StringP("bif-filter", "b", "", "Wildcard for filtering by BIF relative path (like data/*.bif). Case insensitive. data/ part is ignored if Wildcard has no slashes. `.bif` is ignored if Wildcar has no dots.")
 
 	cmd.AddCommand(NewLsCommand())
 	cmd.AddCommand(NewExportCommand())
@@ -56,18 +56,4 @@ func getFileTypeFilter(tokens []string) (filter []fs.FileType) {
 		filter = append(filter, key)
 	}
 	return filter
-}
-
-func getContentFilter(rawInput string) *regexp.Regexp {
-	if len(rawInput) == 0 {
-		return nil
-	}
-
-	compiled, err := regexp.Compile(rawInput)
-	if err != nil {
-		log.Fatalf("Value %s is not Regexp: %v\n", rawInput, err)
-		return nil
-	}
-
-	return compiled
 }

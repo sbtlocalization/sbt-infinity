@@ -4,6 +4,7 @@ go 1.25
 
 require (
 	codeberg.org/tealeg/xlsx/v4 v4.0.0
+	github.com/gobwas/glob v0.2.3
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/kaitai-io/kaitai_struct_go_runtime v0.11.0
 	github.com/mewkiz/flac v1.0.13
