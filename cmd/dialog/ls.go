@@ -62,7 +62,7 @@ func runLs(cmd *cobra.Command, args []string) error {
 		tlkFs = osFs
 	}
 
-	dlgFs := fs.NewInfinityFs(keyPath, fs.FileType_DLG)
+	dlgFs := fs.NewInfinityFs(keyPath, fs.WithTypeFilter(fs.FileType_DLG))
 
 	dc := dialog.NewDialogBuilder(dlgFs, tlkFs, false, false)
 

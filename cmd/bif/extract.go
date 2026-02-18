@@ -64,12 +64,13 @@ func runExtractBif(cmd *cobra.Command, args []string) {
 		log.Fatalf("Error with .key path: %v\n", err)
 	}
 
-	bifFilter := fs.CompileFilter(bifFilterRawInput, false, true, true)
-	contentFilter := fs.CompileFilter(filterRawInput, false, false, false)
+	resFs := fs.NewInfinityFs(keyFilePath,
+		fs.WithTypeFilter(getFileTypeFilter(typeRawInput)...),
+		fs.WithBifFilter(bifFilterRawInput),
+		fs.WithContentFilter(filterRawInput),
+	)
 
-	resFs := fs.NewInfinityFs(keyFilePath, getFileTypeFilter(typeRawInput)...)
-
-	for _, v := range resFs.ListResourses(bifFilter, contentFilter) {
+	for v := range resFs.ListResources() {
 		fullName := v.FullName
 		file, err := resFs.Open(fullName)
 		if err != nil {

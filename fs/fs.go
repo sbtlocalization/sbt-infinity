@@ -9,6 +9,7 @@ package fs
 import (
 	"fmt"
 	"io"
+	"iter"
 	"log"
 	"os"
 	"path/filepath"
@@ -114,13 +115,18 @@ type fileEntry struct {
 
 type InfinityFs struct {
 	KeyFile  string
-	filters  []FileType
+	options  fsOptions
 	catalog  *fileCatalog
 	cache    *BifFileCache
 	openBifs map[string]*fileEntry
 }
 
-func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
+func NewInfinityFs(keyFilePath string, opts ...Option) *InfinityFs {
+	var options fsOptions
+	for _, opt := range opts {
+		opt(&options)
+	}
+
 	fs := afero.NewOsFs()
 	keyFile, err := fs.Open(keyFilePath)
 	if err != nil {
@@ -144,10 +150,12 @@ func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
 	}
 
 	catalog := newFileCatalog()
+	bifFilterCache := make(map[string]bool)
+
 	for _, res := range resources {
 		recordType := FileTypeFromParserType(res.Type)
 
-		if len(filters) > 0 && !slices.Contains(filters, recordType) {
+		if len(options.typeFilters) > 0 && !slices.Contains(options.typeFilters, recordType) {
 			continue
 		}
 
@@ -160,6 +168,21 @@ func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
 		if err != nil {
 			log.Fatalln("Error getting BIF file path:", err)
 			continue
+		}
+
+		// BIF filter — applied before Stat to skip I/O for non-matching BIFs
+		if options.bifFilter != nil {
+			if matched, seen := bifFilterCache[bifPath]; seen {
+				if !matched {
+					continue
+				}
+			} else {
+				matched = options.bifFilter.Match(bifPath)
+				bifFilterCache[bifPath] = matched
+				if !matched {
+					continue
+				}
+			}
 		}
 
 		dirFs := afero.NewBasePathFs(fs, filepath.Dir(keyFilePath))
@@ -181,6 +204,11 @@ func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
 			IsTileset:    recordType == FileType_TIS,
 			FileLength:   -1,
 			FileOffset:   -1,
+		}
+
+		// Content filter — applied after FullName is constructed
+		if options.contentFilter != nil && !options.contentFilter.Match(record.FullName) {
+			continue
 		}
 
 		catalog.byName[strings.ToLower(record.FullName)] = record
@@ -217,7 +245,7 @@ func NewInfinityFs(keyFilePath string, filters ...FileType) *InfinityFs {
 
 	return &InfinityFs{
 		KeyFile:  keyFilePath,
-		filters:  filters,
+		options:  options,
 		catalog:  catalog,
 		cache:    cache,
 		openBifs: make(map[string]*fileEntry),
@@ -452,25 +480,12 @@ func (fs *InfinityFs) GetBifFilePath(name string) (string, error) {
 	return "", os.ErrNotExist
 }
 
-func (fs *InfinityFs) ListResourses(bifFilter *CompiledFilter, contentFilter *CompiledFilter) (result []*fileRecord) {
-	// It would be much more logically to add Bif filter into NewInfinityFs, but it's already used everywhere
-	// So filter less effective, but right here
-	for bifName, listOfResources := range fs.catalog.filesByBif {
-		if bifFilter != nil {
-			if !bifFilter.Match(bifName) {
-				continue
+func (fs *InfinityFs) ListResources() iter.Seq[*fileRecord] {
+	return func(yield func(*fileRecord) bool) {
+		for _, value := range fs.catalog.byName {
+			if !yield(value) {
+				return
 			}
-		}
-
-		for _, value := range listOfResources {
-			if contentFilter != nil {
-				if !contentFilter.Match(value.FullName) {
-					continue
-				}
-			}
-			result = append(result, value)
 		}
 	}
-
-	return result
 }

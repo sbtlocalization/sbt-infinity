@@ -60,7 +60,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	infFs := fs.NewInfinityFs(keyPath, fs.FileType_PVRZ)
+	infFs := fs.NewInfinityFs(keyPath, fs.WithTypeFilter(fs.FileType_PVRZ))
 
 	if len(pvrzFiles) == 0 {
 		dir, err := infFs.Open("PVRZ")

@@ -86,7 +86,7 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 	if withCreatures {
 		typesToLoad = append(typesToLoad, fs.FileType_CRE, fs.FileType_BMP)
 	}
-	dlgFs := fs.NewInfinityFs(keyPath, typesToLoad...)
+	dlgFs := fs.NewInfinityFs(keyPath, fs.WithTypeFilter(typesToLoad...))
 
 	dc := dialog.NewDialogBuilder(dlgFs, tlkFs, withCreatures, verbose)
 

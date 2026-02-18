@@ -52,7 +52,7 @@ func runShow(cmd *cobra.Command, args []string) error {
 		resourceName = resourceName + ".2DA"
 	}
 
-	infFs := fs.NewInfinityFs(keyPath, fs.FileType_2DA)
+	infFs := fs.NewInfinityFs(keyPath, fs.WithTypeFilter(fs.FileType_2DA))
 
 	file, err := infFs.Open(resourceName)
 	if err != nil {
