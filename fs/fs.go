@@ -482,11 +482,9 @@ func (fs *InfinityFs) GetBifFilePath(name string) (string, error) {
 
 func (fs *InfinityFs) ListResources() iter.Seq[*fileRecord] {
 	return func(yield func(*fileRecord) bool) {
-		for _, listOfResources := range fs.catalog.filesByBif {
-			for _, value := range listOfResources {
-				if !yield(value) {
-					return
-				}
+		for _, value := range fs.catalog.byName {
+			if !yield(value) {
+				return
 			}
 		}
 	}
