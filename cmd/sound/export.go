@@ -81,7 +81,7 @@ func runExportSound(cmd *cobra.Command, args []string) {
 	skipped := 0
 	failed := 0
 
-	for _, v := range resFs.ListResources() {
+	for v := range resFs.ListResources() {
 		file, err := resFs.Open(v.FullName)
 		if err != nil {
 			log.Printf("Failed to open %s: %v\n", v.FullName, err)

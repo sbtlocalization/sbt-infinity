@@ -53,7 +53,7 @@ func runListBif(cmd *cobra.Command, args []string) {
 		fs.WithContentFilter(filterRawInput),
 	)
 
-	for _, v := range resFs.ListResources() {
+	for v := range resFs.ListResources() {
 		if isJson {
 			output := struct {
 				Name    string      `json:"name"`

@@ -9,6 +9,7 @@ package fs
 import (
 	"fmt"
 	"io"
+	"iter"
 	"log"
 	"os"
 	"path/filepath"
@@ -479,11 +480,14 @@ func (fs *InfinityFs) GetBifFilePath(name string) (string, error) {
 	return "", os.ErrNotExist
 }
 
-func (fs *InfinityFs) ListResources() (result []*fileRecord) {
-	for _, listOfResources := range fs.catalog.filesByBif {
-		for _, value := range listOfResources {
-			result = append(result, value)
+func (fs *InfinityFs) ListResources() iter.Seq[*fileRecord] {
+	return func(yield func(*fileRecord) bool) {
+		for _, listOfResources := range fs.catalog.filesByBif {
+			for _, value := range listOfResources {
+				if !yield(value) {
+					return
+				}
+			}
 		}
 	}
-	return result
 }
