@@ -14,11 +14,11 @@ import (
 	"strings"
 
 	"github.com/sbtlocalization/sbt-infinity/config"
+	"github.com/sbtlocalization/sbt-infinity/dcanvas"
 	"github.com/sbtlocalization/sbt-infinity/dialog"
 	"github.com/sbtlocalization/sbt-infinity/fs"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"github.com/supersonicpineapple/go-jsoncanvas"
 	_ "golang.org/x/image/bmp"
 )
 
@@ -27,8 +27,8 @@ func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "export [DLG-file...]",
 		Aliases: []string{"ex"},
-		Short:   "Export dialogs as JSON Canvas files",
-		Long: `Export dialogs from DLG files (with texts from TLK file) as JSON Canvas files.
+		Short:   "Export dialogs as dCanvas files",
+		Long: `Export dialogs from DLG files (with texts from TLK file) as dCanvas files.
 Creates a visual representation of dialog structures.`,
 		Args: cobra.MinimumNArgs(0),
 		RunE: runExportDialogs,
@@ -135,9 +135,9 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%s: loaded %d dialogs\n", df, len(dlg.Dialogs))
 		}
 		for _, d := range dlg.Dialogs {
-			canvas := d.ToJsonCanvas()
+			canvas := d.ToDCanvas()
 			dialogName := strings.TrimSuffix(d.Id.DlgName, filepath.Ext(d.Id.DlgName))
-			fileName := filepath.Join(outputDir, fmt.Sprintf("%s-%d.canvas", dialogName, d.Id.Index))
+			fileName := filepath.Join(outputDir, fmt.Sprintf("%s-%d.d.canvas", dialogName, d.Id.Index))
 			file, err := os.Create(fileName)
 			if verbose {
 				fmt.Printf("  exporting dialog %s to %s\n", d.Id, fileName)
@@ -148,7 +148,7 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 			}
 			defer file.Close()
 
-			err = jsoncanvas.Encode(canvas, file)
+			err = dcanvas.Encode(canvas, file)
 			if err != nil {
 				return fmt.Errorf("error encoding canvas for dialog %s: %v", d.Id, err)
 			}
