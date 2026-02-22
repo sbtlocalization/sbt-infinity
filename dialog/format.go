@@ -129,6 +129,7 @@ func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string) *dcanvas.N
 	case StateNodeType:
 		cNode.NodeRole = "state"
 		cNode.TextId = fmt.Sprintf("#%d", node.State.TextRef)
+		cNode.Sound = node.State.Sound
 		cNode.Trigger = strings.TrimSpace(node.State.Trigger)
 		cNode.Text = node.State.Text
 
@@ -147,10 +148,12 @@ func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string) *dcanvas.N
 		if node.Transition.HasText {
 			cNode.TextId = fmt.Sprintf("#%d", node.Transition.TextRef)
 			cNode.Text = node.Transition.Text
+			cNode.Sound = node.Transition.Sound
 		}
 		if node.Transition.HasJournalText {
 			cNode.JournalTextId = fmt.Sprintf("#%d", node.Transition.JournalTextRef)
 			cNode.JournalText = node.Transition.JournalText
+			cNode.JournalSound = node.Transition.JournalSound
 		}
 		cNode.Action = strings.TrimSpace(node.Transition.Action)
 

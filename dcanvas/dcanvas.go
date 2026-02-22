@@ -31,8 +31,10 @@ type Node struct {
 	NodeId        string     `json:"x-nodeId,omitempty"`
 	Character     *Character `json:"x-character,omitempty"`
 	TextId        string     `json:"x-textId,omitempty"`
+	Sound         string     `json:"x-sound,omitempty"`
 	JournalTextId string     `json:"x-journalTextId,omitempty"`
 	JournalText   string     `json:"x-journalText,omitempty"`
+	JournalSound  string     `json:"x-journalSound,omitempty"`
 	Trigger       string     `json:"x-trigger,omitempty"`
 	Action        string     `json:"x-action,omitempty"`
 }

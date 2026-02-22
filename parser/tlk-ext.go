@@ -59,6 +59,19 @@ func (t *TlkFile) GetText(strref uint32) string {
 	return text
 }
 
+func (t *TlkFile) GetSound(strref uint32) string {
+	if t == nil || t.Tlk == nil || strref == 0xFFFFFFFF || strref > t.NumEntries {
+		return ""
+	}
+
+	entry := t.Entries[strref]
+	if !entry.Flags.SoundExists {
+		return ""
+	}
+
+	return entry.AudioName
+}
+
 func (t *TlkFile) FileName() string {
 	return t.File.Name()
 }

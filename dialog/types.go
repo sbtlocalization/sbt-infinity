@@ -62,6 +62,7 @@ type Node struct {
 type StateData struct {
 	TextRef    uint32
 	Text       string
+	Sound      string
 	HasTrigger bool
 	Trigger    string
 }
@@ -70,9 +71,11 @@ type TransitionData struct {
 	HasText         bool
 	TextRef         uint32
 	Text            string
+	Sound           string
 	HasJournalText  bool
 	JournalTextRef  uint32
 	JournalText     string
+	JournalSound    string
 	HasTrigger      bool
 	Trigger         string
 	HasAction       bool

@@ -291,8 +291,10 @@ func (b *DialogBuilder) loadStateWithTransitions(dialog *Dialog, origin NodeOrig
 	state := states[origin.Index]
 	trigger, triggerExists := state.GetTriggerText()
 	text := ""
+	sound := ""
 	if b.tlkFile != nil {
 		text = b.tlkFile.GetText(state.TextRef)
+		sound = b.tlkFile.GetSound(state.TextRef)
 	}
 	stateNode := &Node{
 		Type:     StateNodeType,
@@ -303,6 +305,7 @@ func (b *DialogBuilder) loadStateWithTransitions(dialog *Dialog, origin NodeOrig
 		State: &StateData{
 			TextRef:    state.TextRef,
 			Text:       text,
+			Sound:      sound,
 			HasTrigger: triggerExists,
 			Trigger:    trigger,
 		},
@@ -321,6 +324,16 @@ func (b *DialogBuilder) loadStateWithTransitions(dialog *Dialog, origin NodeOrig
 		journalTextRef, journalText, withJournalText := transition.GetJournalText(b.tlkFile)
 		action, withAction := transition.GetActionText()
 
+		var transitionSound, journalSound string
+		if b.tlkFile != nil {
+			if withText {
+				transitionSound = b.tlkFile.GetSound(textRef)
+			}
+			if withJournalText {
+				journalSound = b.tlkFile.GetSound(journalTextRef)
+			}
+		}
+
 		numChildren := 1
 		if transition.Flags.DialogEnd {
 			numChildren = 0
@@ -335,9 +348,11 @@ func (b *DialogBuilder) loadStateWithTransitions(dialog *Dialog, origin NodeOrig
 				HasText:         withText,
 				TextRef:         textRef,
 				Text:            text,
+				Sound:           transitionSound,
 				HasJournalText:  withJournalText,
 				JournalTextRef:  journalTextRef,
 				JournalText:     journalText,
+				JournalSound:    journalSound,
 				HasTrigger:      withTrigger,
 				Trigger:         trigger,
 				HasAction:       withAction,
