@@ -24,3 +24,6 @@ run *params: build
 
 pprof:
 	go tool pprof -http=:8080 cpu.pprof
+
+test:
+	go test -v ./...

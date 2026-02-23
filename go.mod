@@ -25,6 +25,8 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/icza/bitio v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/jfreymuth/oggvorbis v1.0.5 // indirect
+	github.com/jfreymuth/vorbis v1.0.2 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mewkiz/pkg v0.0.0-20250417130911-3f050ff8c56d // indirect
