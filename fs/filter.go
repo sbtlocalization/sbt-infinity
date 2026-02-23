@@ -16,7 +16,7 @@ type CompiledFilter struct {
 	filter glob.Glob
 	caseSensitive bool
 	removePrefix bool //Remove `data/` prefix from input string if pattern has no slashes
-	removeExtension bool //Remove `.bif` suffix from input string if pattern has no dots
+	removeExtension bool //Remove file extension from input string if pattern has no dots
 }
 
 func CompileFilter (pattern string, caseSensitive bool, removePrefix bool, removeExtension bool) *CompiledFilter {
@@ -50,11 +50,9 @@ func (f *CompiledFilter) Match(input string) bool {
 	if f.removePrefix {
 		input, _ = strings.CutPrefix(input, "data/")
 	}
-	bifExtension := ".bif"
-	if f.removeExtension && len(input) > len(bifExtension) {
-		extension := strings.ToLower(input[len(input) - len(bifExtension):])
-		if strings.HasSuffix(extension, bifExtension) {
-			input = input[:len(input) - len(bifExtension)]
+	if f.removeExtension {
+		if idx := strings.LastIndexByte(input, '.'); idx >= 0 {
+			input = input[:idx]
 		}
 	}
 	if !f.caseSensitive {
