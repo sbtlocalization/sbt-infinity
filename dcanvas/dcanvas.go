@@ -61,3 +61,23 @@ type Character struct {
 	Name     string `json:"name"`
 	Portrait string `json:"portrait,omitempty"`
 }
+
+// HasOverlappingNodes reports whether any two nodes in the canvas have
+// overlapping bounding boxes. Nodes that merely touch at an edge are
+// not considered overlapping (strict less-than comparison).
+func (c *Canvas) HasOverlappingNodes() bool {
+	nodes := c.Nodes
+	for i := 0; i < len(nodes); i++ {
+		a := nodes[i]
+		for j := i + 1; j < len(nodes); j++ {
+			b := nodes[j]
+			if a.X < b.X+b.Width &&
+				b.X < a.X+a.Width &&
+				a.Y < b.Y+b.Height &&
+				b.Y < a.Y+a.Height {
+				return true
+			}
+		}
+	}
+	return false
+}

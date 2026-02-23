@@ -47,6 +47,7 @@ Creates a visual representation of dialog structures.`,
 	cmd.Flags().String("sound-prefix", "sounds/", "Prefix for sound names in dCanvas output")
 	cmd.Flags().String("sound-suffix", ".wav", "Suffix for sound names in dCanvas output")
 	cmd.Flags().String("report", "", "Path to write a JSON report of all sounds and strrefs used in dialogs")
+	cmd.Flags().Bool("scan-overlaps", false, "Scan dCanvas output for overlapping nodes and include affected file paths in the report")
 
 	cmd.MarkFlagDirname("output")
 
@@ -64,6 +65,7 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 	soundPrefix, _ := cmd.Flags().GetString("sound-prefix")
 	soundSuffix, _ := cmd.Flags().GetString("sound-suffix")
 	reportPath, _ := cmd.Flags().GetString("report")
+	scanOverlaps, _ := cmd.Flags().GetBool("scan-overlaps")
 
 	fmtOpts := dialog.FormatOptions{
 		SoundPrefix: soundPrefix,
@@ -133,6 +135,7 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 
 	soundSet := make(map[string]struct{})
 	strrefSet := make(map[uint32]struct{})
+	overlapFiles := make([]string, 0)
 
 	for _, df := range dialogFiles {
 		if excludeMap[df] {
@@ -179,6 +182,12 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 			}
 			dialogName := strings.TrimSuffix(d.Id.DlgName, filepath.Ext(d.Id.DlgName))
 			fileName := filepath.Join(outputDir, fmt.Sprintf("%s-%d.d.canvas", dialogName, d.Id.Index))
+			if scanOverlaps && canvas.HasOverlappingNodes() {
+				overlapFiles = append(overlapFiles, fileName)
+				if verbose {
+					fmt.Printf("  warning: overlapping nodes detected in %s\n", fileName)
+				}
+			}
 			file, err := os.Create(fileName)
 			if verbose {
 				fmt.Printf("  exporting dialog %s to %s\n", d.Id, fileName)
@@ -242,12 +251,16 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 		}
 		slices.Sort(strrefs)
 
+		slices.Sort(overlapFiles)
+
 		report := struct {
-			Sounds  []string `json:"sounds"`
-			Strrefs []uint32 `json:"strrefs"`
+			Sounds      []string `json:"sounds"`
+			Strrefs     []uint32 `json:"strrefs"`
+			OverlapFiles []string `json:"overlap_files,omitempty"`
 		}{
-			Sounds:  sounds,
-			Strrefs: strrefs,
+			Sounds:      sounds,
+			Strrefs:     strrefs,
+			OverlapFiles: overlapFiles,
 		}
 
 		reportFile, err := os.Create(reportPath)
