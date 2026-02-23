@@ -25,7 +25,19 @@ var (
 	FinalTransitionColor = "1"
 )
 
-func (d *Dialog) ToDCanvas() *dcanvas.Canvas {
+type FormatOptions struct {
+	SoundPrefix string
+	SoundSuffix string
+}
+
+func formatSound(name, prefix, suffix string) string {
+	if name == "" {
+		return ""
+	}
+	return prefix + name + suffix
+}
+
+func (d *Dialog) ToDCanvas(opts FormatOptions) *dcanvas.Canvas {
 	c := &dcanvas.Canvas{
 		Version: "2.0",
 	}
@@ -50,7 +62,7 @@ func (d *Dialog) ToDCanvas() *dcanvas.Canvas {
 				}
 			}
 
-			cNode := newNode(d, dNode, dlgNameToColor)
+			cNode := newNode(d, dNode, dlgNameToColor, opts)
 			if cNode != nil {
 				c.Nodes = append(c.Nodes, cNode)
 				nodes[cNode.ID] = cNode
@@ -114,7 +126,7 @@ func (d *Dialog) ToDCanvas() *dcanvas.Canvas {
 	return c
 }
 
-func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string) *dcanvas.Node {
+func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string, opts FormatOptions) *dcanvas.Node {
 	cNode := &dcanvas.Node{
 		ID:     node.String(),
 		Type:   "text",
@@ -129,7 +141,7 @@ func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string) *dcanvas.N
 	case StateNodeType:
 		cNode.NodeRole = "state"
 		cNode.TextId = fmt.Sprintf("#%d", node.State.TextRef)
-		cNode.Sound = node.State.Sound
+		cNode.Sound = formatSound(node.State.Sound, opts.SoundPrefix, opts.SoundSuffix)
 		cNode.Trigger = strings.TrimSpace(node.State.Trigger)
 		cNode.Text = node.State.Text
 
@@ -148,12 +160,12 @@ func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string) *dcanvas.N
 		if node.Transition.HasText {
 			cNode.TextId = fmt.Sprintf("#%d", node.Transition.TextRef)
 			cNode.Text = node.Transition.Text
-			cNode.Sound = node.Transition.Sound
+			cNode.Sound = formatSound(node.Transition.Sound, opts.SoundPrefix, opts.SoundSuffix)
 		}
 		if node.Transition.HasJournalText {
 			cNode.JournalTextId = fmt.Sprintf("#%d", node.Transition.JournalTextRef)
 			cNode.JournalText = node.Transition.JournalText
-			cNode.JournalSound = node.Transition.JournalSound
+			cNode.JournalSound = formatSound(node.Transition.JournalSound, opts.SoundPrefix, opts.SoundSuffix)
 		}
 		cNode.Action = strings.TrimSpace(node.Transition.Action)
 

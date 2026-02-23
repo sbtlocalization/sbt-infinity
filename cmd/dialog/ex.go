@@ -6,11 +6,13 @@
 package dialog
 
 import (
+	"encoding/json"
 	"fmt"
 	"image"
 	"image/png"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/sbtlocalization/sbt-infinity/config"
@@ -42,6 +44,9 @@ Creates a visual representation of dialog structures.`,
 	cmd.Flags().BoolP("verbose", "v", false, "Enable verbose output")
 	cmd.Flags().BoolP("speakers", "s", true, "Load and export information about characters from CRE files")
 	cmd.Flags().StringSliceP("exclude", "x", []string{}, "Exclude specific dialog files (e.g., ABISHAB.DLG)")
+	cmd.Flags().String("sound-prefix", "sounds/", "Prefix for sound names in dCanvas output")
+	cmd.Flags().String("sound-suffix", ".wav", "Suffix for sound names in dCanvas output")
+	cmd.Flags().String("report", "", "Path to write a JSON report of all sounds and strrefs used in dialogs")
 
 	cmd.MarkFlagDirname("output")
 
@@ -56,6 +61,14 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 	verbose, _ := cmd.Flags().GetBool("verbose")
 	withCreatures, _ := cmd.Flags().GetBool("speakers")
 	excludeFiles, _ := cmd.Flags().GetStringSlice("exclude")
+	soundPrefix, _ := cmd.Flags().GetString("sound-prefix")
+	soundSuffix, _ := cmd.Flags().GetString("sound-suffix")
+	reportPath, _ := cmd.Flags().GetString("report")
+
+	fmtOpts := dialog.FormatOptions{
+		SoundPrefix: soundPrefix,
+		SoundSuffix: soundSuffix,
+	}
 
 	// Resolve the key path and parse other files using the common helper
 	keyPath, err := config.ResolveKeyPath(cmd)
@@ -118,6 +131,9 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	soundSet := make(map[string]struct{})
+	strrefSet := make(map[uint32]struct{})
+
 	for _, df := range dialogFiles {
 		if excludeMap[df] {
 			if verbose {
@@ -135,7 +151,32 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%s: loaded %d dialogs\n", df, len(dlg.Dialogs))
 		}
 		for _, d := range dlg.Dialogs {
-			canvas := d.ToDCanvas()
+			canvas := d.ToDCanvas(fmtOpts)
+
+			if reportPath != "" {
+				for _, node := range d.All() {
+					switch node.Type {
+					case dialog.StateNodeType:
+						strrefSet[node.State.TextRef] = struct{}{}
+						if node.State.Sound != "" {
+							soundSet[node.State.Sound] = struct{}{}
+						}
+					case dialog.TransitionNodeType:
+						if node.Transition.HasText {
+							strrefSet[node.Transition.TextRef] = struct{}{}
+							if node.Transition.Sound != "" {
+								soundSet[node.Transition.Sound] = struct{}{}
+							}
+						}
+						if node.Transition.HasJournalText {
+							strrefSet[node.Transition.JournalTextRef] = struct{}{}
+							if node.Transition.JournalSound != "" {
+								soundSet[node.Transition.JournalSound] = struct{}{}
+							}
+						}
+					}
+				}
+			}
 			dialogName := strings.TrimSuffix(d.Id.DlgName, filepath.Ext(d.Id.DlgName))
 			fileName := filepath.Join(outputDir, fmt.Sprintf("%s-%d.d.canvas", dialogName, d.Id.Index))
 			file, err := os.Create(fileName)
@@ -187,5 +228,44 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 			}
 		}
 	}
+
+	if reportPath != "" {
+		sounds := make([]string, 0, len(soundSet))
+		for s := range soundSet {
+			sounds = append(sounds, s)
+		}
+		slices.Sort(sounds)
+
+		strrefs := make([]uint32, 0, len(strrefSet))
+		for s := range strrefSet {
+			strrefs = append(strrefs, s)
+		}
+		slices.Sort(strrefs)
+
+		report := struct {
+			Sounds  []string `json:"sounds"`
+			Strrefs []uint32 `json:"strrefs"`
+		}{
+			Sounds:  sounds,
+			Strrefs: strrefs,
+		}
+
+		reportFile, err := os.Create(reportPath)
+		if err != nil {
+			return fmt.Errorf("error creating report file %s: %v", reportPath, err)
+		}
+		defer reportFile.Close()
+
+		enc := json.NewEncoder(reportFile)
+		enc.SetIndent("", "\t")
+		if err := enc.Encode(report); err != nil {
+			return fmt.Errorf("error writing report to %s: %v", reportPath, err)
+		}
+
+		if verbose {
+			fmt.Printf("Report written to %s: %d sounds, %d strrefs\n", reportPath, len(sounds), len(strrefs))
+		}
+	}
+
 	return nil
 }
