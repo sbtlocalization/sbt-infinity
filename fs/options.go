@@ -31,10 +31,12 @@ func WithBifFilter(pattern string) Option {
 	}
 }
 
-// WithContentFilter restricts the catalog to resources whose full name
-// matches the given glob pattern. Case insensitive. Empty pattern is a no-op.
+// WithContentFilter restricts the catalog to resources whose name matches
+// the given glob pattern. Case insensitive. If the pattern contains no dots,
+// the file extension is stripped before matching so bare names like "ABELA01"
+// match "ABELA01.WAV". Empty pattern is a no-op.
 func WithContentFilter(pattern string) Option {
 	return func(o *fsOptions) {
-		o.contentFilter = CompileFilter(pattern, false, false, false)
+		o.contentFilter = CompileFilter(pattern, false, false, true)
 	}
 }

@@ -24,8 +24,8 @@ func NewExportCommand() *cobra.Command {
 		Use:     "export [-o output-dir] [--format wav|flac] [flags]...",
 		Aliases: []string{"ex"},
 		Short:   "Export game audio files as WAV or FLAC",
-		Long: `Export audio resources from BIF files, converting WAVC/ACM format
-to standard WAV or FLAC. Resources are read directly from the game
+		Long: `Export audio resources from BIF files, converting WAVC/ACM/Ogg Vorbis
+format to standard WAV or FLAC. Resources are read directly from the game
 via chitin.key.`,
 		Example: `  Export all sound files as WAV:
 
@@ -107,6 +107,8 @@ func runExportSound(cmd *cobra.Command, args []string) {
 			pcm, channels, sampleRate, bitsPerSample, err = snd.DecodeWavc(data)
 		} else if snd.IsACM(data) {
 			pcm, channels, sampleRate, bitsPerSample, err = snd.DecodeAcm(data)
+		} else if snd.IsOgg(data) {
+			pcm, channels, sampleRate, bitsPerSample, err = snd.DecodeOgg(data)
 		} else {
 			if verbose {
 				fmt.Printf("Skipping %s (unknown format)\n", v.FullName)

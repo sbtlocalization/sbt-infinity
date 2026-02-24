@@ -13,7 +13,7 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "sound",
 		Short: "Work with game audio files",
-		Long:  `Utilities for converting between Infinity Engine audio formats (WAVC/ACM) and standard WAV/FLAC.`,
+		Long:  `Utilities for converting between Infinity Engine audio formats (WAVC/ACM/Ogg Vorbis) and standard WAV/FLAC.`,
 	}
 
 	cmd.PersistentFlags().StringP("filter", "f", "", "Wildcard for resourse name filtering. Case insensitive.")
