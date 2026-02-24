@@ -7,6 +7,7 @@ package dialog
 
 import (
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/nulab/autog"
@@ -228,8 +229,8 @@ func newEdge(node *Node) (*dcanvas.Edge, bool) {
 func newCharacter(name, portrait string) *dcanvas.Character {
 	ch := &dcanvas.Character{Name: name}
 	portrait = strings.TrimSuffix(portrait, ".BMP")
-	if portrait != "" {
-		ch.Portrait = portrait + ".png"
+	if portrait != "" && portrait != "None" {
+		ch.Portrait = path.Join("portraits", portrait + ".png")
 	}
 	return ch
 }
