@@ -60,6 +60,7 @@ type Edge struct {
 type Character struct {
 	Name     string `json:"name"`
 	Portrait string `json:"portrait,omitempty"`
+	Gender   string `json:"gender,omitempty"`
 }
 
 // HasOverlappingNodes reports whether any two nodes in the canvas have

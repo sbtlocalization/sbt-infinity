@@ -99,7 +99,7 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 
 	typesToLoad := []fs.FileType{fs.FileType_DLG}
 	if withCreatures {
-		typesToLoad = append(typesToLoad, fs.FileType_CRE, fs.FileType_BMP)
+		typesToLoad = append(typesToLoad, fs.FileType_CRE, fs.FileType_BMP, fs.FileType_IDS)
 	}
 	dlgFs := fs.NewInfinityFs(keyPath, fs.WithTypeFilter(typesToLoad...))
 

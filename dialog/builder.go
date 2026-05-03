@@ -105,6 +105,22 @@ func (b *DialogBuilder) LoadAllDialogs(tlkName string, dlgNames ...string) (*Dia
 	return collection, nil
 }
 
+func (b *DialogBuilder) loadIds(name string) *p.Ids {
+	file, err := b.infFsys.Open(name)
+	if err != nil {
+		b.Printf("warning: unable to open %s: %v\n", name, err)
+		return nil
+	}
+	defer file.Close()
+
+	ids, err := p.ParseIds(file)
+	if err != nil {
+		b.Printf("warning: unable to parse %s: %v\n", name, err)
+		return nil
+	}
+	return ids
+}
+
 func (b *DialogBuilder) loadCreatures() error {
 	if len(b.creatures) > 0 {
 		// already loaded
@@ -114,6 +130,8 @@ func (b *DialogBuilder) loadCreatures() error {
 	if b.tlkFile == nil {
 		return fmt.Errorf("TLK file must be loaded before loading creatures")
 	}
+
+	genderIds := b.loadIds("GENDER.IDS")
 
 	dir, err := b.infFsys.Open("CRE")
 	if err != nil {
@@ -150,8 +168,14 @@ func (b *DialogBuilder) loadCreatures() error {
 			ShortName:   shortName,
 			LongNameId:  cre.LongNameRef,
 			LongName:    longName,
-			Portrait:    cre.Body.Header.SmallPortrait + ".BMP",
-			Dialog:      cre.Body.Header.Dialog,
+		}
+
+		if cre.Version == "V1.0" || cre.Version == "V1.1" {
+			creature.Portrait = cre.Body.Header.SmallPortrait + ".BMP"
+			creature.Dialog = cre.Body.Header.Dialog
+			if genderIds != nil {
+				creature.Sex = genderIds.Entries[int32(cre.Body.Header.Sex)]
+			}
 		}
 
 		b.Printf("Loading character: %s (dialog: %s)\n", longName, cre.Body.Header.Dialog)

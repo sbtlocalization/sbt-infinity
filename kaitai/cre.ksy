@@ -31,6 +31,7 @@ seq:
       switch-on: version
       cases:
         '"V1.0"': body_v1
+        '"V1.1"': body_v1
 enums:
   spell_type:
     0: priest
@@ -235,7 +236,11 @@ types:
             #   max: 100
           - id: detect_illusion
             type: u1
+            if: _root.version == "V1.0"
             doc: Minimum value – 0
+          - id: proficiencies_unspent
+            type: u1
+            if: _root.version == "V1.1"
           - id: set_traps
             type: u1
           - id: lore
@@ -272,40 +277,12 @@ types:
             #   max: 100
           - id: luck
             type: u1
-          - id: large_swords_proficiency
-            type: u1
-          - id: small_swords_proficiency
-            type: u1
-          - id: bows_proficiency
-            type: u1
-          - id: spears_proficiency
-            type: u1
-          - id: blunt_proficiency
-            type: u1
-          - id: spiked_proficiency
-            type: u1
-          - id: axe_proficiency
-            type: u1
-          - id: missile_proficiency
-            type: u1
-          - id: reserved_proficiency
-            type: u1
-            repeat: expr
-            repeat-expr: 5
-          - id: unspent_proficiencies
-            type: u1
-          - id: num_available_inventory_slots
-            type: u1
-          - id: nightmare_mode_modifiers
-            type: u1
-          - id: translucency
-            type: u1
-          - id: reputation_gain_loss_when_killed_or_murder_variable_increment
-            type: u1
-          - id: reputation_gain_loss_when_joining_party
-            type: u1
-          - id: reputation_gain_loss_when_leaving_party
-            type: u1
+          - id: proficiencies
+            type:
+              switch-on: _root.version
+              cases:
+                '"V1.0"': proficiencies_v1_0
+                '"V1.1"': proficiencies_v1_1
           - id: turn_undead_level
             type: u1
           - id: tracking_skill
@@ -381,7 +358,9 @@ types:
             doc: See `RACE.IDS`
           - id: morale_recovery_time
             type: u2
-          - type: u4
+          - id: kit_or_deity
+            type: kit_or_deity
+            size: 4
           - id: override_script
             type: strz
             size: 8
@@ -402,6 +381,9 @@ types:
             type: strz
             size: 8
             encoding: ASCII
+          - id: pst_extension
+            type: pst_extension_block
+            if: _root.version == "V1.1"
           - id: enemy_ally
             type: u1
             doc: See `EA.IDS`
@@ -599,6 +581,143 @@ types:
                 type: b1
               - id: confused
                 type: b1
+          proficiencies_v1_0:
+            seq:
+              - id: large_swords_proficiency
+                type: u1
+              - id: small_swords_proficiency
+                type: u1
+              - id: bows_proficiency
+                type: u1
+              - id: spears_proficiency
+                type: u1
+              - id: blunt_proficiency
+                type: u1
+              - id: spiked_proficiency
+                type: u1
+              - id: axe_proficiency
+                type: u1
+              - id: missile_proficiency
+                type: u1
+              - id: reserved_proficiency
+                type: u1
+                repeat: expr
+                repeat-expr: 5
+              - id: unspent_proficiencies
+                type: u1
+              - id: num_available_inventory_slots
+                type: u1
+              - id: nightmare_mode_modifiers
+                type: u1
+              - id: translucency
+                type: u1
+              - id: reputation_gain_loss_when_killed_or_murder_variable_increment
+                type: u1
+              - id: reputation_gain_loss_when_joining_party
+                type: u1
+              - id: reputation_gain_loss_when_leaving_party
+                type: u1
+          proficiencies_v1_1:
+            seq:
+              - id: fist_proficiency
+                type: u1
+              - id: edged_weapon_proficiency
+                type: u1
+              - id: hammer_proficiency
+                type: u1
+              - id: axe_proficiency
+                type: u1
+              - id: club_proficiency
+                type: u1
+              - id: bow_proficiency
+                type: u1
+              - id: reserved
+                size: 14
+          kit_or_deity:
+            doc: |
+              In BG1/BG2 this is a 4-byte kit value (KIT.IDS).
+              In PST/PSTEE this is split into deity (DEITY.IDS) and mage type (MAGESPEC.IDS).
+            instances:
+              bg_kit:
+                pos: 0
+                type: u4
+                doc: See KIT.IDS
+              pst_deity:
+                pos: 0
+                type: u2
+                doc: See DEITY.IDS
+              pst_mage_type:
+                pos: 2
+                type: u2
+                doc: See MAGESPEC.IDS
+          pst_extension_block:
+            doc: |
+              PST-specific extended section. 164 bytes.
+              Only present in V1.1 (and V1.2) CRE files.
+            seq:
+              - id: reserved_1
+                size: 24
+              - id: reserved_2
+                size: 4
+              - id: reserved_3
+                size: 8
+              - id: ofs_overlays
+                type: u4
+              - id: overlays_size
+                type: u4
+              - id: xp_second_class
+                type: u4
+              - id: xp_third_class
+                type: u4
+              - id: internal_values
+                type: u2
+                repeat: expr
+                repeat-expr: 10
+                doc: See INTERNAL.IDS
+              - id: good_increment
+                type: u1
+              - id: law_increment
+                type: u1
+              - id: lady_increment
+                type: u1
+              - id: murder_increment
+                type: u1
+              - id: character_type
+                type: strz
+                size: 32
+                encoding: ASCII
+              - id: dialog_activation_radius
+                type: u1
+              - id: collision_radius
+                type: u1
+              - id: reserved_4
+                size: 1
+              - id: num_colors
+                type: u1
+              - id: attributes
+                type: u4
+                doc: PST attribute flags
+              - id: color_values
+                type: u2
+                repeat: expr
+                repeat-expr: 7
+              - id: reserved_5
+                size: 3
+              - id: color_placements
+                type: u1
+                repeat: expr
+                repeat-expr: 7
+              - id: reserved_6
+                size: 21
+              - id: species
+                type: u1
+                doc: See RACE.IDS
+              - id: team
+                type: u1
+                doc: See TEAM.IDS
+              - id: faction
+                type: u1
+                doc: See FACTION.IDS
       known_spell:
         seq:
           - id: res_name

@@ -41,6 +41,8 @@ func formatSound(name, prefix, suffix string) string {
 func (d *Dialog) ToDCanvas(opts FormatOptions) *dcanvas.Canvas {
 	c := &dcanvas.Canvas{
 		Version: "2.0",
+		Nodes:   []*dcanvas.Node{},
+		Edges:   []*dcanvas.Edge{},
 	}
 
 	// Create color mapping for unique DlgName values (built on-demand)
@@ -147,7 +149,7 @@ func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string, opts Forma
 		cNode.Text = node.State.Text
 
 		if cre, ok := d.AllCreatures[node.Origin.DlgName]; ok {
-			cNode.Character = newCharacter(cre.LongName, cre.Portrait)
+			cNode.Character = newCharacter(cre.LongName, cre.Portrait, cre.Sex)
 		}
 
 		if color, exists := dlgNameToColor[node.Origin.DlgName]; exists {
@@ -171,10 +173,10 @@ func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string, opts Forma
 		cNode.Action = strings.TrimSpace(node.Transition.Action)
 
 		if node.Transition.IsDialogEnd {
-			cNode.Character = newCharacter("End dialog", "")
+			cNode.Character = newCharacter("End dialog", "", "")
 			cNode.Color = FinalTransitionColor
 		} else {
-			cNode.Character = newCharacter("Answer", "")
+			cNode.Character = newCharacter("Answer", "", "")
 			cNode.Color = TransitionColor
 		}
 
@@ -226,11 +228,11 @@ func newEdge(node *Node) (*dcanvas.Edge, bool) {
 	return cEdge, loop
 }
 
-func newCharacter(name, portrait string) *dcanvas.Character {
-	ch := &dcanvas.Character{Name: name}
+func newCharacter(name, portrait, gender string) *dcanvas.Character {
+	ch := &dcanvas.Character{Name: name, Gender: gender}
 	portrait = strings.TrimSuffix(portrait, ".BMP")
 	if portrait != "" && portrait != "None" {
-		ch.Portrait = path.Join("portraits", portrait + ".png")
+		ch.Portrait = path.Join("portraits", portrait+".png")
 	}
 	return ch
 }

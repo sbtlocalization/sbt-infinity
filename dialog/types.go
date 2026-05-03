@@ -142,4 +142,5 @@ type Creature struct {
 	LongName    string
 	Portrait    string
 	Dialog      string
+	Sex         string
 }
