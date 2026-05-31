@@ -48,7 +48,7 @@ in the specified output directory.`,
 	cmd.Flags().StringP("output", "o", "", "output `directory` path (writes dialog.tlk and dialogf.tlk)")
 	cmd.Flags().StringP("separator", "s", " // ", "separator for male/female text variants")
 	cmd.Flags().Uint16("lang-code", 0, "language code for TLK header")
-	cmd.Flags().Uint32P("entries", "n", 0, "total `number` of entries in output TLK (0 to N inclusive); if not set, all entries are imported")
+	cmd.Flags().Uint32P("max-entry", "n", 0, "import entries from 0 to `N`; if not set, all entries are imported")
 	cmd.Flags().BoolP("verbose", "v", false, "enable verbose output")
 
 	cmd.MarkFlagRequired("input")
@@ -64,7 +64,7 @@ func runImport(cmd *cobra.Command, args []string) error {
 	outputPath, _ := cmd.Flags().GetString("output")
 	separator, _ := cmd.Flags().GetString("separator")
 	langCode, _ := cmd.Flags().GetUint16("lang-code")
-	entries, _ := cmd.Flags().GetUint32("entries")
+	tillEntry, _ := cmd.Flags().GetUint32("max-entry")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 
 	if !strings.HasSuffix(strings.ToLower(inputPath), ".xlsx") {
@@ -93,8 +93,8 @@ func runImport(cmd *cobra.Command, args []string) error {
 	}
 
 	var maxEntry *uint32
-	if entries != 0 {
-		maxEntry = &entries
+	if tillEntry != 0 {
+		maxEntry = &tillEntry
 	}
 
 	maleEntries, femaleEntries, hasFemale := buildTlkEntries(rows, separator, maxEntry)
