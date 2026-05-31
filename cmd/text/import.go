@@ -48,6 +48,7 @@ in the specified output directory.`,
 	cmd.Flags().StringP("output", "o", "", "output `directory` path (writes dialog.tlk and dialogf.tlk)")
 	cmd.Flags().StringP("separator", "s", " // ", "separator for male/female text variants")
 	cmd.Flags().Uint16("lang-code", 0, "language code for TLK header")
+	cmd.Flags().Uint32P("entries", "n", 0, "total `number` of entries in output TLK (0 to N inclusive); if not set, all entries are imported")
 	cmd.Flags().BoolP("verbose", "v", false, "enable verbose output")
 
 	cmd.MarkFlagRequired("input")
@@ -63,6 +64,7 @@ func runImport(cmd *cobra.Command, args []string) error {
 	outputPath, _ := cmd.Flags().GetString("output")
 	separator, _ := cmd.Flags().GetString("separator")
 	langCode, _ := cmd.Flags().GetUint16("lang-code")
+	entries, _ := cmd.Flags().GetUint32("entries")
 	verbose, _ := cmd.Flags().GetBool("verbose")
 
 	if !strings.HasSuffix(strings.ToLower(inputPath), ".xlsx") {
@@ -90,7 +92,12 @@ func runImport(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Found %d entries\n", len(rows))
 	}
 
-	maleEntries, femaleEntries, hasFemale := buildTlkEntries(rows, separator)
+	var maxEntry *uint32
+	if entries != 0 {
+		maxEntry = &entries
+	}
+
+	maleEntries, femaleEntries, hasFemale := buildTlkEntries(rows, separator, maxEntry)
 
 	opts := text.TlkWriteOptions{Lang: langCode}
 
@@ -241,10 +248,14 @@ func parseXlsxForTlk(path string) ([]xlsxTlkRow, error) {
 
 // Converts XLSX rows to TLK entries, filling gaps with empty entries.
 // Returns (maleEntries, femaleEntries, hasFemaleVariants)
-func buildTlkEntries(rows []xlsxTlkRow, separator string) ([]text.TlkWriteEntry, []text.TlkWriteEntry, bool) {
+func buildTlkEntries(rows []xlsxTlkRow, separator string, maxEntry *uint32) ([]text.TlkWriteEntry, []text.TlkWriteEntry, bool) {
 	maxKey := lo.MaxBy(rows, func(a, b xlsxTlkRow) bool {
 		return a.Key > b.Key
 	}).Key
+
+	if maxEntry != nil {
+		maxKey = *maxEntry
+	}
 
 	// Initialize arrays with empty entries
 	maleEntries := make([]text.TlkWriteEntry, maxKey+1)
@@ -258,6 +269,9 @@ func buildTlkEntries(rows []xlsxTlkRow, separator string) ([]text.TlkWriteEntry,
 
 	// Fill in actual data
 	for _, row := range rows {
+		if row.Key > maxKey {
+			break
+		}
 		maleText, femaleText, hasSplit := utils.SplitMaleFemaleText(row.Text, separator)
 		if hasSplit {
 			hasFemale = true
