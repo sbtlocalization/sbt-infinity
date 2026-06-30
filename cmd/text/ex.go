@@ -241,6 +241,21 @@ func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl str
 		return fmt.Errorf("unable to read dialog directory names: %v", err)
 	}
 
+	var displayFamilyActions p.DisplayFamilyActions
+	action, err := infFs.Open("ACTION.IDS")
+	if err != nil {
+		fmt.Println("warning: unable to open ACTION.IDS:", err)
+	} else {
+		ids, err := p.ParseIds(action)
+		action.Close()
+		if err != nil {
+			fmt.Println("warning: unable to parse ACTION.IDS:", err)
+		} else if displayFamilyActions, err = p.BuildDisplayFamilyActions(ids); err != nil {
+			fmt.Println("warning: unable to build display family from ACTION.IDS:", err)
+			displayFamilyActions = nil
+		}
+	}
+
 	total := len(dialogFiles)
 
 	if verbose {
@@ -253,7 +268,7 @@ func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl str
 			return fmt.Errorf("error loading dialogs: %v", err)
 		}
 
-		collection.LoadContextFromDialogs(baseUrl, dc)
+		collection.LoadContextFromDialogs(baseUrl, dc, displayFamilyActions)
 	}
 
 	if verbose {

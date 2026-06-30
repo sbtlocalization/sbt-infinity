@@ -34,6 +34,7 @@ const (
 	ContextCreature
 	ContextCreatureSound
 	ContextDialog
+	ContextDialogScript
 	ContextEffect
 	ContextItem
 	ContextProjectile
@@ -58,6 +59,7 @@ const (
 	lb_creature            = "creature"
 	lb_cynicismQuote       = "cynicism quote"
 	lb_dialog              = "dialog"
+	lb_dialog_action       = "dialog action"
 	lb_dialog_answer       = "answer"
 	lb_dialog_journal      = "journal"
 	lb_dialog_question     = "question"
@@ -152,7 +154,7 @@ func (c *TextCollection) AddLabel(id uint32, label string) {
 	}
 }
 
-func (c *TextCollection) LoadContextFromDialogs(baseUrl string, dlg *dialog.DialogCollection) {
+func (c *TextCollection) LoadContextFromDialogs(baseUrl string, dlg *dialog.DialogCollection, displayFamilyActions p.DisplayFamilyActions) {
 	const labelFormat = "dialog %d @ %s"
 
 	for _, d := range dlg.Dialogs {
@@ -186,10 +188,42 @@ func (c *TextCollection) LoadContextFromDialogs(baseUrl string, dlg *dialog.Dial
 					c.AddLabel(ref, d.Id.DlgName)
 					c.AddLabel(ref, fmt.Sprintf(labelFormat, d.Id.Index, d.Id.DlgName))
 				}
+
+				if node.Transition.HasAction {
+					c.addDialogScriptContext(d, url, node.Transition.Action, displayFamilyActions)
+				}
 			default:
 				// ignore errors and loops
 			}
 		}
+	}
+}
+
+func (c *TextCollection) addDialogScriptContext(d *dialog.Dialog, url, action string, displayFamilyActions p.DisplayFamilyActions) {
+	if displayFamilyActions == nil {
+		return
+	}
+
+	for _, call := range p.ParseActionCalls(action) {
+		sig, ok := displayFamilyActions[call.Name]
+		if !ok {
+			continue
+		}
+
+		if sig.StrRefPositional < 0 || sig.StrRefPositional >= len(call.Args) {
+			continue
+		}
+
+		ref, err := strconv.ParseUint(strings.TrimSpace(call.Args[sig.StrRefPositional]), 10, 32)
+		if err != nil {
+			continue
+		}
+
+		strref := uint32(ref)
+		value := fmt.Sprintf("Action: %s @ %s", strings.TrimSpace(action), url)
+		c.AddContext(strref, ContextDialogScript, d.Id.String(), value)
+		c.AddLabel(strref, lb_dialog_action)
+		c.AddLabel(strref, d.Id.DlgName)
 	}
 }
 
@@ -784,7 +818,6 @@ func (c *TextCollection) LoadContextFromCharSnd2DA(_ string, twoda *p.TwoDA, ids
 				slotName = sndSlot
 			}
 		}
-
 
 		row, ok := twoda.Row(rowKey)
 		if !ok {

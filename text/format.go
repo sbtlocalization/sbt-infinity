@@ -136,6 +136,12 @@ func joinContext(entry *TextEntry) string {
 		parts = append(parts, "DIALOGS: ----------\n"+strings.Join(dialogs, "\n"))
 	}
 
+	if dlgScriptContexts, ok := contexts[ContextDialogScript]; ok && len(dlgScriptContexts) > 0 {
+		scripts := lo.MapToSlice(dlgScriptContexts, toList)
+		slices.Sort(scripts)
+		parts = append(parts, "DIALOG SCRIPTS: ----------\n"+strings.Join(scripts, "\n"))
+	}
+
 	if uiContexts, ok := contexts[ContextUI]; ok && len(uiContexts) > 0 {
 		screens := lo.MapToSlice(uiContexts, toList)
 		slices.Sort(screens)
