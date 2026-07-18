@@ -102,6 +102,30 @@ func TestLoadContextFromDialogs_DialogScript(t *testing.T) {
 	}
 }
 
+func TestLoadContextFromDialogs_DialogScriptOnlyMatchingCall(t *testing.T) {
+	c := newTestCollection(14381, 14382)
+	dlg := newActionTransitionDialog("SetGlobal(\"v\",\"GLOBAL\",1)\nDisplayStringHead(Myself,14381)\nDisplayStringHead(Player1,14382)")
+	family := buildTestDisplayFamilyActions(t)
+
+	c.LoadContextFromDialogs("https://example.com", dlg, family)
+
+	for strref, call := range map[uint32]string{
+		14381: "DisplayStringHead(Myself,14381)",
+		14382: "DisplayStringHead(Player1,14382)",
+	} {
+		values := c.Entries[strref].Context[ContextDialogScript]["TEST[0]"]
+		if len(values) != 1 {
+			t.Fatalf("expected one context value for %d, got %v", strref, values)
+		}
+		if !strings.HasPrefix(values[0], "Action: "+call+" @ ") {
+			t.Errorf("unexpected context value for %d: %q", strref, values[0])
+		}
+		if strings.Contains(values[0], "SetGlobal") {
+			t.Errorf("context value for %d leaks sibling call: %q", strref, values[0])
+		}
+	}
+}
+
 func TestLoadContextFromDialogs_NonIntegerStrRefSkipped(t *testing.T) {
 	c := newTestCollection(14381)
 	// SetGlobal is not display-family; nothing should be linked.

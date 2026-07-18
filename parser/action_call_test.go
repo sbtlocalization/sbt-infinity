@@ -20,36 +20,36 @@ func TestParseActionCalls(t *testing.T) {
 			name: "single display action",
 			text: "DisplayStringHead(Myself,14381)",
 			want: []ActionCall{
-				{Name: "DisplayStringHead", Args: []string{"Myself", "14381"}},
+				{Name: "DisplayStringHead", Args: []string{"Myself", "14381"}, Raw: "DisplayStringHead(Myself,14381)"},
 			},
 		},
 		{
 			name: "quoted string with comma is not split",
 			text: `SetGlobal("v","GLOBAL",1)`,
 			want: []ActionCall{
-				{Name: "SetGlobal", Args: []string{`"v"`, `"GLOBAL"`, "1"}},
+				{Name: "SetGlobal", Args: []string{`"v"`, `"GLOBAL"`, "1"}, Raw: `SetGlobal("v","GLOBAL",1)`},
 			},
 		},
 		{
 			name: "nested parens in object spec",
 			text: "ActionOverride(Player1,DisplayStringHead(Myself,14381))",
 			want: []ActionCall{
-				{Name: "ActionOverride", Args: []string{"Player1", "DisplayStringHead(Myself,14381)"}},
+				{Name: "ActionOverride", Args: []string{"Player1", "DisplayStringHead(Myself,14381)"}, Raw: "ActionOverride(Player1,DisplayStringHead(Myself,14381))"},
 			},
 		},
 		{
 			name: "multiple statements one per line",
 			text: "DisplayStringHead(Myself,14381)\nSetGlobal(\"v\",\"GLOBAL\",1)",
 			want: []ActionCall{
-				{Name: "DisplayStringHead", Args: []string{"Myself", "14381"}},
-				{Name: "SetGlobal", Args: []string{`"v"`, `"GLOBAL"`, "1"}},
+				{Name: "DisplayStringHead", Args: []string{"Myself", "14381"}, Raw: "DisplayStringHead(Myself,14381)"},
+				{Name: "SetGlobal", Args: []string{`"v"`, `"GLOBAL"`, "1"}, Raw: `SetGlobal("v","GLOBAL",1)`},
 			},
 		},
 		{
 			name: "no arguments",
 			text: "EndDialog()",
 			want: []ActionCall{
-				{Name: "EndDialog", Args: nil},
+				{Name: "EndDialog", Args: nil, Raw: "EndDialog()"},
 			},
 		},
 		{

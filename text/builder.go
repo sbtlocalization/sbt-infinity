@@ -222,7 +222,7 @@ func (c *TextCollection) addDialogScriptContext(d *dialog.Dialog, url, action st
 		}
 
 		strref := uint32(ref)
-		value := fmt.Sprintf("Action: %s @ %s", strings.TrimSpace(action), url)
+		value := fmt.Sprintf("Action: %s @ %s", call.Raw, url)
 		c.AddContext(strref, ContextDialogScript, d.Id.String(), value)
 		c.AddLabel(strref, lb_dialog_action)
 		c.AddLabel(strref, d.Id.DlgName)

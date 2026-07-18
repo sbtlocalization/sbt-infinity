@@ -12,6 +12,7 @@ import "strings"
 type ActionCall struct {
 	Name string
 	Args []string
+	Raw  string
 }
 
 // ParseActionCalls splits a block of source-form action text into its
@@ -79,7 +80,7 @@ func parseActionCall(stmt string) (ActionCall, bool) {
 
 	argsStr := stmt[open+1 : len(stmt)-1]
 
-	return ActionCall{Name: name, Args: splitArgs(argsStr)}, true
+	return ActionCall{Name: name, Args: splitArgs(argsStr), Raw: stmt}, true
 }
 
 // splitArgs splits an argument list at the top level only, respecting nested
