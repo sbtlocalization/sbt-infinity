@@ -38,6 +38,7 @@ const (
 	ContextEffect
 	ContextItem
 	ContextProjectile
+	ContextScript
 	ContextSubtitles
 	ContextSpell
 	ContextStore
@@ -67,6 +68,7 @@ const (
 	lb_item                = "item"
 	lb_projectile          = "projectile"
 	lb_ranger_tracking     = "tracking.2da"
+	lb_script_action       = "script action"
 	lb_spell               = "spell"
 	lb_store               = "store"
 	lb_store_drink         = "store drink"
@@ -227,6 +229,14 @@ func (c *TextCollection) addDialogScriptContext(d *dialog.Dialog, url, action st
 	}
 }
 
+func (c *TextCollection) LoadContextFromCompiledScript(scriptFilename string, calls []p.ScriptCall, usage ScriptUsageIndex) {
+	key := usage.AnnotateScriptKey(scriptFilename)
+	for _, call := range calls {
+		c.AddContext(call.StrRef, ContextScript, key, call.Call)
+		c.AddLabel(call.StrRef, lb_script_action)
+	}
+}
+
 func (c *TextCollection) LoadContextFromUiScreens(uiFilename string, chu *p.Chu) error {
 	windows, err := chu.Windows()
 	if err != nil {
@@ -262,7 +272,7 @@ func (c *TextCollection) LoadContextFromUiScreens(uiFilename string, chu *p.Chu)
 	return nil
 }
 
-func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre, ids *p.Ids) error {
+func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre, ids *p.Ids, usage ScriptUsageIndex) error {
 	longName := cre.LongNameRef
 	if longName != 0 && longName != 0xFFFFFFFF {
 		c.AddLabel(longName, lb_creature)
@@ -278,6 +288,13 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 	if cre.Body == nil {
 		return fmt.Errorf("unsupported CRE version %q", cre.Version)
 	}
+
+	header := cre.Body.Header
+	usage.Add(header.OverrideScript, "override", creFilename)
+	usage.Add(header.ClassScript, "class", creFilename)
+	usage.Add(header.RaceScript, "race", creFilename)
+	usage.Add(header.GeneralScript, "general", creFilename)
+	usage.Add(header.DefaultScript, "default", creFilename)
 
 	soundRefs := cre.Body.Header.StrRefs
 
@@ -365,9 +382,29 @@ func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp
 	return nil
 }
 
-func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are) error {
+func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usage ScriptUsageIndex) error {
+	areaSite := resourceName(areFilename)
+	usage.Add(are.AreaScriptBcs, "area", areaSite)
+
+	if actors, err := are.Actors(); err == nil {
+		for _, actor := range actors {
+			for _, script := range []string{
+				actor.OverrideScriptBcs,
+				actor.GeneralScriptBcs,
+				actor.ClassScriptBcs,
+				actor.RaceScriptBcs,
+				actor.DefaultScriptBcs,
+				actor.SpecificScriptBcs,
+			} {
+				usage.Add(script, "actor", areaSite)
+			}
+		}
+	}
+
 	if regions, err := are.Regions(); err == nil {
 		for i, region := range regions {
+			usage.Add(region.ScriptBcs, regionSlotName(region.RegionType), areaSite)
+
 			if infoRef := region.InfoRef; infoRef != 0 && infoRef != 0xFFFFFFFF {
 				c.AddLabel(infoRef, lb_area_trigger)
 				c.AddContext(infoRef, ContextArea, "Info point on the map", fmt.Sprintf("%s → trigger %d", areFilename, i))
@@ -383,6 +420,8 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are) err
 
 	if containers, err := are.Containers(); err == nil {
 		for i, container := range containers {
+			usage.Add(container.TrapScriptBcs, "container", areaSite)
+
 			if lockpickRef := container.LockpickRef; lockpickRef != 0 && lockpickRef != 0xFFFFFFFF {
 				c.AddLabel(lockpickRef, lb_area_container)
 				c.AddContext(lockpickRef, ContextArea, "Container's lockpicking message", fmt.Sprintf("%s → container %d", areFilename, i))
@@ -392,6 +431,8 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are) err
 
 	if doors, err := are.Doors(); err == nil {
 		for i, door := range doors {
+			usage.Add(door.ScriptBcs, "door", areaSite)
+
 			if unlockMessageRef := door.UnlockMessageRef; unlockMessageRef != 0 && unlockMessageRef != 0xFFFFFFFF {
 				c.AddLabel(unlockMessageRef, lb_area_door)
 				c.AddContext(unlockMessageRef, ContextArea, "Unlock message", fmt.Sprintf("%s → door %d", areFilename, i))

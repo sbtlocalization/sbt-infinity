@@ -13,52 +13,31 @@ import (
 	"strings"
 )
 
-// ScriptCall is one decoded display-family action found in a compiled script
-// (a standalone .BCS resource): the StrRef it references together with the
-// rendered source-form call, e.g. {14381, "DisplayString(LastTrigger,14381)"}.
 type ScriptCall struct {
 	StrRef uint32
 	Call   string
 }
 
-// bcsObject is one parsed OB object specification from a compiled script. Only
-// the fields needed to render a pragmatic decoded call are retained.
 type bcsObject struct {
-	// ea..alignment are the enumerated specification fields (EA.IDS,
-	// GENERAL.IDS, …). For a plain object reference they are all zero.
+	// enumerated specification fields (EA.IDS, GENERAL.IDS, …); all zero for
+	// a plain object reference
 	ea, general, race, class, specific, gender, alignment int32
-	// identifiers is the OBJECT.IDS value (e.g. LastTrigger, Myself).
-	identifiers int32
-	// name is the object name string, shown verbatim when present.
-	name string
+	identifiers                                           int32 // OBJECT.IDS value (e.g. LastTrigger, Myself)
+	name                                                  string
 }
 
-// bcsAction is one parsed AC action block: its numeric ACTION.IDS id, the
-// three object slots (o1 reserved for an ActionOverride target, o2 the normal
-// single-object slot, o3 a secondary object) and the integer slots in their
-// physical layout int0, point(x,y), int1, int2.
 type bcsAction struct {
 	id   int32
-	o1   bcsObject
-	o2   bcsObject
+	o1   bcsObject // reserved for an ActionOverride target
+	o2   bcsObject // the normal single-object slot
 	o3   bcsObject
 	ints [5]int32 // int0, x, y, int1, int2
 }
 
-// intSlotField maps a logical integer slot (ActionSignature.StrRefIntSlot) to
-// the physical field index within bcsAction.ints. The point coordinates
-// occupy physical fields 1 and 2, so the logical integer slots land on 0, 3
-// and 4.
+// The point coordinates occupy physical fields 1 and 2 of bcsAction.ints, so
+// the logical integer slots land on 0, 3 and 4.
 var intSlotField = map[int]int{0: 0, 1: 3, 2: 4}
 
-// DecodeCompiledScript parses the textual source of a compiled script (.BCS)
-// and returns one ScriptCall for every display-family action it contains.
-//
-// actionIds is the parsed ACTION.IDS, used to resolve a block's numeric action
-// id to its name; family selects the display-family actions and supplies the
-// integer slot that carries the StrRef; objectIds is the parsed OBJECT.IDS,
-// used to resolve object identifiers such as LastTrigger or Myself.
-//
 // A malformed action or block is skipped rather than aborting the parse; an
 // error is returned only when the input cannot be read at all.
 func DecodeCompiledScript(r io.Reader, actionIds *Ids, family DisplayFamilyActions, objectIds *Ids) ([]ScriptCall, error) {
@@ -76,8 +55,6 @@ func DecodeCompiledScript(r io.Reader, actionIds *Ids, family DisplayFamilyActio
 	return p.parseScript(), nil
 }
 
-// bcsParser walks a flat token stream of a compiled script. Markers and the
-// numeric/string fields between them are all individual tokens.
 type bcsParser struct {
 	tokens []string
 	pos    int
@@ -89,11 +66,9 @@ type bcsParser struct {
 	calls []ScriptCall
 }
 
-// tokenizeBcs splits the BCS source into a flat token stream. Two-letter block
-// markers are emitted as their own tokens even when a numeric id is glued to
-// the following marker (e.g. "100AC" → "100", "AC"); quoted strings are kept
-// as single tokens (with the surrounding quotes) so empty strings and embedded
-// spaces survive.
+// Block markers glued to a preceding number are split apart ("100AC" →
+// "100", "AC"); quoted strings stay single tokens so empty strings and
+// embedded spaces survive.
 func tokenizeBcs(r io.Reader) ([]string, error) {
 	var sb strings.Builder
 	scanner := bufio.NewScanner(r)
@@ -118,7 +93,6 @@ func splitBcsTokens(s string) []string {
 		ch := s[i]
 		switch {
 		case ch == '"':
-			// Consume a quoted string as a single token.
 			end := i + 1
 			for end < len(s) && s[end] != '"' {
 				end++
@@ -131,9 +105,6 @@ func splitBcsTokens(s string) []string {
 		case isBcsSpace(ch):
 			i++
 		default:
-			// Consume a run of non-space, non-quote characters, then split off
-			// any trailing two-letter block marker glued to a number
-			// (e.g. "100AC" → "100", "AC").
 			end := i
 			for end < len(s) && !isBcsSpace(s[end]) && s[end] != '"' {
 				end++
@@ -149,9 +120,8 @@ func isBcsSpace(ch byte) bool {
 	return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'
 }
 
-// splitGluedMarker breaks a run like "100AC" into "100", "AC" while leaving a
-// bare marker or a bare number untouched. It splits off at most one trailing
-// marker (the format never glues more than one).
+// At most one trailing marker is split off — the format never glues more
+// than one.
 func splitGluedMarker(run string) []string {
 	for _, m := range bcsMarkers {
 		if run == m {
@@ -199,36 +169,29 @@ func (p *bcsParser) next() (string, bool) {
 	return tok, ok
 }
 
-// parseScript walks the whole token stream. The block structure is shallow:
-// the only thing that contributes script context is an AC action block. An
-// action block opens with its numeric id glued to the AC marker (e.g.
-// "100AC"), so the parser scans for an integer token immediately followed by
-// an AC marker and delegates that block, skipping everything else
-// (SC/CR/CO/TR/RS/RE markers, trigger fields, response weights).
+// Only AC action blocks contribute script context. An integer glued before
+// the marker (e.g. "100AC") is the enclosing response's weight, not the
+// action id — the id is the first field of the block's own body. Consecutive
+// actions in one response appear as adjacent "AC <body1> AC AC <body2> AC"
+// pairs, so scanning for a bare AC marker and skipping everything else
+// handles them naturally.
 func (p *bcsParser) parseScript() []ScriptCall {
 	for {
 		tok, ok := p.next()
 		if !ok {
 			break
 		}
-		// The action id precedes the AC marker. When an integer is followed
-		// by AC, it opens an action block.
-		if isAllDigitsOrSign(tok) {
-			if marker, ok := p.peek(); ok && marker == "AC" {
-				p.next() // consume the opening AC marker
-				p.parseActionBlock(tok)
-			}
+		if tok == "AC" {
+			p.parseActionBlock()
 		}
 	}
 	return p.calls
 }
 
-// parseActionBlock decodes the body of an action block whose numeric id and
-// opening AC marker have already been consumed. A malformed block is consumed
-// (up to its closing AC, or end of stream) and skipped so the rest of the
-// script still parses.
-func (p *bcsParser) parseActionBlock(idTok string) {
-	action, ok := p.readAction(idTok)
+// A malformed block is consumed up to its closing AC (or end of stream) and
+// skipped so the rest of the script still parses.
+func (p *bcsParser) parseActionBlock() {
+	action, ok := p.readAction()
 	if !ok {
 		return
 	}
@@ -262,14 +225,13 @@ func (p *bcsParser) parseActionBlock(idTok string) {
 	})
 }
 
-// readAction parses the body of an action block whose numeric id (idTok) and
-// opening AC marker have already been consumed: three OB objects, then the five
-// int/point fields and two strings, up to the closing AC marker. It returns
-// ok=false if the block is structurally broken, having consumed tokens up to
-// the next AC.
-func (p *bcsParser) readAction(idTok string) (bcsAction, bool) {
+func (p *bcsParser) readAction() (bcsAction, bool) {
 	var a bcsAction
 
+	idTok, ok := p.next()
+	if !ok {
+		return a, false
+	}
 	id, err := strconv.ParseInt(idTok, 0, 64)
 	if err != nil {
 		p.skipToActionEnd()
@@ -317,12 +279,9 @@ func (p *bcsParser) readAction(idTok string) (bcsAction, bool) {
 	return a, true
 }
 
-// readObjectBody parses the fields of an OB block (the opening OB marker has
-// already been consumed) up to and including the closing OB marker: eight
-// enumerated/identifier integers, then up to four trailing integers, an
-// optional point and a name string. The trailing fields vary by game, so the
-// reader is tolerant: it consumes integers and an optional [x.y] point until
-// it reaches the name string, then the closing OB marker.
+// The OB fields after the eight enumerated/identifier integers vary by game,
+// so the reader is tolerant: it consumes integers and an optional [x.y]
+// point until it reaches the name string, then the closing OB marker.
 func (p *bcsParser) readObjectBody() (bcsObject, bool) {
 	var o bcsObject
 
@@ -392,8 +351,6 @@ func (p *bcsParser) expect(marker string) bool {
 	return ok && tok == marker
 }
 
-// skipToActionEnd consumes tokens until the closing AC marker (or end of
-// stream) so a malformed action block does not derail the rest of the parse.
 func (p *bcsParser) skipToActionEnd() {
 	for {
 		tok, ok := p.next()
@@ -414,17 +371,14 @@ func unquote(tok string) string {
 	return tok
 }
 
-// renderCall builds the source-form call string for a display-family action:
-// the action name with its decoded object and the StrRef. Object decoding is
-// pragmatic — a normal single-object action renders its o2 object (o1 is
-// reserved for an ActionOverride target).
+// Object decoding is pragmatic — a normal single-object action renders its
+// o2 object (o1 is reserved for an ActionOverride target).
 func (p *bcsParser) renderCall(name string, a bcsAction, strref uint32) string {
 	return fmt.Sprintf("%s(%s,%d)", name, p.renderObject(a.o2), strref)
 }
 
-// renderObject decodes an object specification into a compact source-form
-// token. A name string wins when present; otherwise an OBJECT.IDS identifier
-// is resolved by value. Exotic EA/RACE/GENERAL/… specifications fall back to a
+// A name string wins when present; otherwise an OBJECT.IDS identifier is
+// resolved by value. Exotic EA/RACE/GENERAL/… specifications fall back to a
 // compact placeholder rather than a full [EA.GENERAL.RACE…] expansion.
 func (p *bcsParser) renderObject(o bcsObject) string {
 	if o.name != "" {
@@ -438,8 +392,6 @@ func (p *bcsParser) renderObject(o bcsObject) string {
 	return "[object]"
 }
 
-// isPlainIdentifier reports whether the object is a simple OBJECT.IDS reference
-// with no enumerated EA/RACE/GENERAL/… specification.
 func (o bcsObject) isPlainIdentifier() bool {
 	return o.ea == 0 && o.general == 0 && o.race == 0 && o.class == 0 &&
 		o.specific == 0 && o.gender == 0 && o.alignment == 0

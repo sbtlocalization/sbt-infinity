@@ -115,6 +115,56 @@ func TestLoadContextFromDialogs_NonIntegerStrRefSkipped(t *testing.T) {
 	}
 }
 
+func TestLoadContextFromCompiledScript(t *testing.T) {
+	c := newTestCollection(14381, 99999)
+	calls := []p.ScriptCall{
+		{StrRef: 14381, Call: "DisplayString(LastTrigger,14381)"},
+	}
+
+	// A nil usage index (e.g. --context-from bcs alone) keeps the bare key.
+	c.LoadContextFromCompiledScript("CTFB.BCS", calls, nil)
+
+	entry := c.Entries[14381]
+	scripts, ok := entry.Context[ContextScript]
+	if !ok {
+		t.Fatalf("expected SCRIPTS context for 14381, got none")
+	}
+
+	values, ok := scripts["CTFB.BCS"]
+	if !ok {
+		t.Fatalf("expected context keyed by CTFB.BCS, got keys %v", keysOf(scripts))
+	}
+	if len(values) != 1 || values[0] != "DisplayString(LastTrigger,14381)" {
+		t.Errorf("unexpected context values: %v", values)
+	}
+
+	if _, ok := entry.Labels[lb_script_action]; !ok {
+		t.Errorf("expected %q label on 14381, got %v", lb_script_action, keysOf(entry.Labels))
+	}
+
+	// Untouched ids must not gain any script context.
+	if other := c.Entries[99999]; len(other.Context) != 0 || len(other.Labels) != 0 {
+		t.Errorf("untouched id 99999 was modified: context=%v labels=%v", other.Context, other.Labels)
+	}
+}
+
+func TestLoadContextFromCompiledScript_WithUsage(t *testing.T) {
+	c := newTestCollection(14381)
+	calls := []p.ScriptCall{
+		{StrRef: 14381, Call: "DisplayString(LastTrigger,14381)"},
+	}
+
+	usage := make(ScriptUsageIndex)
+	usage.Add("CTFB", "trap", "AR1234")
+
+	c.LoadContextFromCompiledScript("CTFB.BCS", calls, usage)
+
+	scripts := c.Entries[14381].Context[ContextScript]
+	if _, ok := scripts["CTFB.BCS [trap @ AR1234]"]; !ok {
+		t.Fatalf("expected context keyed by annotated script name, got keys %v", keysOf(scripts))
+	}
+}
+
 func keysOf[V any](m map[string]V) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {

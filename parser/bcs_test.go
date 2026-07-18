@@ -76,12 +76,13 @@ func obBlock(ident int, name string) string {
 	}, "\n")
 }
 
-// acBlock renders an AC action block with the given action id, the three object
-// slots (o1 reserved for ActionOverride, o2 the normal object, o3 secondary)
-// and the five integer fields int0, x, y, int1, int2.
+// Real scripts keep the action id as its own field — an integer glued to
+// the AC marker (e.g. "100AC") is the enclosing response's weight, not the
+// action id.
 func acBlock(id int, o1, o2, o3 string, int0, x, y, int1, int2 int) string {
 	return strings.Join([]string{
-		intStr(id) + "AC", // glued id + marker, e.g. "100AC"
+		"AC",
+		intStr(id),
 		o1,
 		o2,
 		o3,
@@ -240,10 +241,12 @@ func TestDecodeCompiledScript_ObjectName(t *testing.T) {
 	}
 }
 
-// TestDecodeCompiledScript_GluedMarkers verifies glued block markers parse:
-// both the action id ("100AC") and an object id glued to its marker ("151OB").
+// Mirrors real compiled scripts: a response weight glued to the opening AC
+// marker ("100AC"), the action id glued to the first object's OB marker
+// ("151OB", as in BG1's CTFB.BCS), and an object identifier glued to a
+// trailing OB marker.
 func TestDecodeCompiledScript_GluedMarkers(t *testing.T) {
-	// o2 with the identifier glued to the OB marker: "...0 151OB" style.
+	// o2 with the identifier glued to its closing OB marker.
 	o2 := strings.Join([]string{
 		"OB",
 		"0 0 0 0 0 0 0",
@@ -257,8 +260,11 @@ func TestDecodeCompiledScript_GluedMarkers(t *testing.T) {
 	o3 := "OB\n0 0 0 0 0 0 0\n0\n0 0 0 151OB"
 
 	action := strings.Join([]string{
-		"100AC", // glued action id + marker
-		emptyObject(),
+		"100AC",                         // glued response weight + opening AC marker
+		intStr(actDisplayString) + "OB", // glued action id + first object's opening OB marker
+		"0 0 0 0 0 0 0 0 0 0 0 0",
+		`""`,
+		"OB",
 		o2,
 		o3,
 		`14381 0 0 0 0 "" ""`,

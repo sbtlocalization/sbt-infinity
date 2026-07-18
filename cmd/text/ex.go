@@ -99,6 +99,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 	contextTypes := []fs.FileType{
 		fs.FileType_2DA,
 		fs.FileType_ARE,
+		fs.FileType_BCS,
 		fs.FileType_CHU,
 		fs.FileType_CRE,
 		fs.FileType_DLG,
@@ -113,6 +114,15 @@ func runEx(cmd *cobra.Command, args []string) error {
 		contextTypes = lo.UniqMap(contextFrom, utils.Iteratee(fs.FileTypeFromExtension))
 	}
 
+	// Compiled scripts must be processed after areas and creatures: SCRIPTS
+	// keys embed usage sites collected by the ARE and CRE scans, so the BCS
+	// pass is moved to the end to run against a fully populated usage index.
+	if i := slices.Index(contextTypes, fs.FileType_BCS); i >= 0 {
+		contextTypes = append(slices.Delete(contextTypes, i, i+1), fs.FileType_BCS)
+	}
+
+	scriptUsage := make(text.ScriptUsageIndex)
+
 	infFs := fs.NewInfinityFs(keyPath)
 
 	for _, t := range contextTypes {
@@ -123,9 +133,14 @@ func runEx(cmd *cobra.Command, args []string) error {
 				fmt.Println("warning: unable to process 2DA files:", err)
 			}
 		case fs.FileType_ARE:
-			err = processAreas(collection, infFs, verbose)
+			err = processAreas(collection, infFs, scriptUsage, verbose)
 			if err != nil {
 				fmt.Println("warning: unable to process areas:", err)
+			}
+		case fs.FileType_BCS:
+			err = processCompiledScripts(collection, infFs, scriptUsage, verbose)
+			if err != nil {
+				fmt.Println("warning: unable to process compiled scripts:", err)
 			}
 		case fs.FileType_CHU:
 			err = processUiScreens(collection, infFs, verbose)
@@ -133,7 +148,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 				fmt.Println("warning: unable to process UI screens:", err)
 			}
 		case fs.FileType_CRE:
-			err = processCreatures(collection, infFs, verbose)
+			err = processCreatures(collection, infFs, scriptUsage, verbose)
 			if err != nil {
 				fmt.Println("warning: unable to process creatures:", err)
 			}
@@ -278,7 +293,94 @@ func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl str
 	return nil
 }
 
-func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+// ACTION.IDS and OBJECT.IDS are required to decode a script at all, so a
+// failure to load either aborts this pass while the rest of the export
+// continues; a single malformed or unreadable script is only skipped.
+func processCompiledScripts(collection *text.TextCollection, infFs afero.Fs, scriptUsage text.ScriptUsageIndex, verbose bool) error {
+	dir, err := infFs.Open("BCS")
+	if err != nil {
+		return fmt.Errorf("unable to list existing BCS files: %v", err)
+	}
+	defer dir.Close()
+	scriptFiles, err := dir.Readdirnames(0)
+	if err != nil {
+		return fmt.Errorf("unable to read BCS directory names: %v", err)
+	}
+
+	action, err := infFs.Open("ACTION.IDS")
+	if err != nil {
+		return fmt.Errorf("unable to open ACTION.IDS: %v", err)
+	}
+	actionIds, err := p.ParseIds(action)
+	action.Close()
+	if err != nil {
+		return fmt.Errorf("unable to parse ACTION.IDS: %v", err)
+	}
+	displayFamilyActions, err := p.BuildDisplayFamilyActions(actionIds)
+	if err != nil {
+		return fmt.Errorf("unable to build display family from ACTION.IDS: %v", err)
+	}
+
+	object, err := infFs.Open("OBJECT.IDS")
+	if err != nil {
+		return fmt.Errorf("unable to open OBJECT.IDS: %v", err)
+	}
+	objectIds, err := p.ParseIds(object)
+	object.Close()
+	if err != nil {
+		return fmt.Errorf("unable to parse OBJECT.IDS: %v", err)
+	}
+
+	total := len(scriptFiles)
+	processed := 0
+	hasWarnings := false
+
+	if verbose {
+		fmt.Print("extracting context from compiled scripts...")
+	}
+
+	for _, sf := range scriptFiles {
+		file, err := infFs.Open(sf)
+		if err != nil {
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to open BCS file %q: %v. skipping...\n", sf, err)
+			}
+			continue
+		}
+
+		calls, err := p.DecodeCompiledScript(file, actionIds, displayFamilyActions, objectIds)
+		file.Close()
+		if err != nil {
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to decode BCS file %q: %v. skipping...\n", sf, err)
+			}
+			continue
+		}
+
+		collection.LoadContextFromCompiledScript(sf, calls, scriptUsage)
+		processed++
+	}
+
+	if verbose {
+		if processed == total {
+			fmt.Printf(" done (%d files).\n", total)
+		} else {
+			fmt.Printf("done (%d/%d files).\n", processed, total)
+		}
+	}
+
+	return nil
+}
+
+func processCreatures(collection *text.TextCollection, infFs afero.Fs, scriptUsage text.ScriptUsageIndex, verbose bool) error {
 	dir, err := infFs.Open("CRE")
 	if err != nil {
 		return fmt.Errorf("unable to list existing CRE files: %v", err)
@@ -339,7 +441,7 @@ func processCreatures(collection *text.TextCollection, infFs afero.Fs, verbose b
 			continue
 		}
 
-		if err := collection.LoadContextFromCreature(cf, cre, ids); err != nil {
+		if err := collection.LoadContextFromCreature(cf, cre, ids, scriptUsage); err != nil {
 			if verbose {
 				if !hasWarnings {
 					fmt.Println()
@@ -451,13 +553,13 @@ func processWorldMaps(collection *text.TextCollection, infFs afero.Fs, verbose b
 	})
 }
 
-func processAreas(collection *text.TextCollection, infFs afero.Fs, verbose bool) error {
+func processAreas(collection *text.TextCollection, infFs afero.Fs, scriptUsage text.ScriptUsageIndex, verbose bool) error {
 	return processFiles(infFs, verbose, "ARE", "areas", func(filename string, stream *kaitai.Stream) error {
 		are := p.NewAre()
 		if err := are.Read(stream, nil, are); err != nil {
 			return err
 		}
-		collection.LoadContextFromArea(filename, are)
+		collection.LoadContextFromArea(filename, are, scriptUsage)
 		return nil
 	})
 }
