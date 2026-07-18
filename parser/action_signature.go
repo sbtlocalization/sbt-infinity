@@ -41,6 +41,15 @@ func (s *ActionSignature) HasStrRef() bool {
 	return s.StrRefPositional >= 0
 }
 
+func (s *ActionSignature) HasObject() bool {
+	for _, p := range s.Parameters {
+		if p.Type == "O" {
+			return true
+		}
+	}
+	return false
+}
+
 // ParseActionSignature parses an ACTION.IDS/TRIGGER.IDS identifier string
 // into its function name and ordered, typed parameter list.
 func ParseActionSignature(identifier string) (*ActionSignature, error) {

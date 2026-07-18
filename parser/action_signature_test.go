@@ -129,6 +129,27 @@ func TestParseActionSignature_TormentReordering(t *testing.T) {
 	}
 }
 
+func TestParseActionSignature_HasObject(t *testing.T) {
+	cases := []struct {
+		identifier string
+		want       bool
+	}{
+		{"DisplayString(O:Object*,I:StrRef*)", true},
+		{"EraseJournalEntry(I:STRREF*)", false},
+		{"Wait()", false},
+		{"DisplayStringPointLog(I:StrRef*,P:Location*,I:Other*)", false},
+	}
+	for _, c := range cases {
+		sig, err := ParseActionSignature(c.identifier)
+		if err != nil {
+			t.Fatalf("ParseActionSignature(%q) failed: %v", c.identifier, err)
+		}
+		if sig.HasObject() != c.want {
+			t.Errorf("HasObject() = %v for %q, want %v", sig.HasObject(), c.identifier, c.want)
+		}
+	}
+}
+
 func TestParseActionSignature_InvalidIdentifier(t *testing.T) {
 	if _, err := ParseActionSignature("DisplayString"); err == nil {
 		t.Error("expected error for missing parameter list, got nil")

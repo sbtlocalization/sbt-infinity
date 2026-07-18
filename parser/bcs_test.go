@@ -23,6 +23,10 @@ const (
 	// the first integer parameter is not the StrRef, so StrRefIntSlot == 1
 	// maps to physical field 3.
 	actDisplayStringWait = 200 // DisplayStringWait(O:Object*,I:Time*,I:StrRef*)
+	// An objectless display-family signature (IWD shape): the compiled block
+	// still carries three all-zero object slots, but the rendered call must
+	// not show them.
+	actEraseJournalEntry = 253 // EraseJournalEntry(I:STRREF*)
 )
 
 // OBJECT.IDS values used in the tests.
@@ -39,6 +43,7 @@ func testActionIds() *Ids {
 			actAttack:            "Attack(O:Target*)",
 			actSetGlobal:         "SetGlobal(S:Name*,S:Area*,I:Value*)",
 			actDisplayStringWait: "DisplayStringWait(O:Object*,I:Time*,I:StrRef*)",
+			actEraseJournalEntry: "EraseJournalEntry(I:STRREF*)",
 		},
 	}
 }
@@ -238,6 +243,31 @@ func TestDecodeCompiledScript_ObjectName(t *testing.T) {
 	}
 	if calls[0].Call != "DisplayString(Gorion,42)" {
 		t.Errorf("Call = %q, want %q", calls[0].Call, "DisplayString(Gorion,42)")
+	}
+}
+
+// TestDecodeCompiledScript_ObjectlessSignature is the parser-seam test for the
+// phantom-object bug: an all-zero o2 slot resolves to "Nothing" via OBJECT.IDS,
+// so a signature without an object parameter must suppress the slot entirely —
+// EraseJournalEntry(26331), not EraseJournalEntry(Nothing,26331).
+func TestDecodeCompiledScript_ObjectlessSignature(t *testing.T) {
+	action := acBlock(
+		actEraseJournalEntry,
+		emptyObject(),
+		emptyObject(),
+		emptyObject(),
+		26331, 0, 0, 0, 0,
+	)
+
+	calls := decode(t, wrapScript(action))
+	if len(calls) != 1 {
+		t.Fatalf("len(calls) = %d, want 1", len(calls))
+	}
+	if calls[0].StrRef != 26331 {
+		t.Errorf("StrRef = %d, want 26331", calls[0].StrRef)
+	}
+	if calls[0].Call != "EraseJournalEntry(26331)" {
+		t.Errorf("Call = %q, want %q", calls[0].Call, "EraseJournalEntry(26331)")
 	}
 }
 

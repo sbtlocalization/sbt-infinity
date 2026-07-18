@@ -221,7 +221,7 @@ func (p *bcsParser) parseActionBlock() {
 
 	p.calls = append(p.calls, ScriptCall{
 		StrRef: strref,
-		Call:   p.renderCall(sig.Name, action, strref),
+		Call:   p.renderCall(sig, action, strref),
 	})
 }
 
@@ -372,9 +372,15 @@ func unquote(tok string) string {
 }
 
 // Object decoding is pragmatic — a normal single-object action renders its
-// o2 object (o1 is reserved for an ActionOverride target).
-func (p *bcsParser) renderCall(name string, a bcsAction, strref uint32) string {
-	return fmt.Sprintf("%s(%s,%d)", name, p.renderObject(a.o2), strref)
+// o2 object (o1 is reserved for an ActionOverride target). The object slots
+// are physically present in every compiled action, so an objectless
+// signature must suppress the slot explicitly or its zero value would leak
+// out as a phantom "Nothing" argument.
+func (p *bcsParser) renderCall(sig *ActionSignature, a bcsAction, strref uint32) string {
+	if !sig.HasObject() {
+		return fmt.Sprintf("%s(%d)", sig.Name, strref)
+	}
+	return fmt.Sprintf("%s(%s,%d)", sig.Name, p.renderObject(a.o2), strref)
 }
 
 // A name string wins when present; otherwise an OBJECT.IDS identifier is
