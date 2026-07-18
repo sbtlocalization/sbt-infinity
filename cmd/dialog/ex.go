@@ -104,6 +104,7 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 	dlgFs := fs.NewInfinityFs(keyPath, fs.WithTypeFilter(typesToLoad...))
 
 	dc := dialog.NewDialogBuilder(dlgFs, tlkFs, withCreatures, verbose)
+	defer dc.Close()
 
 	if len(dialogFiles) == 0 {
 		dir, err := dlgFs.Open("DLG")

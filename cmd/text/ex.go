@@ -246,6 +246,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 
 func processDialogs(collection *text.TextCollection, infFs afero.Fs, baseUrl string, verbose bool) error {
 	dlgBuilder := dialog.NewDialogBuilder(infFs, nil, false, verbose)
+	defer dlgBuilder.Close()
 	dir, err := infFs.Open("DLG")
 	if err != nil {
 		return fmt.Errorf("unable to list existing DLG files: %v", err)

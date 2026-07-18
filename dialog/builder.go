@@ -186,6 +186,15 @@ func (b *DialogBuilder) loadCreatures() error {
 	return nil
 }
 
+func (b *DialogBuilder) Close() error {
+	if b.tlkFile == nil {
+		return nil
+	}
+	err := b.tlkFile.Close()
+	b.tlkFile = nil
+	return err
+}
+
 func (b *DialogBuilder) readTlkFile(tlkFileName string) (*p.TlkFile, error) {
 	return p.ReadTlkFile(b.tlkFsys, tlkFileName)
 }
