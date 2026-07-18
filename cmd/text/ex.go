@@ -428,31 +428,26 @@ func processCreatures(collection *text.TextCollection, infFs afero.Fs, scriptUsa
 
 		cre := p.NewCre()
 		stream := kaitai.NewStream(creFile)
-		err = cre.Read(stream, nil, cre)
+		if err := cre.Read(stream, nil, cre); err != nil {
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to parse CRE file %q: %v. skipping...\n", cf, err)
+			}
+		} else if err := collection.LoadContextFromCreature(cf, cre, ids, scriptUsage); err != nil {
+			if verbose {
+				if !hasWarnings {
+					fmt.Println()
+					hasWarnings = true
+				}
+				fmt.Printf("  warning: unable to parse CRE file %q: %v. skipping...\n", cf, err)
+			}
+		} else {
+			processed++
+		}
 		creFile.Close()
-		if err != nil {
-			if verbose {
-				if !hasWarnings {
-					fmt.Println()
-					hasWarnings = true
-				}
-				fmt.Printf("  warning: unable to parse CRE file %q: %v. skipping...\n", cf, err)
-			}
-			continue
-		}
-
-		if err := collection.LoadContextFromCreature(cf, cre, ids, scriptUsage); err != nil {
-			if verbose {
-				if !hasWarnings {
-					fmt.Println()
-					hasWarnings = true
-				}
-				fmt.Printf("  warning: unable to parse CRE file %q: %v. skipping...\n", cf, err)
-			}
-			continue
-		}
-
-		processed++
 	}
 
 	if verbose {
