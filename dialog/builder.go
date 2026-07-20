@@ -58,7 +58,11 @@ func (b *DialogBuilder) LoadAllRootStates(dlgNames ...string) (*DialogCollection
 		}
 
 		for stateIndex, stateEntry := range states {
-			if _, isRoot := stateEntry.GetTriggerText(); isRoot {
+			_, isRoot, err := stateEntry.GetTriggerText()
+			if err != nil {
+				b.Printf("warning: state %d in DLG file %s: %v\n", stateIndex, dlgName, err)
+			}
+			if isRoot {
 				d := NewDialog(NewNodeOrigin(dlgName, uint32(stateIndex)))
 				collection.Dialogs = append(collection.Dialogs, d)
 			}
@@ -186,6 +190,15 @@ func (b *DialogBuilder) loadCreatures() error {
 	return nil
 }
 
+func (b *DialogBuilder) Close() error {
+	if b.tlkFile == nil {
+		return nil
+	}
+	err := b.tlkFile.Close()
+	b.tlkFile = nil
+	return err
+}
+
 func (b *DialogBuilder) readTlkFile(tlkFileName string) (*p.TlkFile, error) {
 	return p.ReadTlkFile(b.tlkFsys, tlkFileName)
 }
@@ -228,7 +241,11 @@ func (b *DialogBuilder) loadDialogs(dlgName string, dlgFile *p.DlgFile, collecti
 	}
 
 	for stateIndex, stateEntry := range states {
-		if _, isRoot := stateEntry.GetTriggerText(); isRoot {
+		_, isRoot, err := stateEntry.GetTriggerText()
+		if err != nil {
+			b.Printf("warning: state %d in DLG file %s: %v\n", stateIndex, dlgName, err)
+		}
+		if isRoot {
 			d, err := b.loadDialog(NewNodeOrigin(dlgName, uint32(stateIndex)))
 			if err != nil {
 				b.Printf("error loading dialog for state %d: %v", stateIndex, err)
@@ -313,7 +330,10 @@ func (b *DialogBuilder) loadStateWithTransitions(dialog *Dialog, origin NodeOrig
 	}
 
 	state := states[origin.Index]
-	trigger, triggerExists := state.GetTriggerText()
+	trigger, triggerExists, err := state.GetTriggerText()
+	if err != nil {
+		b.Printf("warning: state %s: %v\n", origin, err)
+	}
 	text := ""
 	sound := ""
 	if b.tlkFile != nil {
@@ -343,10 +363,16 @@ func (b *DialogBuilder) loadStateWithTransitions(dialog *Dialog, origin NodeOrig
 
 	for index, transition := range transitions {
 		transitionOrigin := NewNodeOrigin(origin.DlgName, state.FirstTransitionIndex+uint32(index))
-		trigger, withTrigger := transition.GetTriggerText()
+		trigger, withTrigger, err := transition.GetTriggerText()
+		if err != nil {
+			b.Printf("warning: transition %s: %v\n", transitionOrigin, err)
+		}
 		textRef, text, withText := transition.GetText(b.tlkFile)
 		journalTextRef, journalText, withJournalText := transition.GetJournalText(b.tlkFile)
-		action, withAction := transition.GetActionText()
+		action, withAction, err := transition.GetActionText()
+		if err != nil {
+			b.Printf("warning: transition %s: %v\n", transitionOrigin, err)
+		}
 
 		var transitionSound, journalSound string
 		if b.tlkFile != nil {

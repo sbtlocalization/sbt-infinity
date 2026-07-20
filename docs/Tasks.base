@@ -1,0 +1,84 @@
+filters:
+  and:
+    - file.inFolder("docs/tasks")
+formulas:
+  is_blocked: |-
+    note["blocked by"].reduce(
+      acc || (
+        value.asFile().properties.status != "Done" && 
+        value.asFile().properties.status != "Obsolete"
+      ),
+      false
+    )
+properties:
+  note.status:
+    displayName: status
+  file.name:
+    displayName: task
+views:
+  - type: table
+    name: ready
+    filters:
+      and:
+        - formula.is_blocked != true
+        - status.containsAny("To do")
+    order:
+      - kind
+      - file.name
+      - status
+      - blocked by
+      - epic
+      - mode
+      - parent
+      - priority
+      - file.ctime
+    columnSize:
+      file.name: 408
+  - type: table
+    name: all
+    order:
+      - kind
+      - file.name
+      - status
+      - blocked by
+      - epic
+      - mode
+      - parent
+      - priority
+      - file.ctime
+    columnSize:
+      file.name: 464
+  - type: table
+    name: backlog
+    filters:
+      and:
+        - status.containsAny("Backlog")
+    order:
+      - kind
+      - file.name
+      - status
+      - blocked by
+      - epic
+      - mode
+      - parent
+      - priority
+      - file.ctime
+    columnSize:
+      file.name: 408
+  - type: table
+    name: in-progress
+    filters:
+      and:
+        - status.containsAny("In progress")
+    order:
+      - kind
+      - file.name
+      - status
+      - blocked by
+      - epic
+      - mode
+      - parent
+      - priority
+      - file.ctime
+    columnSize:
+      file.name: 408

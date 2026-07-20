@@ -1,0 +1,33 @@
+filters:
+  and:
+    - file.inFolder("docs/epics")
+formulas:
+  is_blocked: |-
+    note["blocked by"].reduce(
+      acc || (
+        value.asFile().properties.status != "Done" && 
+        value.asFile().properties.status != "Obsolete"
+      ),
+      false
+    )
+properties:
+  note.status:
+    displayName: status
+  file.name:
+    displayName: task
+views:
+  - type: table
+    name: all
+    order:
+      - kind
+      - file.name
+      - status
+      - blocked by
+      - priority
+      - file.ctime
+    sort:
+      - property: epic
+        direction: ASC
+    columnSize:
+      file.name: 462
+      note.status: 119

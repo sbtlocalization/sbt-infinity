@@ -6,6 +6,7 @@
 package text
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -34,9 +35,11 @@ const (
 	ContextCreature
 	ContextCreatureSound
 	ContextDialog
+	ContextDialogScript
 	ContextEffect
 	ContextItem
 	ContextProjectile
+	ContextScript
 	ContextSubtitles
 	ContextSpell
 	ContextStore
@@ -58,6 +61,7 @@ const (
 	lb_creature            = "creature"
 	lb_cynicismQuote       = "cynicism quote"
 	lb_dialog              = "dialog"
+	lb_dialog_action       = "dialog action"
 	lb_dialog_answer       = "answer"
 	lb_dialog_journal      = "journal"
 	lb_dialog_question     = "question"
@@ -65,6 +69,7 @@ const (
 	lb_item                = "item"
 	lb_projectile          = "projectile"
 	lb_ranger_tracking     = "tracking.2da"
+	lb_script_action       = "script action"
 	lb_spell               = "spell"
 	lb_store               = "store"
 	lb_store_drink         = "store drink"
@@ -78,6 +83,14 @@ const (
 
 type TextCollection struct {
 	Entries map[uint32]*TextEntry
+	Long    bool
+}
+
+func (c *TextCollection) location(verbose, fileName string) string {
+	if c.Long {
+		return verbose
+	}
+	return fileName
 }
 
 func NewTextCollection(tlk *p.Tlk) *TextCollection {
@@ -152,7 +165,7 @@ func (c *TextCollection) AddLabel(id uint32, label string) {
 	}
 }
 
-func (c *TextCollection) LoadContextFromDialogs(baseUrl string, dlg *dialog.DialogCollection) {
+func (c *TextCollection) LoadContextFromDialogs(baseUrl string, dlg *dialog.DialogCollection, displayFamilyActions p.DisplayFamilyActions) {
 	const labelFormat = "dialog %d @ %s"
 
 	for _, d := range dlg.Dialogs {
@@ -186,10 +199,51 @@ func (c *TextCollection) LoadContextFromDialogs(baseUrl string, dlg *dialog.Dial
 					c.AddLabel(ref, d.Id.DlgName)
 					c.AddLabel(ref, fmt.Sprintf(labelFormat, d.Id.Index, d.Id.DlgName))
 				}
+
+				if node.Transition.HasAction {
+					c.addDialogScriptContext(d, url, node.Transition.Action, displayFamilyActions)
+				}
 			default:
 				// ignore errors and loops
 			}
 		}
+	}
+}
+
+func (c *TextCollection) addDialogScriptContext(d *dialog.Dialog, url, action string, displayFamilyActions p.DisplayFamilyActions) {
+	if displayFamilyActions == nil {
+		return
+	}
+
+	for _, call := range p.ParseActionCalls(action) {
+		sig, ok := displayFamilyActions[call.Name]
+		if !ok {
+			continue
+		}
+
+		if sig.StrRefPositional < 0 || sig.StrRefPositional >= len(call.Args) {
+			continue
+		}
+
+		ref, err := strconv.ParseUint(strings.TrimSpace(call.Args[sig.StrRefPositional]), 10, 32)
+		if err != nil {
+			continue
+		}
+
+		strref := uint32(ref)
+		value := fmt.Sprintf("Action: %s @ %s", call.Raw, url)
+		c.AddContext(strref, ContextDialogScript, d.Id.String(), value)
+		c.AddLabel(strref, lb_dialog_action)
+		c.AddLabel(strref, d.Id.DlgName)
+	}
+}
+
+func (c *TextCollection) LoadContextFromCompiledScript(scriptFilename string, calls []p.ScriptCall, usage ScriptUsageIndex) {
+	key := usage.AnnotateScriptKey(scriptFilename)
+	for _, call := range calls {
+		c.AddContext(call.StrRef, ContextScript, key, call.Call)
+		c.AddLabel(call.StrRef, lb_script_action)
+		c.AddLabel(call.StrRef, scriptFilename)
 	}
 }
 
@@ -217,6 +271,7 @@ func (c *TextCollection) LoadContextFromUiScreens(uiFilename string, chu *p.Chu)
 				if label.InitialTextRef != 0 && label.InitialTextRef != 0xFFFFFFFF {
 					ref := label.InitialTextRef
 					c.AddLabel(ref, lb_ui)
+					c.AddLabel(ref, uiFilename)
 					c.AddContext(ref, ContextUI, uiFilename, fmt.Sprintf("window %d → control %d", window.WinId, int16(data.ControlId)))
 				}
 			default:
@@ -228,22 +283,33 @@ func (c *TextCollection) LoadContextFromUiScreens(uiFilename string, chu *p.Chu)
 	return nil
 }
 
-func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre, ids *p.Ids) error {
+func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre, ids *p.Ids, usage ScriptUsageIndex) error {
+	var errs []error
+
 	longName := cre.LongNameRef
 	if longName != 0 && longName != 0xFFFFFFFF {
 		c.AddLabel(longName, lb_creature)
+		c.AddLabel(longName, creFilename)
 		c.AddContext(longName, ContextCreature, "Long name", strings.ToLower(creFilename))
 	}
 
 	shortName := cre.ShortNameRef
 	if shortName != 0 && shortName != 0xFFFFFFFF {
 		c.AddLabel(shortName, lb_creature)
+		c.AddLabel(shortName, creFilename)
 		c.AddContext(shortName, ContextCreature, "Short name (tooltip)", strings.ToLower(creFilename))
 	}
 
 	if cre.Body == nil {
 		return fmt.Errorf("unsupported CRE version %q", cre.Version)
 	}
+
+	header := cre.Body.Header
+	usage.Add(header.OverrideScript, "override", creFilename)
+	usage.Add(header.ClassScript, "class", creFilename)
+	usage.Add(header.RaceScript, "race", creFilename)
+	usage.Add(header.GeneralScript, "general", creFilename)
+	usage.Add(header.DefaultScript, "default", creFilename)
 
 	soundRefs := cre.Body.Header.StrRefs
 
@@ -258,10 +324,13 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 		if dialog := cre.Body.Header.Dialog; dialog != "" && dialog != "0" && dialog != "None" {
 			c.AddLabel(ref, strings.ToUpper(dialog))
 		}
+		c.AddLabel(ref, creFilename)
 		c.AddCreatureSoundContext(ref, identifier, strings.ToLower(creFilename))
 	}
 
-	if effects, err := cre.Body.Effects(); err == nil {
+	if effects, err := cre.Body.Effects(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get creature effects: %w", err))
+	} else {
 		const creatureEffectPattern = "Creature %s → effect %d"
 
 		for i, effect := range effects {
@@ -270,7 +339,8 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 				if strref, context := getStrrefFromEffect(uint32(v.Opcode), v.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 					c.AddLabel(strref, lb_creature)
 					c.AddLabel(strref, lb_effect)
-					c.AddContext(strref, ContextEffect, context, fmt.Sprintf(creatureEffectPattern, creFilename, i))
+					c.AddLabel(strref, creFilename)
+					c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf(creatureEffectPattern, creFilename, i), creFilename))
 				}
 			case *p.Eff_BodyV2:
 				// Special handling for opcode 0x14A (Show floating text)
@@ -283,18 +353,20 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 					for i := fromStrref; i < fromStrref+count; i++ {
 						c.AddLabel(i, lb_effect)
 						c.AddLabel(i, lb_cynicismQuote)
-						c.AddContext(i, ContextEffect, "Show floating text", fmt.Sprintf(creatureEffectPattern, creFilename, i))
+						c.AddLabel(i, creFilename)
+						c.AddContext(i, ContextEffect, "Show floating text", c.location(fmt.Sprintf(creatureEffectPattern, creFilename, i), creFilename))
 					}
 				} else if strref, context := getStrrefFromEffect(uint32(v.Opcode), v.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 					c.AddLabel(strref, lb_creature)
 					c.AddLabel(strref, lb_effect)
-					c.AddContext(strref, ContextEffect, context, fmt.Sprintf(creatureEffectPattern, creFilename, i))
+					c.AddLabel(strref, creFilename)
+					c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf(creatureEffectPattern, creFilename, i), creFilename))
 				}
 			}
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp) error {
@@ -308,7 +380,8 @@ func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp
 
 		if nameRef != 0 && nameRef != 0xFFFFFFFF {
 			c.AddLabel(nameRef, lb_world_map)
-			c.AddContext(nameRef, ContextWorldMap, "World map name", fmt.Sprintf("%s → map %d", wmpFilename, wmEntry.MapId))
+			c.AddLabel(nameRef, wmpFilename)
+			c.AddContext(nameRef, ContextWorldMap, "World map name", c.location(fmt.Sprintf("%s → map %d", wmpFilename, wmEntry.MapId), wmpFilename))
 		}
 
 		areas, err := wmEntry.AreaEntries()
@@ -319,11 +392,13 @@ func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp
 		for i, area := range areas {
 			if captionRef := area.CaptionRef; captionRef != 0 && captionRef != 0xFFFFFFFF {
 				c.AddLabel(captionRef, lb_area)
-				c.AddContext(captionRef, ContextWorldMap, "Area caption", fmt.Sprintf("%s → map %d → area %d", wmpFilename, wmEntry.MapId, i))
+				c.AddLabel(captionRef, wmpFilename)
+				c.AddContext(captionRef, ContextWorldMap, "Area caption", c.location(fmt.Sprintf("%s → map %d → area %d", wmpFilename, wmEntry.MapId, i), wmpFilename))
 			}
 			if tooltipRef := area.TooltipRef; tooltipRef != 0 && tooltipRef != 0xFFFFFFFF {
 				c.AddLabel(tooltipRef, lb_area)
-				c.AddContext(tooltipRef, ContextWorldMap, "Area tooltip", fmt.Sprintf("%s → map %d → area %d", wmpFilename, wmEntry.MapId, i))
+				c.AddLabel(tooltipRef, wmpFilename)
+				c.AddContext(tooltipRef, ContextWorldMap, "Area tooltip", c.location(fmt.Sprintf("%s → map %d → area %d", wmpFilename, wmEntry.MapId, i), wmpFilename))
 			}
 		}
 	}
@@ -331,120 +406,180 @@ func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp
 	return nil
 }
 
-func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are) error {
-	if regions, err := are.Regions(); err == nil {
+func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usage ScriptUsageIndex) error {
+	var errs []error
+
+	areaSite := resourceName(areFilename)
+	usage.Add(are.AreaScriptBcs, "area", areaSite)
+
+	if actors, err := are.Actors(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area actors: %w", err))
+	} else {
+		for _, actor := range actors {
+			for _, script := range []string{
+				actor.OverrideScriptBcs,
+				actor.GeneralScriptBcs,
+				actor.ClassScriptBcs,
+				actor.RaceScriptBcs,
+				actor.DefaultScriptBcs,
+				actor.SpecificScriptBcs,
+			} {
+				usage.Add(script, "actor", areaSite)
+			}
+		}
+	}
+
+	if regions, err := are.Regions(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area regions: %w", err))
+	} else {
 		for i, region := range regions {
+			usage.Add(region.ScriptBcs, regionSlotName(region.RegionType), areaSite)
+
 			if infoRef := region.InfoRef; infoRef != 0 && infoRef != 0xFFFFFFFF {
 				c.AddLabel(infoRef, lb_area_trigger)
-				c.AddContext(infoRef, ContextArea, "Info point on the map", fmt.Sprintf("%s → trigger %d", areFilename, i))
+				c.AddLabel(infoRef, areFilename)
+				c.AddContext(infoRef, ContextArea, "Info point on the map", c.location(fmt.Sprintf("%s → trigger %d", areFilename, i), areFilename))
 			}
 
 			if speakerRef := region.PstSpeakerNameRef; speakerRef != 0 && speakerRef != 0xFFFFFFFF {
 				c.AddLabel(speakerRef, lb_area_trigger)
 				c.AddLabel(speakerRef, lb_area_speaker)
-				c.AddContext(speakerRef, ContextArea, "Trigger's speaker name (PST only)", fmt.Sprintf("%s → trigger %d", areFilename, i))
+				c.AddLabel(speakerRef, areFilename)
+				c.AddContext(speakerRef, ContextArea, "Trigger's speaker name (PST only)", c.location(fmt.Sprintf("%s → trigger %d", areFilename, i), areFilename))
 			}
 		}
 	}
 
-	if containers, err := are.Containers(); err == nil {
+	if containers, err := are.Containers(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area containers: %w", err))
+	} else {
 		for i, container := range containers {
+			usage.Add(container.TrapScriptBcs, "container", areaSite)
+
 			if lockpickRef := container.LockpickRef; lockpickRef != 0 && lockpickRef != 0xFFFFFFFF {
 				c.AddLabel(lockpickRef, lb_area_container)
-				c.AddContext(lockpickRef, ContextArea, "Container's lockpicking message", fmt.Sprintf("%s → container %d", areFilename, i))
+				c.AddLabel(lockpickRef, areFilename)
+				c.AddContext(lockpickRef, ContextArea, "Container's lockpicking message", c.location(fmt.Sprintf("%s → container %d", areFilename, i), areFilename))
 			}
 		}
 	}
 
-	if doors, err := are.Doors(); err == nil {
+	if doors, err := are.Doors(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area doors: %w", err))
+	} else {
 		for i, door := range doors {
+			usage.Add(door.ScriptBcs, "door", areaSite)
+
 			if unlockMessageRef := door.UnlockMessageRef; unlockMessageRef != 0 && unlockMessageRef != 0xFFFFFFFF {
 				c.AddLabel(unlockMessageRef, lb_area_door)
-				c.AddContext(unlockMessageRef, ContextArea, "Unlock message", fmt.Sprintf("%s → door %d", areFilename, i))
+				c.AddLabel(unlockMessageRef, areFilename)
+				c.AddContext(unlockMessageRef, ContextArea, "Unlock message", c.location(fmt.Sprintf("%s → door %d", areFilename, i), areFilename))
 			}
 
 			if speakerRef := door.SpeakerNameRef; speakerRef != 0 && speakerRef != 0xFFFFFFFF {
 				c.AddLabel(speakerRef, lb_area_door)
 				c.AddLabel(speakerRef, lb_area_speaker)
-				c.AddContext(speakerRef, ContextArea, "Door's speaker name", fmt.Sprintf("%s → door %d", areFilename, i))
+				c.AddLabel(speakerRef, areFilename)
+				c.AddContext(speakerRef, ContextArea, "Door's speaker name", c.location(fmt.Sprintf("%s → door %d", areFilename, i), areFilename))
 			}
 		}
 	}
 
-	if bgAutomapNotes, err := are.BgAutomapNotes(); err == nil {
+	if bgAutomapNotes, err := are.BgAutomapNotes(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area automap notes: %w", err))
+	} else {
 		for i, note := range bgAutomapNotes {
 			// Read only internal notes
 			if textRef := note.NoteRef; note.NoteRefIsInternal.Value && textRef != 0 && textRef != 0xFFFFFFFF {
 				c.AddLabel(textRef, lb_area_automap_note)
-				c.AddContext(textRef, ContextArea, "Automap note", fmt.Sprintf("%s → automap note %d", areFilename, i))
+				c.AddLabel(textRef, areFilename)
+				c.AddContext(textRef, ContextArea, "Automap note", c.location(fmt.Sprintf("%s → automap note %d", areFilename, i), areFilename))
 			}
 		}
 	}
 
-	if restEncounters, err := are.RestEncounters(); err == nil {
+	if restEncounters, err := are.RestEncounters(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area rest encounters: %w", err))
+	} else {
 		for _, creatureTextRef := range restEncounters.CreatureTextRef {
 			if creatureTextRef != 0 && creatureTextRef != 0xFFFFFFFF {
 				c.AddLabel(creatureTextRef, lb_area_rest_encounter)
+				c.AddLabel(creatureTextRef, areFilename)
 				c.AddContext(creatureTextRef, ContextArea, "Rest encounter message", areFilename)
 			}
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *TextCollection) LoadContextFromItem(itmFilename string, itm *p.Itm) error {
+	var errs []error
+
 	if unidentNameRef := itm.UnidentifiedNameRef; unidentNameRef != 0 && unidentNameRef != 0xFFFFFFFF {
 		c.AddLabel(unidentNameRef, lb_item)
+		c.AddLabel(unidentNameRef, itmFilename)
 		c.AddContext(unidentNameRef, ContextItem, "General (unidentified) item name", itmFilename)
 	}
 
 	if identNameRef := itm.IdentifiedNameRef; identNameRef != 0 && identNameRef != 0xFFFFFFFF {
 		c.AddLabel(identNameRef, lb_item)
+		c.AddLabel(identNameRef, itmFilename)
 		c.AddContext(identNameRef, ContextItem, "Identified item name", itmFilename)
 	}
 
 	if unidentDescRef := itm.UnidentifiedDescriptionRef; unidentDescRef != 0 && unidentDescRef != 0xFFFFFFFF {
 		c.AddLabel(unidentDescRef, lb_item)
+		c.AddLabel(unidentDescRef, itmFilename)
 		c.AddContext(unidentDescRef, ContextItem, "General (unidentified) item description", itmFilename)
 	}
 
 	if identDescRef := itm.IdentifiedDescriptionRef; identDescRef != 0 && identDescRef != 0xFFFFFFFF {
 		c.AddLabel(identDescRef, lb_item)
+		c.AddLabel(identDescRef, itmFilename)
 		c.AddContext(identDescRef, ContextItem, "Identified item description", itmFilename)
 	}
 
-	if globalEffects, err := itm.GlobalEffects(); err == nil {
+	if globalEffects, err := itm.GlobalEffects(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get item global effects: %w", err))
+	} else {
 		for i, effect := range globalEffects {
 			if strref, context := getStrrefFromEffect(uint32(effect.Opcode), effect.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 				c.AddLabel(strref, lb_item)
 				c.AddLabel(strref, lb_effect)
-				c.AddContext(strref, ContextEffect, context, fmt.Sprintf("Item %s → global effect %d", itmFilename, i))
+				c.AddLabel(strref, itmFilename)
+				c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf("Item %s → global effect %d", itmFilename, i), itmFilename))
 			}
 		}
 	}
 
-	if abilities, err := itm.ExtendedHeaders(); err == nil {
+	if abilities, err := itm.ExtendedHeaders(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get item extended headers: %w", err))
+	} else {
 		for i, ability := range abilities {
-			if effects, err := ability.Effects(); err == nil {
+			if effects, err := ability.Effects(); err != nil {
+				errs = append(errs, fmt.Errorf("unable to get effects for item ability %d: %w", i, err))
+			} else {
 				for j, effect := range effects {
 					if strref, context := getStrrefFromEffect(uint32(effect.Opcode), effect.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 						c.AddLabel(strref, lb_item)
 						c.AddLabel(strref, lb_ability)
 						c.AddLabel(strref, lb_effect)
-						c.AddContext(strref, ContextEffect, context, fmt.Sprintf("Item %s → ability %d → effect %d", itmFilename, i, j))
+						c.AddLabel(strref, itmFilename)
+						c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf("Item %s → ability %d → effect %d", itmFilename, i, j), itmFilename))
 					}
 				}
 			}
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *TextCollection) LoadContextFromProjectile(proFilename string, pro *p.Pro) error {
 	if messageRef := pro.MessageRef; messageRef != 0 && messageRef != 0xFFFFFFFF {
 		c.AddLabel(messageRef, lb_projectile)
+		c.AddLabel(messageRef, proFilename)
 		c.AddContext(messageRef, ContextProjectile, "Projectile's message", proFilename)
 	}
 
@@ -452,71 +587,91 @@ func (c *TextCollection) LoadContextFromProjectile(proFilename string, pro *p.Pr
 }
 
 func (c *TextCollection) LoadContextFromSpell(splFilename string, spl *p.Spl) error {
+	var errs []error
+
 	if unidentNameRef := spl.UnidentifiedNameRef; unidentNameRef != 0 && unidentNameRef != 0xFFFFFFFF {
 		c.AddLabel(unidentNameRef, lb_spell)
+		c.AddLabel(unidentNameRef, splFilename)
 		c.AddContext(unidentNameRef, ContextSpell, "General (unidentified) spell name", splFilename)
 	}
 
 	if identNameRef := spl.IdentifiedNameRef; identNameRef != 0 && identNameRef != 9_999_999 && identNameRef != 0xFFFFFFFF {
 		c.AddLabel(identNameRef, lb_spell)
+		c.AddLabel(identNameRef, splFilename)
 		c.AddContext(identNameRef, ContextSpell, "Identified spell name", splFilename)
 	}
 
 	if unidentDescRef := spl.UnidentifiedDescriptionRef; unidentDescRef != 0 && unidentDescRef != 0xFFFFFFFF {
 		c.AddLabel(unidentDescRef, lb_spell)
+		c.AddLabel(unidentDescRef, splFilename)
 		c.AddContext(unidentDescRef, ContextSpell, "General (unidentified) spell description", splFilename)
 	}
 
 	if identDescRef := spl.IdentifiedDescriptionRef; identDescRef != 0 && identDescRef != 9_999_999 && identDescRef != 0xFFFFFFFF {
 		c.AddLabel(identDescRef, lb_spell)
+		c.AddLabel(identDescRef, splFilename)
 		c.AddContext(identDescRef, ContextSpell, "Identified spell description", splFilename)
 	}
 
-	if globalEffects, err := spl.Effects(); err == nil {
+	if globalEffects, err := spl.Effects(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get spell effects: %w", err))
+	} else {
 		for i, effect := range globalEffects {
 			if strref, context := getStrrefFromEffect(uint32(effect.Opcode), effect.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 				c.AddLabel(strref, lb_spell)
 				c.AddLabel(strref, lb_effect)
-				c.AddContext(strref, ContextEffect, context, fmt.Sprintf("Spell %s → effect %d", splFilename, i))
+				c.AddLabel(strref, splFilename)
+				c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf("Spell %s → effect %d", splFilename, i), splFilename))
 			}
 		}
 	}
 
-	if abilities, err := spl.ExtendedHeaders(); err == nil {
+	if abilities, err := spl.ExtendedHeaders(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get spell extended headers: %w", err))
+	} else {
 		for i, ability := range abilities {
-			if effects, err := ability.Effects(); err == nil {
+			if effects, err := ability.Effects(); err != nil {
+				errs = append(errs, fmt.Errorf("unable to get effects for spell ability %d: %w", i, err))
+			} else {
 				for j, effect := range effects {
 					if strref, context := getStrrefFromEffect(uint32(effect.Opcode), effect.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 						c.AddLabel(strref, lb_spell)
 						c.AddLabel(strref, lb_ability)
 						c.AddLabel(strref, lb_effect)
-						c.AddContext(strref, ContextEffect, context, fmt.Sprintf("Spell %s → ability %d → effect %d", splFilename, i, j))
+						c.AddLabel(strref, splFilename)
+						c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf("Spell %s → ability %d → effect %d", splFilename, i, j), splFilename))
 					}
 				}
 			}
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *TextCollection) LoadContextFromStore(stoFilename string, sto *p.Sto) error {
+	var errs []error
+
 	if nameRef := sto.NameRef; nameRef != 0 && nameRef != 0xFFFFFFFF {
 		c.AddLabel(nameRef, lb_store)
+		c.AddLabel(nameRef, stoFilename)
 		c.AddContext(nameRef, ContextStore, "Store name", stoFilename)
 	}
 
-	if drinks, err := sto.Drinks(); err == nil {
+	if drinks, err := sto.Drinks(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get store drinks: %w", err))
+	} else {
 		for i, drink := range drinks {
 			if nameRef := drink.DrinkNameRef; nameRef != 0 && nameRef != 0xFFFFFFFF {
 				c.AddLabel(nameRef, lb_store)
 				c.AddLabel(nameRef, lb_store_drink)
-				c.AddContext(nameRef, ContextStore, "Drink name (at merchant)", fmt.Sprintf("%s → drink %d", stoFilename, i))
+				c.AddLabel(nameRef, stoFilename)
+				c.AddContext(nameRef, ContextStore, "Drink name (at merchant)", c.location(fmt.Sprintf("%s → drink %d", stoFilename, i), stoFilename))
 			}
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *TextCollection) LoadContextFromEffect(effFilename string, eff *p.Eff) error {
@@ -531,10 +686,12 @@ func (c *TextCollection) LoadContextFromEffect(effFilename string, eff *p.Eff) e
 		for i := fromStrref; i < fromStrref+count; i++ {
 			c.AddLabel(i, lb_effect)
 			c.AddLabel(i, lb_cynicismQuote)
+			c.AddLabel(i, effFilename)
 			c.AddContext(i, ContextEffect, "Show floating text", effFilename)
 		}
 	} else if strref, context := getStrrefFromEffect(opcode, param1); strref != 0 && strref != 0xFFFFFFFF {
 		c.AddLabel(strref, lb_effect)
+		c.AddLabel(strref, effFilename)
 		c.AddContext(strref, ContextEffect, context, effFilename)
 	}
 
@@ -571,7 +728,7 @@ func (c *TextCollection) FillKnownContext() {
 }
 
 // Effect state names
-func (c *TextCollection) LoadContextFromEffText2DA(_ string, twoda *p.TwoDA) error {
+func (c *TextCollection) LoadContextFromEffText2DA(filename string, twoda *p.TwoDA) error {
 	for _, rowKey := range twoda.RowKeys {
 		effName, ok := twoda.Get(rowKey, "EFFECT_NAME")
 		if !ok {
@@ -590,6 +747,7 @@ func (c *TextCollection) LoadContextFromEffText2DA(_ string, twoda *p.TwoDA) err
 
 		if strref := uint32(strrefSigned); strref != 0 && strref != 0xFFFFFFFF {
 			c.AddLabel(strref, lb_effect)
+			c.AddLabel(strref, filename)
 			c.AddContext(strref, ContextEffect, "EFFTEXT.2DA (state name shown in the game message window)", effName)
 		}
 	}
@@ -597,7 +755,7 @@ func (c *TextCollection) LoadContextFromEffText2DA(_ string, twoda *p.TwoDA) err
 }
 
 // Engine's standard text references
-func (c *TextCollection) LoadContextFromEngineSt2DA(_ string, twoda *p.TwoDA) error {
+func (c *TextCollection) LoadContextFromEngineSt2DA(filename string, twoda *p.TwoDA) error {
 	for _, rowKey := range twoda.RowKeys {
 		strrefStr, ok := twoda.Get(rowKey, "StrRef")
 		if !ok {
@@ -611,6 +769,7 @@ func (c *TextCollection) LoadContextFromEngineSt2DA(_ string, twoda *p.TwoDA) er
 
 		if strref := uint32(strrefSigned); strref != 0 && strref != 0xFFFFFFFF {
 			c.AddLabel(strref, lb_ui)
+			c.AddLabel(strref, filename)
 			c.AddContext(strref, ContextUI, "ENGINEST.2DA (used in UI)", rowKey)
 		}
 	}
@@ -618,7 +777,7 @@ func (c *TextCollection) LoadContextFromEngineSt2DA(_ string, twoda *p.TwoDA) er
 }
 
 // Magic dispel primary type
-func (c *TextCollection) LoadContextFromMSchool2DA(_ string, twoda *p.TwoDA) error {
+func (c *TextCollection) LoadContextFromMSchool2DA(filename string, twoda *p.TwoDA) error {
 	for _, rowKey := range twoda.RowKeys {
 		strrefStr, ok := twoda.Get(rowKey, "RES_REF")
 		if !ok {
@@ -632,6 +791,7 @@ func (c *TextCollection) LoadContextFromMSchool2DA(_ string, twoda *p.TwoDA) err
 
 		if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
 			c.AddLabel(strref, lb_spell)
+			c.AddLabel(strref, filename)
 			c.AddContext(strref, ContextSpell, "MSCHOOL.2DA (the text that appears when magic is dispelled based on its primary type)", rowKey)
 		}
 	}
@@ -639,7 +799,7 @@ func (c *TextCollection) LoadContextFromMSchool2DA(_ string, twoda *p.TwoDA) err
 }
 
 // Magic dispel secondary type
-func (c *TextCollection) LoadContextFromMSecType2DA(_ string, twoda *p.TwoDA) error {
+func (c *TextCollection) LoadContextFromMSecType2DA(filename string, twoda *p.TwoDA) error {
 	for _, rowKey := range twoda.RowKeys {
 		strrefStr, ok := twoda.Get(rowKey, "RES_REF")
 		if !ok {
@@ -653,6 +813,7 @@ func (c *TextCollection) LoadContextFromMSecType2DA(_ string, twoda *p.TwoDA) er
 
 		if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
 			c.AddLabel(strref, lb_spell)
+			c.AddLabel(strref, filename)
 			c.AddContext(strref, ContextSpell, "MSECTYPE.2DA (the text that appears when magic is dispelled based on its secondary type)", rowKey)
 		}
 	}
@@ -686,8 +847,9 @@ func (c *TextCollection) LoadContextFromTracking2DA(_ string, twoda *p.TwoDA) er
 
 		if strref != 0 && strref != 0xFFFFFFFF {
 			c.AddLabel(strref, lb_ranger_tracking)
+			c.AddLabel(strref, fmt.Sprintf("%s.ARE", rowKey))
 			if isStandalone {
-				c.AddContext(strref, ContextTracking2DA, "The text displayed by the rangers Tracking skill", fmt.Sprintf("Area %s", rowKey))
+				c.AddContext(strref, ContextTracking2DA, "The text displayed by the rangers Tracking skill", fmt.Sprintf("%s.ARE", rowKey))
 			} else {
 				c.AddLabel(67807, lb_ranger_tracking)
 				c.AddContext(67807, ContextTracking2DA, "The default text displayed by the rangers Tracking skill. (See the tag). Possible variables to embed", strrefStr)
@@ -707,6 +869,7 @@ func (c *TextCollection) LoadContextFrom25StWeap2DA(filename string, twoda *p.Tw
 				nameref := uint32(nameref)
 				if nameref != 0 && nameref != 0xFFFFFFFF {
 					c.AddLabel(nameref, lb_item)
+					c.AddLabel(nameref, filename)
 					c.AddContext(nameref, ContextItem, fmt.Sprintf("%s (starting equipment name) for slots", filename), rowKey)
 				}
 			}
@@ -717,6 +880,7 @@ func (c *TextCollection) LoadContextFrom25StWeap2DA(filename string, twoda *p.Tw
 				descref := uint32(descref)
 				if descref != 0 && descref != 0xFFFFFFFF {
 					c.AddLabel(descref, lb_item)
+					c.AddLabel(descref, filename)
 					c.AddContext(descref, ContextItem, fmt.Sprintf("%s (starting equipment description) for slots", filename), rowKey)
 				}
 			}
@@ -727,7 +891,7 @@ func (c *TextCollection) LoadContextFrom25StWeap2DA(filename string, twoda *p.Tw
 }
 
 // Credits
-func (c *TextCollection) LoadContextFrom25ECred2DA(_ string, twoda *p.TwoDA) error {
+func (c *TextCollection) LoadContextFrom25ECred2DA(filename string, twoda *p.TwoDA) error {
 	if row, ok := twoda.Row("DEFAULT"); ok {
 		for i, strrefStr := range row {
 			strref, err := strconv.ParseUint(strrefStr, 10, 32)
@@ -737,6 +901,7 @@ func (c *TextCollection) LoadContextFrom25ECred2DA(_ string, twoda *p.TwoDA) err
 
 			if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
 				c.AddLabel(strref, lb_ui)
+				c.AddLabel(strref, filename)
 				c.AddContext(strref, ContextUI, "25ECRED.2DA (credits text)", fmt.Sprintf("%s.BMP", twoda.GetByIndexOrDefault("BMP", i)))
 			}
 		}
@@ -747,7 +912,7 @@ func (c *TextCollection) LoadContextFrom25ECred2DA(_ string, twoda *p.TwoDA) err
 }
 
 // 7 eyes
-func (c *TextCollection) LoadContextFrom7Eyes2DA(_ string, twoda *p.TwoDA) error {
+func (c *TextCollection) LoadContextFrom7Eyes2DA(filename string, twoda *p.TwoDA) error {
 	for _, rowKey := range twoda.RowKeys {
 		strrefStr, ok := twoda.Get(rowKey, "STRREF")
 		if !ok {
@@ -761,6 +926,7 @@ func (c *TextCollection) LoadContextFrom7Eyes2DA(_ string, twoda *p.TwoDA) error
 
 		if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
 			c.AddLabel(strref, lb_spell)
+			c.AddLabel(strref, filename)
 			c.AddContext(strref, ContextSpell, "7EYES.2DA (Spell Effect: Seven Eyes). The text is shown when an effect is blocked by an active spellstate", rowKey)
 		}
 	}
@@ -768,7 +934,7 @@ func (c *TextCollection) LoadContextFrom7Eyes2DA(_ string, twoda *p.TwoDA) error
 }
 
 // Subtitles
-func (c *TextCollection) LoadContextFromCharSnd2DA(_ string, twoda *p.TwoDA, ids *p.Ids) error {
+func (c *TextCollection) LoadContextFromCharSnd2DA(filename string, twoda *p.TwoDA, ids *p.Ids) error {
 	columns := twoda.Columns
 	for _, rowKey := range twoda.RowKeys {
 		var slotName string
@@ -785,7 +951,6 @@ func (c *TextCollection) LoadContextFromCharSnd2DA(_ string, twoda *p.TwoDA, ids
 			}
 		}
 
-
 		row, ok := twoda.Row(rowKey)
 		if !ok {
 			continue
@@ -799,6 +964,7 @@ func (c *TextCollection) LoadContextFromCharSnd2DA(_ string, twoda *p.TwoDA, ids
 
 			if strref := uint32(strref); strref != 0 && strref != 0xFFFFFFFF {
 				c.AddLabel(strref, lb_sound_subtitles)
+				c.AddLabel(strref, filename)
 				c.AddContext(strref, ContextSubtitles, "CHARSND.2DA (subtitles; M* – male, F* – female)", fmt.Sprintf("%s → %s", columns[col], slotName))
 			}
 		}

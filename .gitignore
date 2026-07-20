@@ -13,3 +13,9 @@ dist/
 
 out*/
 example/
+
+# MemPalace per-project files (issue #185)
+mempalace.yaml
+entities.json
+
+.obsidian/

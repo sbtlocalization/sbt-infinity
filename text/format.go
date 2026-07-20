@@ -17,6 +17,8 @@ import (
 	"github.com/samber/lo"
 )
 
+const autoListInlineLimit = 3
+
 func (c *TextCollection) ExportToXlsx(outputPath string, timestamps map[uint32]int64) error {
 	xlsxFile := xlsx.NewFile()
 	sheet, err := xlsxFile.AddSheet("Sheet1")
@@ -54,7 +56,7 @@ func (c *TextCollection) ExportToXlsx(outputPath string, timestamps map[uint32]i
 		labelsCell.SetString(strings.Join(slices.Sorted(maps.Keys(entry.Labels)), ","))
 
 		contextCell := row.AddCell()
-		contextCell.SetString(joinContext(entry))
+		contextCell.SetString(joinContext(entry, c.Long))
 
 		hasTextCell := row.AddCell()
 		hasTextCell.SetBool(entry.HasText)
@@ -108,22 +110,46 @@ func toList(key string, values []string) string {
 	return fmt.Sprintf("%s:\n%s", key, strings.Join(lines, "\n"))
 }
 
-func toAutoList(key string, values []string) string {
-	if len(values) == 0 {
+func uniqueSorted(values []string) []string {
+	unique := lo.Uniq(values)
+	slices.Sort(unique)
+	return unique
+}
+
+func toAutoListLong(key string, values []string) string {
+	unique := uniqueSorted(values)
+	if len(unique) == 0 {
 		return ""
 	}
 	var text string
-	if len(values) <= 5 {
-		text = strings.Join(lo.Uniq(values), ", ")
+	if len(unique) <= autoListInlineLimit {
+		text = strings.Join(unique, ", ")
 	} else {
-		text = "\n" + strings.Join(lo.UniqMap(values, toListItem), "\n")
+		text = "\n" + strings.Join(lo.Map(unique, toListItem), "\n")
 	}
 	return fmt.Sprintf("%s: %s", key, text)
 }
 
-func joinContext(entry *TextEntry) string {
+func toAutoListShort(key string, values []string) string {
+	unique := uniqueSorted(values)
+	if len(unique) == 0 {
+		return ""
+	}
+	text := strings.Join(unique, ", ")
+	if len(unique) > autoListInlineLimit {
+		text = strings.Join(unique[:autoListInlineLimit], ", ") + fmt.Sprintf(" (+%d more)", len(unique)-autoListInlineLimit)
+	}
+	return fmt.Sprintf("%s: %s", key, text)
+}
+
+func joinContext(entry *TextEntry, long bool) string {
 	contexts := entry.Context
 	var parts []string
+
+	autoList := toAutoListShort
+	if long {
+		autoList = toAutoListLong
+	}
 
 	if sndContexts, ok := contexts[ContextTlkSound]; ok && len(sndContexts) > 0 {
 		files := lo.MapToSlice(sndContexts, func(file string, _ []string) string { return file })
@@ -136,6 +162,18 @@ func joinContext(entry *TextEntry) string {
 		parts = append(parts, "DIALOGS: ----------\n"+strings.Join(dialogs, "\n"))
 	}
 
+	if scriptContexts, ok := contexts[ContextScript]; ok && len(scriptContexts) > 0 {
+		compiledScripts := lo.MapToSlice(scriptContexts, toList)
+		slices.Sort(compiledScripts)
+		parts = append(parts, "SCRIPTS: ----------\n"+strings.Join(compiledScripts, "\n"))
+	}
+
+	if dlgScriptContexts, ok := contexts[ContextDialogScript]; ok && len(dlgScriptContexts) > 0 {
+		scripts := lo.MapToSlice(dlgScriptContexts, toList)
+		slices.Sort(scripts)
+		parts = append(parts, "DIALOG SCRIPTS: ----------\n"+strings.Join(scripts, "\n"))
+	}
+
 	if uiContexts, ok := contexts[ContextUI]; ok && len(uiContexts) > 0 {
 		screens := lo.MapToSlice(uiContexts, toList)
 		slices.Sort(screens)
@@ -143,7 +181,7 @@ func joinContext(entry *TextEntry) string {
 	}
 
 	if creContexts, ok := contexts[ContextCreature]; ok && len(creContexts) > 0 {
-		creatures := lo.MapToSlice(creContexts, toAutoList)
+		creatures := lo.MapToSlice(creContexts, autoList)
 		slices.Sort(creatures)
 		parts = append(parts, "CREATURES: ----------\n"+strings.Join(creatures, "\n"))
 	}
@@ -157,49 +195,49 @@ func joinContext(entry *TextEntry) string {
 	}
 
 	if wmContexts, ok := contexts[ContextWorldMap]; ok && len(wmContexts) > 0 {
-		maps := lo.MapToSlice(wmContexts, toAutoList)
+		maps := lo.MapToSlice(wmContexts, autoList)
 		slices.Sort(maps)
 		parts = append(parts, "WORLD MAPS: ----------\n"+strings.Join(maps, "\n"))
 	}
 
 	if areContexts, ok := contexts[ContextArea]; ok && len(areContexts) > 0 {
-		areas := lo.MapToSlice(areContexts, toAutoList)
+		areas := lo.MapToSlice(areContexts, autoList)
 		slices.Sort(areas)
 		parts = append(parts, "AREAS: ----------\n"+strings.Join(areas, "\n"))
 	}
 
 	if itemContexts, ok := contexts[ContextItem]; ok && len(itemContexts) > 0 {
-		items := lo.MapToSlice(itemContexts, toAutoList)
+		items := lo.MapToSlice(itemContexts, autoList)
 		slices.Sort(items)
 		parts = append(parts, "ITEMS: ----------\n"+strings.Join(items, "\n"))
 	}
 
 	if projContexts, ok := contexts[ContextProjectile]; ok && len(projContexts) > 0 {
-		projectiles := lo.MapToSlice(projContexts, toAutoList)
+		projectiles := lo.MapToSlice(projContexts, autoList)
 		slices.Sort(projectiles)
 		parts = append(parts, "PROJECTILES: ----------\n"+strings.Join(projectiles, "\n"))
 	}
 
 	if spellContexts, ok := contexts[ContextSpell]; ok && len(spellContexts) > 0 {
-		spells := lo.MapToSlice(spellContexts, toAutoList)
+		spells := lo.MapToSlice(spellContexts, autoList)
 		slices.Sort(spells)
 		parts = append(parts, "SPELLS: ----------\n"+strings.Join(spells, "\n"))
 	}
 
 	if storeContexts, ok := contexts[ContextStore]; ok && len(storeContexts) > 0 {
-		stores := lo.MapToSlice(storeContexts, toAutoList)
+		stores := lo.MapToSlice(storeContexts, autoList)
 		slices.Sort(stores)
 		parts = append(parts, "STORES: ----------\n"+strings.Join(stores, "\n"))
 	}
 
 	if effectContexts, ok := contexts[ContextEffect]; ok && len(effectContexts) > 0 {
-		effects := lo.MapToSlice(effectContexts, toAutoList)
+		effects := lo.MapToSlice(effectContexts, autoList)
 		slices.Sort(effects)
 		parts = append(parts, "EFFECTS: ----------\n"+strings.Join(effects, "\n"))
 	}
 
 	if tracking2DAContexts, ok := contexts[ContextTracking2DA]; ok && len(tracking2DAContexts) > 0 {
-		trackings := lo.MapToSlice(tracking2DAContexts, toAutoList)
+		trackings := lo.MapToSlice(tracking2DAContexts, autoList)
 		slices.Sort(trackings)
 		parts = append(parts, "TRACKING.2DA: ----------\n"+strings.Join(trackings, "\n"))
 	}

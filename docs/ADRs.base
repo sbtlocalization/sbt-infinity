@@ -1,0 +1,46 @@
+filters:
+  and:
+    - file.inFolder("docs/adr")
+formulas:
+  is_blocked: |-
+    note["blocked by"].reduce(
+      acc || (
+        value.asFile().properties.status != "Done" && 
+        value.asFile().properties.status != "Obsolete"
+      ),
+      false
+    )
+properties:
+  note.status:
+    displayName: status
+  file.name:
+    displayName: name
+views:
+  - type: table
+    name: актуальні
+    filters:
+      and:
+        - note["adr-status"] != "Superseded"
+    order:
+      - adr-status
+      - file.name
+      - file.ctime
+    sort:
+      - property: epic
+        direction: ASC
+    columnSize:
+      file.name: 524
+      note.superseded-by: 224
+  - type: table
+    name: all
+    order:
+      - adr-status
+      - file.name
+      - superseded-by
+      - file.ctime
+    sort:
+      - property: epic
+        direction: ASC
+    columnSize:
+      file.name: 460
+      note.superseded-by: 224
