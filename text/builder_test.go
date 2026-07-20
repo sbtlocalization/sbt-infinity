@@ -6,10 +6,13 @@
 package text
 
 import (
+	"bytes"
+	"encoding/binary"
 	"slices"
 	"strings"
 	"testing"
 
+	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
 	"github.com/sbtlocalization/sbt-infinity/dialog"
 	p "github.com/sbtlocalization/sbt-infinity/parser"
 )
@@ -186,6 +189,50 @@ func TestLoadContextFromCompiledScript_WithUsage(t *testing.T) {
 	scripts := c.Entries[14381].Context[ContextScript]
 	if _, ok := scripts["CTFB.BCS [trap @ AR1234]"]; !ok {
 		t.Fatalf("expected context keyed by annotated script name, got keys %v", keysOf(scripts))
+	}
+}
+
+// A valid 156-byte STO header whose drinks section claims one entry at an
+// offset sitting on EOF, so Sto.Drinks() fails while the header (and thus the
+// store name) stays readable — the seam a swallowed lazy-getter error hides.
+func brokenDrinksStore(t *testing.T, nameRef uint32) *p.Sto {
+	t.Helper()
+
+	const headerSize = 156
+	buf := make([]byte, headerSize)
+	copy(buf[0:4], "STOR")
+	copy(buf[4:8], "V1.0")
+	binary.LittleEndian.PutUint32(buf[12:16], nameRef)    // NameRef
+	binary.LittleEndian.PutUint32(buf[76:80], headerSize) // OfsDrinks → EOF
+	binary.LittleEndian.PutUint32(buf[80:84], 1)          // NumDrinks
+
+	sto := p.NewSto()
+	if err := sto.Read(kaitai.NewStream(bytes.NewReader(buf)), nil, sto); err != nil {
+		t.Fatalf("crafting broken STO: %v", err)
+	}
+	// Do not probe Drinks() here: the lazy getter memoizes on first call
+	// (including a failing one), so a probe would return a cached nil error and
+	// mask the failure the loader must surface.
+	return sto
+}
+
+func TestLoadContextFromStore_LazyGetterFailureSurfacedAndPartial(t *testing.T) {
+	const nameRef = 14381
+	c := newTestCollection(nameRef)
+	sto := brokenDrinksStore(t, nameRef)
+
+	err := c.LoadContextFromStore("SHOP.STO", sto)
+	if err == nil {
+		t.Fatal("LoadContextFromStore() err = nil, want the drinks-read failure surfaced")
+	}
+
+	entry := c.Entries[nameRef]
+	values := entry.Context[ContextStore]["Store name"]
+	if !slices.Contains(values, "SHOP.STO") {
+		t.Errorf("readable store name context was dropped: %v", entry.Context[ContextStore])
+	}
+	if _, ok := entry.Labels[lb_store]; !ok {
+		t.Errorf("expected %q label on %d, got %v", lb_store, nameRef, keysOf(entry.Labels))
 	}
 }
 

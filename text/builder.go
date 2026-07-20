@@ -6,6 +6,7 @@
 package text
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -281,6 +282,8 @@ func (c *TextCollection) LoadContextFromUiScreens(uiFilename string, chu *p.Chu)
 }
 
 func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre, ids *p.Ids, usage ScriptUsageIndex) error {
+	var errs []error
+
 	longName := cre.LongNameRef
 	if longName != 0 && longName != 0xFFFFFFFF {
 		c.AddLabel(longName, lb_creature)
@@ -320,7 +323,9 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 		c.AddCreatureSoundContext(ref, identifier, strings.ToLower(creFilename))
 	}
 
-	if effects, err := cre.Body.Effects(); err == nil {
+	if effects, err := cre.Body.Effects(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get creature effects: %w", err))
+	} else {
 		const creatureEffectPattern = "Creature %s → effect %d"
 
 		for i, effect := range effects {
@@ -353,7 +358,7 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp) error {
@@ -391,10 +396,14 @@ func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp
 }
 
 func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usage ScriptUsageIndex) error {
+	var errs []error
+
 	areaSite := resourceName(areFilename)
 	usage.Add(are.AreaScriptBcs, "area", areaSite)
 
-	if actors, err := are.Actors(); err == nil {
+	if actors, err := are.Actors(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area actors: %w", err))
+	} else {
 		for _, actor := range actors {
 			for _, script := range []string{
 				actor.OverrideScriptBcs,
@@ -409,7 +418,9 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usa
 		}
 	}
 
-	if regions, err := are.Regions(); err == nil {
+	if regions, err := are.Regions(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area regions: %w", err))
+	} else {
 		for i, region := range regions {
 			usage.Add(region.ScriptBcs, regionSlotName(region.RegionType), areaSite)
 
@@ -426,7 +437,9 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usa
 		}
 	}
 
-	if containers, err := are.Containers(); err == nil {
+	if containers, err := are.Containers(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area containers: %w", err))
+	} else {
 		for i, container := range containers {
 			usage.Add(container.TrapScriptBcs, "container", areaSite)
 
@@ -437,7 +450,9 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usa
 		}
 	}
 
-	if doors, err := are.Doors(); err == nil {
+	if doors, err := are.Doors(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area doors: %w", err))
+	} else {
 		for i, door := range doors {
 			usage.Add(door.ScriptBcs, "door", areaSite)
 
@@ -454,7 +469,9 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usa
 		}
 	}
 
-	if bgAutomapNotes, err := are.BgAutomapNotes(); err == nil {
+	if bgAutomapNotes, err := are.BgAutomapNotes(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area automap notes: %w", err))
+	} else {
 		for i, note := range bgAutomapNotes {
 			// Read only internal notes
 			if textRef := note.NoteRef; note.NoteRefIsInternal.Value && textRef != 0 && textRef != 0xFFFFFFFF {
@@ -464,7 +481,9 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usa
 		}
 	}
 
-	if restEncounters, err := are.RestEncounters(); err == nil {
+	if restEncounters, err := are.RestEncounters(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get area rest encounters: %w", err))
+	} else {
 		for _, creatureTextRef := range restEncounters.CreatureTextRef {
 			if creatureTextRef != 0 && creatureTextRef != 0xFFFFFFFF {
 				c.AddLabel(creatureTextRef, lb_area_rest_encounter)
@@ -473,10 +492,12 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usa
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *TextCollection) LoadContextFromItem(itmFilename string, itm *p.Itm) error {
+	var errs []error
+
 	if unidentNameRef := itm.UnidentifiedNameRef; unidentNameRef != 0 && unidentNameRef != 0xFFFFFFFF {
 		c.AddLabel(unidentNameRef, lb_item)
 		c.AddContext(unidentNameRef, ContextItem, "General (unidentified) item name", itmFilename)
@@ -497,7 +518,9 @@ func (c *TextCollection) LoadContextFromItem(itmFilename string, itm *p.Itm) err
 		c.AddContext(identDescRef, ContextItem, "Identified item description", itmFilename)
 	}
 
-	if globalEffects, err := itm.GlobalEffects(); err == nil {
+	if globalEffects, err := itm.GlobalEffects(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get item global effects: %w", err))
+	} else {
 		for i, effect := range globalEffects {
 			if strref, context := getStrrefFromEffect(uint32(effect.Opcode), effect.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 				c.AddLabel(strref, lb_item)
@@ -507,9 +530,13 @@ func (c *TextCollection) LoadContextFromItem(itmFilename string, itm *p.Itm) err
 		}
 	}
 
-	if abilities, err := itm.ExtendedHeaders(); err == nil {
+	if abilities, err := itm.ExtendedHeaders(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get item extended headers: %w", err))
+	} else {
 		for i, ability := range abilities {
-			if effects, err := ability.Effects(); err == nil {
+			if effects, err := ability.Effects(); err != nil {
+				errs = append(errs, fmt.Errorf("unable to get effects for item ability %d: %w", i, err))
+			} else {
 				for j, effect := range effects {
 					if strref, context := getStrrefFromEffect(uint32(effect.Opcode), effect.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 						c.AddLabel(strref, lb_item)
@@ -522,7 +549,7 @@ func (c *TextCollection) LoadContextFromItem(itmFilename string, itm *p.Itm) err
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *TextCollection) LoadContextFromProjectile(proFilename string, pro *p.Pro) error {
@@ -535,6 +562,8 @@ func (c *TextCollection) LoadContextFromProjectile(proFilename string, pro *p.Pr
 }
 
 func (c *TextCollection) LoadContextFromSpell(splFilename string, spl *p.Spl) error {
+	var errs []error
+
 	if unidentNameRef := spl.UnidentifiedNameRef; unidentNameRef != 0 && unidentNameRef != 0xFFFFFFFF {
 		c.AddLabel(unidentNameRef, lb_spell)
 		c.AddContext(unidentNameRef, ContextSpell, "General (unidentified) spell name", splFilename)
@@ -555,7 +584,9 @@ func (c *TextCollection) LoadContextFromSpell(splFilename string, spl *p.Spl) er
 		c.AddContext(identDescRef, ContextSpell, "Identified spell description", splFilename)
 	}
 
-	if globalEffects, err := spl.Effects(); err == nil {
+	if globalEffects, err := spl.Effects(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get spell effects: %w", err))
+	} else {
 		for i, effect := range globalEffects {
 			if strref, context := getStrrefFromEffect(uint32(effect.Opcode), effect.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 				c.AddLabel(strref, lb_spell)
@@ -565,9 +596,13 @@ func (c *TextCollection) LoadContextFromSpell(splFilename string, spl *p.Spl) er
 		}
 	}
 
-	if abilities, err := spl.ExtendedHeaders(); err == nil {
+	if abilities, err := spl.ExtendedHeaders(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get spell extended headers: %w", err))
+	} else {
 		for i, ability := range abilities {
-			if effects, err := ability.Effects(); err == nil {
+			if effects, err := ability.Effects(); err != nil {
+				errs = append(errs, fmt.Errorf("unable to get effects for spell ability %d: %w", i, err))
+			} else {
 				for j, effect := range effects {
 					if strref, context := getStrrefFromEffect(uint32(effect.Opcode), effect.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 						c.AddLabel(strref, lb_spell)
@@ -580,16 +615,20 @@ func (c *TextCollection) LoadContextFromSpell(splFilename string, spl *p.Spl) er
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *TextCollection) LoadContextFromStore(stoFilename string, sto *p.Sto) error {
+	var errs []error
+
 	if nameRef := sto.NameRef; nameRef != 0 && nameRef != 0xFFFFFFFF {
 		c.AddLabel(nameRef, lb_store)
 		c.AddContext(nameRef, ContextStore, "Store name", stoFilename)
 	}
 
-	if drinks, err := sto.Drinks(); err == nil {
+	if drinks, err := sto.Drinks(); err != nil {
+		errs = append(errs, fmt.Errorf("unable to get store drinks: %w", err))
+	} else {
 		for i, drink := range drinks {
 			if nameRef := drink.DrinkNameRef; nameRef != 0 && nameRef != 0xFFFFFFFF {
 				c.AddLabel(nameRef, lb_store)
@@ -599,7 +638,7 @@ func (c *TextCollection) LoadContextFromStore(stoFilename string, sto *p.Sto) er
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *TextCollection) LoadContextFromEffect(effFilename string, eff *p.Eff) error {

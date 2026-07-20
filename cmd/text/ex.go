@@ -536,8 +536,7 @@ func processUiScreens(collection *text.TextCollection, infFs afero.Fs, verbose b
 		if err := chu.Read(stream, nil, chu); err != nil {
 			return err
 		}
-		collection.LoadContextFromUiScreens(filename, chu)
-		return nil
+		return collection.LoadContextFromUiScreens(filename, chu)
 	})
 }
 
@@ -547,8 +546,7 @@ func processWorldMaps(collection *text.TextCollection, infFs afero.Fs, verbose b
 		if err := wmp.Read(stream, nil, wmp); err != nil {
 			return err
 		}
-		collection.LoadContextFromWorldMaps(filename, wmp)
-		return nil
+		return collection.LoadContextFromWorldMaps(filename, wmp)
 	})
 }
 
@@ -558,8 +556,7 @@ func processAreas(collection *text.TextCollection, infFs afero.Fs, scriptUsage t
 		if err := are.Read(stream, nil, are); err != nil {
 			return err
 		}
-		collection.LoadContextFromArea(filename, are, scriptUsage)
-		return nil
+		return collection.LoadContextFromArea(filename, are, scriptUsage)
 	})
 }
 
@@ -569,8 +566,7 @@ func processItems(collection *text.TextCollection, infFs afero.Fs, verbose bool)
 		if err := itm.Read(stream, nil, itm); err != nil {
 			return err
 		}
-		collection.LoadContextFromItem(filename, itm)
-		return nil
+		return collection.LoadContextFromItem(filename, itm)
 	})
 }
 
@@ -580,8 +576,7 @@ func processProjectiles(collection *text.TextCollection, infFs afero.Fs, verbose
 		if err := pro.Read(stream, nil, pro); err != nil {
 			return err
 		}
-		collection.LoadContextFromProjectile(filename, pro)
-		return nil
+		return collection.LoadContextFromProjectile(filename, pro)
 	})
 }
 
@@ -591,8 +586,7 @@ func processSpells(collection *text.TextCollection, infFs afero.Fs, verbose bool
 		if err := spl.Read(stream, nil, spl); err != nil {
 			return err
 		}
-		collection.LoadContextFromSpell(filename, spl)
-		return nil
+		return collection.LoadContextFromSpell(filename, spl)
 	})
 }
 
@@ -602,8 +596,7 @@ func processStores(collection *text.TextCollection, infFs afero.Fs, verbose bool
 		if err := sto.Read(stream, nil, sto); err != nil {
 			return err
 		}
-		collection.LoadContextFromStore(filename, sto)
-		return nil
+		return collection.LoadContextFromStore(filename, sto)
 	})
 }
 
@@ -613,8 +606,7 @@ func processEffects(collection *text.TextCollection, infFs afero.Fs, verbose boo
 		if err := eff.Read(stream, nil, eff); err != nil {
 			return err
 		}
-		collection.LoadContextFromEffect(filename, eff)
-		return nil
+		return collection.LoadContextFromEffect(filename, eff)
 	})
 }
 

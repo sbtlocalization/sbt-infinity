@@ -1,7 +1,7 @@
 ---
 epic:
 parent:
-status: To do
+status: Done
 priority: 3
 blocked by:
   - "[[0009 - Close CRE file only after creature context is extracted]]"
@@ -98,8 +98,8 @@ Make these failures visible while keeping graceful degradation: accumulate the e
 
 # Acceptance criteria
 
-- [ ] No `err == nil`-guarded lazy getter in the context loaders discards its error; each failure is joined into the loader's returned error.
-- [ ] A resource with one failing section still contributes context from its other sections.
-- [ ] `text export --verbose` prints a warning naming the file when any lazy getter fails; non-verbose output stays quiet.
-- [ ] A loader returning a joined error still lets the scan continue with the remaining files.
-- [ ] Collection-seam test: a loader fed an object whose lazy getter fails returns a non-nil error and still records the context that was readable.
+- [x] No `err == nil`-guarded lazy getter in the context loaders discards its error; each failure is joined into the loader's returned error.
+- [x] A resource with one failing section still contributes context from its other sections.
+- [x] `text export --verbose` prints a warning naming the file when any lazy getter fails; non-verbose output stays quiet.
+- [x] A loader returning a joined error still lets the scan continue with the remaining files.
+- [x] Collection-seam test: a loader fed an object whose lazy getter fails returns a non-nil error and still records the context that was readable.
