@@ -6,7 +6,7 @@
 package parser
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/spf13/afero"
 )
@@ -24,39 +24,42 @@ func (d *DlgFile) Close() error {
 	return d.File.Close()
 }
 
-func (s *Dlg_StateEntry) GetTriggerText() (string, bool) {
+func (s *Dlg_StateEntry) GetTriggerText() (string, bool, error) {
 	trigger, err := s.Trigger()
-	if trigger == nil || err != nil {
-		return "", false
+	if err != nil {
+		return "", false, fmt.Errorf("failed to read state trigger: %w", err)
+	}
+	if trigger == nil {
+		return "", false, nil
 	}
 
 	text, err := trigger.Text()
 	if err != nil {
-		log.Println("Error getting trigger text for state entry:", err)
-		return "", false
+		return "", false, fmt.Errorf("failed to read state trigger text: %w", err)
 	}
 
-	return text, true
+	return text, true, nil
 }
 
-func (t *Dlg_TransitionEntry) GetTriggerText() (string, bool) {
+func (t *Dlg_TransitionEntry) GetTriggerText() (string, bool, error) {
 	if !t.Flags.WithTrigger {
-		return "", false
+		return "", false, nil
 	}
 
 	trigger, err := t.Trigger()
-	if trigger == nil || err != nil {
-		log.Fatalln("There is no trigger although there should be one:", err)
-		return "", false
+	if err != nil {
+		return "", false, fmt.Errorf("failed to read transition trigger: %w", err)
+	}
+	if trigger == nil {
+		return "", false, fmt.Errorf("transition promises a trigger but none was read")
 	}
 
 	text, err := trigger.Text()
 	if err != nil {
-		log.Println("Error getting trigger text for transition entry:", err)
-		return "", false
+		return "", false, fmt.Errorf("failed to read transition trigger text: %w", err)
 	}
 
-	return text, true
+	return text, true, nil
 }
 
 func (t *Dlg_TransitionEntry) GetText(tlkFile *TlkFile) (uint32, string, bool) {
@@ -83,22 +86,23 @@ func (t *Dlg_TransitionEntry) GetJournalText(tlkFile *TlkFile) (uint32, string, 
 	}
 }
 
-func (t *Dlg_TransitionEntry) GetActionText() (string, bool) {
+func (t *Dlg_TransitionEntry) GetActionText() (string, bool, error) {
 	if !t.Flags.WithAction {
-		return "", false
+		return "", false, nil
 	}
 
 	action, err := t.Action()
 	if err != nil {
-		log.Fatalln("There is no action although there should be one:", err)
-		return "", false
+		return "", false, fmt.Errorf("failed to read transition action: %w", err)
+	}
+	if action == nil {
+		return "", false, fmt.Errorf("transition promises an action but none was read")
 	}
 
 	text, err := action.Text()
 	if err != nil {
-		log.Println("Error getting action text for transition entry:", err)
-		return "", false
+		return "", false, fmt.Errorf("failed to read transition action text: %w", err)
 	}
 
-	return text, true
+	return text, true, nil
 }

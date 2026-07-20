@@ -10,6 +10,9 @@ update-parser:
 	kaitai-struct-compiler --target go --go-package parser --outdir . kaitai/*.ksy
 
 build:
+	go build .
+
+build-mac:
 	go build -o sbt-inf .
 
 build-win:
