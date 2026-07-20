@@ -82,6 +82,14 @@ const (
 
 type TextCollection struct {
 	Entries map[uint32]*TextEntry
+	Long    bool
+}
+
+func (c *TextCollection) location(verbose, fileName string) string {
+	if c.Long {
+		return verbose
+	}
+	return fileName
 }
 
 func NewTextCollection(tlk *p.Tlk) *TextCollection {
@@ -321,7 +329,7 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 				if strref, context := getStrrefFromEffect(uint32(v.Opcode), v.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 					c.AddLabel(strref, lb_creature)
 					c.AddLabel(strref, lb_effect)
-					c.AddContext(strref, ContextEffect, context, fmt.Sprintf(creatureEffectPattern, creFilename, i))
+					c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf(creatureEffectPattern, creFilename, i), creFilename))
 				}
 			case *p.Eff_BodyV2:
 				// Special handling for opcode 0x14A (Show floating text)
@@ -334,12 +342,12 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 					for i := fromStrref; i < fromStrref+count; i++ {
 						c.AddLabel(i, lb_effect)
 						c.AddLabel(i, lb_cynicismQuote)
-						c.AddContext(i, ContextEffect, "Show floating text", fmt.Sprintf(creatureEffectPattern, creFilename, i))
+						c.AddContext(i, ContextEffect, "Show floating text", c.location(fmt.Sprintf(creatureEffectPattern, creFilename, i), creFilename))
 					}
 				} else if strref, context := getStrrefFromEffect(uint32(v.Opcode), v.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 					c.AddLabel(strref, lb_creature)
 					c.AddLabel(strref, lb_effect)
-					c.AddContext(strref, ContextEffect, context, fmt.Sprintf(creatureEffectPattern, creFilename, i))
+					c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf(creatureEffectPattern, creFilename, i), creFilename))
 				}
 			}
 		}
@@ -359,7 +367,7 @@ func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp
 
 		if nameRef != 0 && nameRef != 0xFFFFFFFF {
 			c.AddLabel(nameRef, lb_world_map)
-			c.AddContext(nameRef, ContextWorldMap, "World map name", fmt.Sprintf("%s → map %d", wmpFilename, wmEntry.MapId))
+			c.AddContext(nameRef, ContextWorldMap, "World map name", c.location(fmt.Sprintf("%s → map %d", wmpFilename, wmEntry.MapId), wmpFilename))
 		}
 
 		areas, err := wmEntry.AreaEntries()
@@ -370,11 +378,11 @@ func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp
 		for i, area := range areas {
 			if captionRef := area.CaptionRef; captionRef != 0 && captionRef != 0xFFFFFFFF {
 				c.AddLabel(captionRef, lb_area)
-				c.AddContext(captionRef, ContextWorldMap, "Area caption", fmt.Sprintf("%s → map %d → area %d", wmpFilename, wmEntry.MapId, i))
+				c.AddContext(captionRef, ContextWorldMap, "Area caption", c.location(fmt.Sprintf("%s → map %d → area %d", wmpFilename, wmEntry.MapId, i), wmpFilename))
 			}
 			if tooltipRef := area.TooltipRef; tooltipRef != 0 && tooltipRef != 0xFFFFFFFF {
 				c.AddLabel(tooltipRef, lb_area)
-				c.AddContext(tooltipRef, ContextWorldMap, "Area tooltip", fmt.Sprintf("%s → map %d → area %d", wmpFilename, wmEntry.MapId, i))
+				c.AddContext(tooltipRef, ContextWorldMap, "Area tooltip", c.location(fmt.Sprintf("%s → map %d → area %d", wmpFilename, wmEntry.MapId, i), wmpFilename))
 			}
 		}
 	}
@@ -407,13 +415,13 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usa
 
 			if infoRef := region.InfoRef; infoRef != 0 && infoRef != 0xFFFFFFFF {
 				c.AddLabel(infoRef, lb_area_trigger)
-				c.AddContext(infoRef, ContextArea, "Info point on the map", fmt.Sprintf("%s → trigger %d", areFilename, i))
+				c.AddContext(infoRef, ContextArea, "Info point on the map", c.location(fmt.Sprintf("%s → trigger %d", areFilename, i), areFilename))
 			}
 
 			if speakerRef := region.PstSpeakerNameRef; speakerRef != 0 && speakerRef != 0xFFFFFFFF {
 				c.AddLabel(speakerRef, lb_area_trigger)
 				c.AddLabel(speakerRef, lb_area_speaker)
-				c.AddContext(speakerRef, ContextArea, "Trigger's speaker name (PST only)", fmt.Sprintf("%s → trigger %d", areFilename, i))
+				c.AddContext(speakerRef, ContextArea, "Trigger's speaker name (PST only)", c.location(fmt.Sprintf("%s → trigger %d", areFilename, i), areFilename))
 			}
 		}
 	}
@@ -424,7 +432,7 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usa
 
 			if lockpickRef := container.LockpickRef; lockpickRef != 0 && lockpickRef != 0xFFFFFFFF {
 				c.AddLabel(lockpickRef, lb_area_container)
-				c.AddContext(lockpickRef, ContextArea, "Container's lockpicking message", fmt.Sprintf("%s → container %d", areFilename, i))
+				c.AddContext(lockpickRef, ContextArea, "Container's lockpicking message", c.location(fmt.Sprintf("%s → container %d", areFilename, i), areFilename))
 			}
 		}
 	}
@@ -435,13 +443,13 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usa
 
 			if unlockMessageRef := door.UnlockMessageRef; unlockMessageRef != 0 && unlockMessageRef != 0xFFFFFFFF {
 				c.AddLabel(unlockMessageRef, lb_area_door)
-				c.AddContext(unlockMessageRef, ContextArea, "Unlock message", fmt.Sprintf("%s → door %d", areFilename, i))
+				c.AddContext(unlockMessageRef, ContextArea, "Unlock message", c.location(fmt.Sprintf("%s → door %d", areFilename, i), areFilename))
 			}
 
 			if speakerRef := door.SpeakerNameRef; speakerRef != 0 && speakerRef != 0xFFFFFFFF {
 				c.AddLabel(speakerRef, lb_area_door)
 				c.AddLabel(speakerRef, lb_area_speaker)
-				c.AddContext(speakerRef, ContextArea, "Door's speaker name", fmt.Sprintf("%s → door %d", areFilename, i))
+				c.AddContext(speakerRef, ContextArea, "Door's speaker name", c.location(fmt.Sprintf("%s → door %d", areFilename, i), areFilename))
 			}
 		}
 	}
@@ -451,7 +459,7 @@ func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usa
 			// Read only internal notes
 			if textRef := note.NoteRef; note.NoteRefIsInternal.Value && textRef != 0 && textRef != 0xFFFFFFFF {
 				c.AddLabel(textRef, lb_area_automap_note)
-				c.AddContext(textRef, ContextArea, "Automap note", fmt.Sprintf("%s → automap note %d", areFilename, i))
+				c.AddContext(textRef, ContextArea, "Automap note", c.location(fmt.Sprintf("%s → automap note %d", areFilename, i), areFilename))
 			}
 		}
 	}
@@ -494,7 +502,7 @@ func (c *TextCollection) LoadContextFromItem(itmFilename string, itm *p.Itm) err
 			if strref, context := getStrrefFromEffect(uint32(effect.Opcode), effect.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 				c.AddLabel(strref, lb_item)
 				c.AddLabel(strref, lb_effect)
-				c.AddContext(strref, ContextEffect, context, fmt.Sprintf("Item %s → global effect %d", itmFilename, i))
+				c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf("Item %s → global effect %d", itmFilename, i), itmFilename))
 			}
 		}
 	}
@@ -507,7 +515,7 @@ func (c *TextCollection) LoadContextFromItem(itmFilename string, itm *p.Itm) err
 						c.AddLabel(strref, lb_item)
 						c.AddLabel(strref, lb_ability)
 						c.AddLabel(strref, lb_effect)
-						c.AddContext(strref, ContextEffect, context, fmt.Sprintf("Item %s → ability %d → effect %d", itmFilename, i, j))
+						c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf("Item %s → ability %d → effect %d", itmFilename, i, j), itmFilename))
 					}
 				}
 			}
@@ -552,7 +560,7 @@ func (c *TextCollection) LoadContextFromSpell(splFilename string, spl *p.Spl) er
 			if strref, context := getStrrefFromEffect(uint32(effect.Opcode), effect.Parameter1); strref != 0 && strref != 0xFFFFFFFF {
 				c.AddLabel(strref, lb_spell)
 				c.AddLabel(strref, lb_effect)
-				c.AddContext(strref, ContextEffect, context, fmt.Sprintf("Spell %s → effect %d", splFilename, i))
+				c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf("Spell %s → effect %d", splFilename, i), splFilename))
 			}
 		}
 	}
@@ -565,7 +573,7 @@ func (c *TextCollection) LoadContextFromSpell(splFilename string, spl *p.Spl) er
 						c.AddLabel(strref, lb_spell)
 						c.AddLabel(strref, lb_ability)
 						c.AddLabel(strref, lb_effect)
-						c.AddContext(strref, ContextEffect, context, fmt.Sprintf("Spell %s → ability %d → effect %d", splFilename, i, j))
+						c.AddContext(strref, ContextEffect, context, c.location(fmt.Sprintf("Spell %s → ability %d → effect %d", splFilename, i, j), splFilename))
 					}
 				}
 			}
@@ -586,7 +594,7 @@ func (c *TextCollection) LoadContextFromStore(stoFilename string, sto *p.Sto) er
 			if nameRef := drink.DrinkNameRef; nameRef != 0 && nameRef != 0xFFFFFFFF {
 				c.AddLabel(nameRef, lb_store)
 				c.AddLabel(nameRef, lb_store_drink)
-				c.AddContext(nameRef, ContextStore, "Drink name (at merchant)", fmt.Sprintf("%s → drink %d", stoFilename, i))
+				c.AddContext(nameRef, ContextStore, "Drink name (at merchant)", c.location(fmt.Sprintf("%s → drink %d", stoFilename, i), stoFilename))
 			}
 		}
 	}
@@ -762,7 +770,7 @@ func (c *TextCollection) LoadContextFromTracking2DA(_ string, twoda *p.TwoDA) er
 		if strref != 0 && strref != 0xFFFFFFFF {
 			c.AddLabel(strref, lb_ranger_tracking)
 			if isStandalone {
-				c.AddContext(strref, ContextTracking2DA, "The text displayed by the rangers Tracking skill", fmt.Sprintf("Area %s", rowKey))
+				c.AddContext(strref, ContextTracking2DA, "The text displayed by the rangers Tracking skill", fmt.Sprintf("%s.ARE", rowKey))
 			} else {
 				c.AddLabel(67807, lb_ranger_tracking)
 				c.AddContext(67807, ContextTracking2DA, "The default text displayed by the rangers Tracking skill. (See the tag). Possible variables to embed", strrefStr)

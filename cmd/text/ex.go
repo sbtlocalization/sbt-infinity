@@ -43,6 +43,7 @@ text IDs (e.g., 1234, 5678).`,
 	cmd.Flags().String("dlg-base-url", "", "base `URL` for dialog references (overrides config)")
 	cmd.Flags().StringSlice("context-from", []string{}, "load context from `types` of files. Use 'all' to include all types.\nUse 'bif types' command to see all types.")
 	cmd.Flags().String("timestamps-from", "", "CSV file `path` containing timestamps to include in the export")
+	cmd.Flags().Bool("long", false, "keep verbose context locations (file paths with internal indices) instead of collapsing them to file names")
 
 	cmd.MarkFlagFilename("output", "xlsx")
 	cmd.MarkFlagFilename("timestamps-from", "csv")
@@ -58,6 +59,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 	baseUrl, _ := config.ResolveDialogBaseUrl(cmd)
 	contextFrom, _ := cmd.Flags().GetStringSlice("context-from")
 	timestampsFrom, _ := cmd.Flags().GetString("timestamps-from")
+	long, _ := cmd.Flags().GetBool("long")
 
 	outputPath, _ := cmd.Flags().GetString("output")
 	if cmd.Flags().Changed("output") && !strings.HasSuffix(strings.ToLower(outputPath), ".xlsx") {
@@ -91,6 +93,7 @@ func runEx(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	collection := text.NewTextCollection(tlkFile.Tlk)
+	collection.Long = long
 	tlkFile.Close()
 	if verbose {
 		fmt.Println("done.")
