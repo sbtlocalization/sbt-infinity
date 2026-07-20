@@ -43,3 +43,5 @@ require (
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 )
+
+replace github.com/nulab/autog => github.com/sbtlocalization/autog v0.11.1-0.20260717214150-9d2b25726d69
