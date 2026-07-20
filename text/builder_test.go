@@ -236,6 +236,75 @@ func TestLoadContextFromStore_LazyGetterFailureSurfacedAndPartial(t *testing.T) 
 	}
 }
 
+func makeTwoDA(t *testing.T, body string) *p.TwoDA {
+	t.Helper()
+	twoda, err := p.ParseTwoDA(strings.NewReader(body))
+	if err != nil {
+		t.Fatalf("ParseTwoDA: %v", err)
+	}
+	return twoda
+}
+
+func TestLoadContextFromCreature_SourceFileLabelRawCase(t *testing.T) {
+	const ref = 14381
+	c := newTestCollection(ref)
+
+	cre := p.NewCre()
+	cre.LongNameRef = ref
+	cre.ShortNameRef = ref
+	// Body is nil, so the loader records the name labels and then bails out
+	// with an "unsupported version" error before reaching sounds/effects.
+	_ = c.LoadContextFromCreature("Fumble.CRE", cre, nil, nil)
+
+	entry := c.Entries[ref]
+	if _, ok := entry.Labels["Fumble.CRE"]; !ok {
+		t.Errorf("expected raw-case source-file label %q, got %v", "Fumble.CRE", keysOf(entry.Labels))
+	}
+	// The context body lower-cases the name; the label must keep raw case.
+	if _, ok := entry.Labels["fumble.cre"]; ok {
+		t.Errorf("label must keep raw filesystem case, found lower-cased %q", "fumble.cre")
+	}
+	if got := entry.Context[ContextCreature]["Long name"]; !slices.Contains(got, "fumble.cre") {
+		t.Errorf("context body should still lower-case the name, got %v", got)
+	}
+}
+
+func TestLoadContextFromTracking2DA_SourceFileLabelIsArea(t *testing.T) {
+	const standalone = 14381
+	const embedded = 24000
+	c := newTestCollection(standalone, embedded, 67807)
+
+	twoda := makeTwoDA(t, "2DA V1.0\n-1\nSTRREF\nAR1000 O_14381\nAR2000 24000\n")
+	if err := c.LoadContextFromTracking2DA("TRACKING.2DA", twoda); err != nil {
+		t.Fatalf("LoadContextFromTracking2DA: %v", err)
+	}
+
+	if _, ok := c.Entries[standalone].Labels["AR1000.ARE"]; !ok {
+		t.Errorf("expected label AR1000.ARE, got %v", keysOf(c.Entries[standalone].Labels))
+	}
+	if _, ok := c.Entries[embedded].Labels["AR2000.ARE"]; !ok {
+		t.Errorf("expected label AR2000.ARE, got %v", keysOf(c.Entries[embedded].Labels))
+	}
+	// The 2DA's own filename must not stand in for the area name here.
+	if _, ok := c.Entries[standalone].Labels["TRACKING.2DA"]; ok {
+		t.Errorf("tracking label must be the area name, not the 2DA file name")
+	}
+}
+
+func TestLoadContextFromEffText2DA_SourceFileLabel(t *testing.T) {
+	const ref = 35501
+	c := newTestCollection(ref)
+
+	twoda := makeTwoDA(t, "2DA V1.0\n-1\nEFFECT_NAME STRREF\n25 POISON 35501\n")
+	if err := c.LoadContextFromEffText2DA("EFFTEXT.2DA", twoda); err != nil {
+		t.Fatalf("LoadContextFromEffText2DA: %v", err)
+	}
+
+	if _, ok := c.Entries[ref].Labels["EFFTEXT.2DA"]; !ok {
+		t.Errorf("expected source-file label %q, got %v", "EFFTEXT.2DA", keysOf(c.Entries[ref].Labels))
+	}
+}
+
 func keysOf[V any](m map[string]V) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {

@@ -1,7 +1,7 @@
 ---
 epic:
 parent:
-status: Backlog
+status: Done
 priority: 3
 blocked by:
 kind: Task
@@ -97,9 +97,9 @@ Note: several `2DA` loaders currently discard their file-name argument (`_ strin
 
 # Acceptance criteria
 
-- [ ] Every StrRef sourced from a spell, item, creature, effect, store, area, world map, projectile, UI, compiled script, or 2DA file carries that file's name (with extension) as a label.
-- [ ] The label is the raw filesystem spelling — no forced upper/lower casing — even where the context body renders the name in a different case.
-- [ ] Ranger Tracking StrRefs are labelled `<rowKey>.ARE`.
-- [ ] Dialog labels are unchanged.
-- [ ] Labels are present regardless of `--long`.
-- [ ] Filtering the `labels` column by a file name (e.g. `MISLEAD.SPL`) returns exactly the StrRefs that file contributes.
+- [x] Every StrRef sourced from a spell, item, creature, effect, store, area, world map, projectile, UI, compiled script, or 2DA file carries that file's name (with extension) as a label.
+- [x] The label is the raw filesystem spelling — no forced upper/lower casing — even where the context body renders the name in a different case.
+- [x] Ranger Tracking StrRefs are labelled `<rowKey>.ARE`.
+- [x] Dialog labels are unchanged.
+- [x] Labels are present regardless of `--long`.
+- [x] Filtering the `labels` column by a file name (e.g. `MISLEAD.SPL`) returns exactly the StrRefs that file contributes.
