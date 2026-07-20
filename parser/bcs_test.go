@@ -27,6 +27,20 @@ const (
 	// still carries three all-zero object slots, but the rendered call must
 	// not show them.
 	actEraseJournalEntry = 253 // EraseJournalEntry(I:STRREF*)
+
+	// Synthetic display-family signatures exercising the signature-driven
+	// renderer: string/point parameters, a Torment-style reordering, and the
+	// unmappable/overflow cases that must render as "?".
+	actReorderStrRefFirst = 300 // DisplayReorder(I:StrRef*,O:Object*)
+	actStringsAndPoint    = 301 // DisplayText(S:First*,S:Second*,P:Point*,I:StrRef*)
+	actNestedAction       = 302 // DisplayAct(A:Action*,I:StrRef*)
+	actNestedTrigger      = 303 // DisplayTrig(T:Trigger*,I:StrRef*)
+	actUnknownType        = 304 // DisplayUnk(X:Weird*,I:StrRef*)
+	actIntOverflow        = 305 // DisplayInts(I:A*,I:B*,I:StrRef*,I:D*)
+	actObjectOverflow     = 306 // DisplayObjs(O:A*,O:B*,O:C*,I:StrRef*)
+	actPointOverflow      = 307 // DisplayPts(P:A*,P:B*,I:StrRef*)
+	actStringOverflow     = 308 // DisplayStrs(S:A*,S:B*,S:C*,I:StrRef*)
+	actExoticObject       = 309 // DisplayExo(O:Object*,I:StrRef*)
 )
 
 // OBJECT.IDS values used in the tests.
@@ -38,12 +52,22 @@ const (
 func testActionIds() *Ids {
 	return &Ids{
 		Entries: map[int32]string{
-			actDisplayString:     "DisplayString(O:Object*,I:StrRef*)",
-			actDisplayStringHead: "DisplayStringHead(O:Object*,I:StrRef*)",
-			actAttack:            "Attack(O:Target*)",
-			actSetGlobal:         "SetGlobal(S:Name*,S:Area*,I:Value*)",
-			actDisplayStringWait: "DisplayStringWait(O:Object*,I:Time*,I:StrRef*)",
-			actEraseJournalEntry: "EraseJournalEntry(I:STRREF*)",
+			actDisplayString:      "DisplayString(O:Object*,I:StrRef*)",
+			actDisplayStringHead:  "DisplayStringHead(O:Object*,I:StrRef*)",
+			actAttack:             "Attack(O:Target*)",
+			actSetGlobal:          "SetGlobal(S:Name*,S:Area*,I:Value*)",
+			actDisplayStringWait:  "DisplayStringWait(O:Object*,I:Time*,I:StrRef*)",
+			actEraseJournalEntry:  "EraseJournalEntry(I:STRREF*)",
+			actReorderStrRefFirst: "DisplayReorder(I:StrRef*,O:Object*)",
+			actStringsAndPoint:    "DisplayText(S:First*,S:Second*,P:Point*,I:StrRef*)",
+			actNestedAction:       "DisplayAct(A:Action*,I:StrRef*)",
+			actNestedTrigger:      "DisplayTrig(T:Trigger*,I:StrRef*)",
+			actUnknownType:        "DisplayUnk(X:Weird*,I:StrRef*)",
+			actIntOverflow:        "DisplayInts(I:A*,I:B*,I:StrRef*,I:D*)",
+			actObjectOverflow:     "DisplayObjs(O:A*,O:B*,O:C*,I:StrRef*)",
+			actPointOverflow:      "DisplayPts(P:A*,P:B*,I:StrRef*)",
+			actStringOverflow:     "DisplayStrs(S:A*,S:B*,S:C*,I:StrRef*)",
+			actExoticObject:       "DisplayExo(O:Object*,I:StrRef*)",
 		},
 	}
 }
@@ -97,7 +121,45 @@ func acBlock(id int, o1, o2, o3 string, int0, x, y, int1, int2 int) string {
 	}, "\n")
 }
 
+// Same shape as acBlock but with explicit values for the two trailing string
+// parameters, for exercising S: rendering.
+func acBlockStr(id int, o1, o2, o3 string, int0, x, y, int1, int2 int, s1, s2 string) string {
+	return strings.Join([]string{
+		"AC",
+		intStr(id),
+		o1,
+		o2,
+		o3,
+		strings.Join([]string{intStr(int0), intStr(x), intStr(y), intStr(int1), intStr(int2)}, " ") +
+			" " + quote(s1) + " " + quote(s2),
+		"AC",
+	}, "\n")
+}
+
+// An OB block with a non-zero EA field, i.e. an object specification the
+// renderer cannot map to a plain identifier.
+func exoticObject() string {
+	return strings.Join([]string{
+		"OB",
+		"255 0 0 0 0 0 0", // ea=255, rest zero
+		"0",               // identifiers
+		"0 0 0 0",
+		"[0.0]",
+		`""`,
+		"OB",
+	}, "\n")
+}
+
 func emptyObject() string { return obBlock(0, "") }
+
+func decodeOne(t *testing.T, script string) ScriptCall {
+	t.Helper()
+	calls := decode(t, script)
+	if len(calls) != 1 {
+		t.Fatalf("len(calls) = %d, want 1", len(calls))
+	}
+	return calls[0]
+}
 
 func intStr(v int) string { return strconv.Itoa(v) }
 
@@ -200,8 +262,10 @@ func TestDecodeCompiledScript_IntSlotNonZero(t *testing.T) {
 	if calls[0].StrRef != 14381 {
 		t.Errorf("StrRef = %d, want 14381 (read from int1/physical field 3)", calls[0].StrRef)
 	}
-	if calls[0].Call != "DisplayStringWait(Myself,14381)" {
-		t.Errorf("Call = %q, want %q", calls[0].Call, "DisplayStringWait(Myself,14381)")
+	// Every integer parameter renders in signature order, so the decoy Time
+	// value now appears too: DisplayStringWait(O:Object*,I:Time*,I:StrRef*).
+	if calls[0].Call != "DisplayStringWait(Myself,7,14381)" {
+		t.Errorf("Call = %q, want %q", calls[0].Call, "DisplayStringWait(Myself,7,14381)")
 	}
 }
 
@@ -333,5 +397,118 @@ func TestDecodeCompiledScript_MalformedBlockSkipped(t *testing.T) {
 	}
 	if calls[0].Call != "DisplayString(LastTrigger,14381)" {
 		t.Errorf("Call = %q, want %q", calls[0].Call, "DisplayString(LastTrigger,14381)")
+	}
+}
+
+// Arguments must render in the signature's actual order: with StrRef declared
+// first, it appears first, not forced to the end. DisplayReorder(I:StrRef*,O:Object*).
+func TestDecodeCompiledScript_TormentReordering(t *testing.T) {
+	action := acBlock(
+		actReorderStrRefFirst,
+		emptyObject(),
+		obBlock(objMyself, ""),
+		emptyObject(),
+		14381, 0, 0, 0, 0,
+	)
+
+	call := decodeOne(t, wrapScript(action))
+	if call.StrRef != 14381 {
+		t.Errorf("StrRef = %d, want 14381", call.StrRef)
+	}
+	if call.Call != "DisplayReorder(14381,Myself)" {
+		t.Errorf("Call = %q, want %q", call.Call, "DisplayReorder(14381,Myself)")
+	}
+}
+
+// S: parameters must render as quoted strings and P: as [x.y]. DisplayText
+// renders both string slots, the single point (physical fields 1-2), then the
+// StrRef.
+func TestDecodeCompiledScript_StringsAndPoint(t *testing.T) {
+	action := acBlockStr(
+		actStringsAndPoint,
+		emptyObject(),
+		emptyObject(),
+		emptyObject(),
+		14381, 3, 4, 0, 0, // int0=StrRef, x=3, y=4
+		"hello", "world",
+	)
+
+	call := decodeOne(t, wrapScript(action))
+	want := `DisplayText("hello","world",[3.4],14381)`
+	if call.Call != want {
+		t.Errorf("Call = %q, want %q", call.Call, want)
+	}
+}
+
+// Every parameter the renderer cannot map from the block — nested A:/T:, an
+// unknown type, and slot-pool overflow of each kind — plus an exotic object
+// specification must render as "?".
+func TestDecodeCompiledScript_Unmappable(t *testing.T) {
+	cases := []struct {
+		name   string
+		action string
+		want   string
+	}{
+		{
+			name: "nested action",
+			action: acBlock(actNestedAction,
+				emptyObject(), emptyObject(), emptyObject(), 14381, 0, 0, 0, 0),
+			want: "DisplayAct(?,14381)",
+		},
+		{
+			name: "nested trigger",
+			action: acBlock(actNestedTrigger,
+				emptyObject(), emptyObject(), emptyObject(), 14381, 0, 0, 0, 0),
+			want: "DisplayTrig(?,14381)",
+		},
+		{
+			name: "unknown type",
+			action: acBlock(actUnknownType,
+				emptyObject(), emptyObject(), emptyObject(), 14381, 0, 0, 0, 0),
+			want: "DisplayUnk(?,14381)",
+		},
+		{
+			// I:A=1 (field0), I:B=2 (field3), I:StrRef=14381 (field4), I:D overflows.
+			name: "fourth integer overflows",
+			action: acBlock(actIntOverflow,
+				emptyObject(), emptyObject(), emptyObject(), 1, 0, 0, 2, 14381),
+			want: "DisplayInts(1,2,14381,?)",
+		},
+		{
+			// O:A=o2, O:B=o3, O:C overflows.
+			name: "third object overflows",
+			action: acBlock(actObjectOverflow,
+				emptyObject(), obBlock(objMyself, ""), obBlock(objLastTrigger, ""), 14381, 0, 0, 0, 0),
+			want: "DisplayObjs(Myself,LastTrigger,?,14381)",
+		},
+		{
+			// Only one point exists; the second P: overflows.
+			name: "second point overflows",
+			action: acBlock(actPointOverflow,
+				emptyObject(), emptyObject(), emptyObject(), 14381, 3, 4, 0, 0),
+			want: "DisplayPts([3.4],?,14381)",
+		},
+		{
+			// Only two string slots exist; the third S: overflows.
+			name: "third string overflows",
+			action: acBlockStr(actStringOverflow,
+				emptyObject(), emptyObject(), emptyObject(), 14381, 0, 0, 0, 0, "a", "b"),
+			want: `DisplayStrs("a","b",?,14381)`,
+		},
+		{
+			name: "exotic object",
+			action: acBlock(actExoticObject,
+				emptyObject(), exoticObject(), emptyObject(), 14381, 0, 0, 0, 0),
+			want: "DisplayExo(?,14381)",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			call := decodeOne(t, wrapScript(c.action))
+			if call.Call != c.want {
+				t.Errorf("Call = %q, want %q", call.Call, c.want)
+			}
+		})
 	}
 }

@@ -103,6 +103,21 @@ func TestParseActionSignature_IntSlotSkipsNonIntegerParameters(t *testing.T) {
 	}
 }
 
+func TestParseActionSignature_ParameterNameCutAtStar(t *testing.T) {
+	// The "I:Value*Time" form names the constraining IDS file after the "*";
+	// it must not leak into the parameter name.
+	sig, err := ParseActionSignature("IncrementGlobal(S:Name*,I:Value*Time)")
+	if err != nil {
+		t.Fatalf("ParseActionSignature failed: %v", err)
+	}
+	if len(sig.Parameters) != 2 {
+		t.Fatalf("len(Parameters) = %d, want 2", len(sig.Parameters))
+	}
+	if got := sig.Parameters[1].Name; got != "Value" {
+		t.Errorf("Parameters[1].Name = %q, want %q", got, "Value")
+	}
+}
+
 func TestParseActionSignature_TormentReordering(t *testing.T) {
 	// Planescape: Torment reorders parameters relative to BG2/IWD. Placing
 	// StrRef before vs. after an intervening P:Location* parameter, with

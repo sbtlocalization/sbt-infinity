@@ -93,14 +93,18 @@ func ParseActionSignature(identifier string) (*ActionSignature, error) {
 func parseActionParameter(raw string) (ActionParameter, error) {
 	raw = strings.TrimSpace(raw)
 
-	colon := strings.IndexByte(raw, ':')
-	if colon == -1 {
+	typ, name, found := strings.Cut(raw, ":")
+	if !found {
 		return ActionParameter{}, fmt.Errorf("invalid parameter: %s", raw)
 	}
 
+	// The name ends at the first "*"; anything after it (e.g. the constraining
+	// IDS file in "I:Value*Time") is not part of the name.
+	name, _, _ = strings.Cut(name, "*")
+
 	return ActionParameter{
-		Type: raw[:colon],
-		Name: strings.TrimSuffix(raw[colon+1:], "*"),
+		Type: typ,
+		Name: name,
 	}, nil
 }
 

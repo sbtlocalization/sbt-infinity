@@ -32,6 +32,8 @@ type bcsAction struct {
 	o2   bcsObject // the normal single-object slot
 	o3   bcsObject
 	ints [5]int32 // int0, x, y, int1, int2
+	s1   string
+	s2   string
 }
 
 // The point coordinates occupy physical fields 1 and 2 of bcsAction.ints, so
@@ -221,7 +223,7 @@ func (p *bcsParser) parseActionBlock() {
 
 	p.calls = append(p.calls, ScriptCall{
 		StrRef: strref,
-		Call:   p.renderCall(sig, action, strref),
+		Call:   p.renderCall(sig, action),
 	})
 }
 
@@ -263,12 +265,15 @@ func (p *bcsParser) readAction() (bcsAction, bool) {
 		a.ints[i] = v
 	}
 
-	// Two string parameters (read and discarded).
-	for i := 0; i < 2; i++ {
-		if _, ok := p.readString(); !ok {
+	// Two string parameters.
+	strs := [...]*string{&a.s1, &a.s2}
+	for _, s := range strs {
+		v, ok := p.readString()
+		if !ok {
 			p.skipToActionEnd()
 			return a, false
 		}
+		*s = v
 	}
 
 	if !p.expect("AC") {
@@ -371,21 +376,58 @@ func unquote(tok string) string {
 	return tok
 }
 
-// Object decoding is pragmatic — a normal single-object action renders its
-// o2 object (o1 is reserved for an ActionOverride target). The object slots
-// are physically present in every compiled action, so an objectless
-// signature must suppress the slot explicitly or its zero value would leak
-// out as a phantom "Nothing" argument.
-func (p *bcsParser) renderCall(sig *ActionSignature, a bcsAction, strref uint32) string {
-	if !sig.HasObject() {
-		return fmt.Sprintf("%s(%d)", sig.Name, strref)
+// Each parameter is rendered in signature order from its own typed slot pool
+// of the compiled block. Nothing branches on the action name or an expected
+// signature shape: whatever cannot be mapped from the block (nested A:/T:
+// parameters, slot-pool overflow, unknown types, exotic object specs) renders
+// as "?".
+func (p *bcsParser) renderCall(sig *ActionSignature, a bcsAction) string {
+	objects := [...]bcsObject{a.o2, a.o3}
+	strs := [...]string{a.s1, a.s2}
+	var objIdx, intIdx, pointIdx, strIdx int
+
+	args := make([]string, 0, len(sig.Parameters))
+	for _, param := range sig.Parameters {
+		switch param.Type {
+		case "O":
+			if objIdx < len(objects) {
+				args = append(args, p.renderObject(objects[objIdx]))
+				objIdx++
+			} else {
+				args = append(args, "?")
+			}
+		case "I":
+			if field, ok := intSlotField[intIdx]; ok {
+				args = append(args, strconv.FormatInt(int64(a.ints[field]), 10))
+				intIdx++
+			} else {
+				args = append(args, "?")
+			}
+		case "P":
+			if pointIdx == 0 {
+				args = append(args, fmt.Sprintf("[%d.%d]", a.ints[1], a.ints[2]))
+				pointIdx++
+			} else {
+				args = append(args, "?")
+			}
+		case "S":
+			if strIdx < len(strs) {
+				args = append(args, fmt.Sprintf("%q", strs[strIdx]))
+				strIdx++
+			} else {
+				args = append(args, "?")
+			}
+		default:
+			args = append(args, "?")
+		}
 	}
-	return fmt.Sprintf("%s(%s,%d)", sig.Name, p.renderObject(a.o2), strref)
+
+	return fmt.Sprintf("%s(%s)", sig.Name, strings.Join(args, ","))
 }
 
 // A name string wins when present; otherwise an OBJECT.IDS identifier is
-// resolved by value. Exotic EA/RACE/GENERAL/… specifications fall back to a
-// compact placeholder rather than a full [EA.GENERAL.RACE…] expansion.
+// resolved by value. An exotic EA/RACE/GENERAL/… specification cannot be
+// mapped and renders as "?".
 func (p *bcsParser) renderObject(o bcsObject) string {
 	if o.name != "" {
 		return o.name
@@ -395,7 +437,7 @@ func (p *bcsParser) renderObject(o bcsObject) string {
 			return ident
 		}
 	}
-	return "[object]"
+	return "?"
 }
 
 func (o bcsObject) isPlainIdentifier() bool {
