@@ -34,22 +34,28 @@ SPDX-License-Identifier: GPL-3.0-only
 
 - `text list` — перелік текстових рядків (можна фільтрувати).
 - `text export` — збереження у форматі `.xlsx`.
+- `text import` — завантаження перекладів з `XLSX` назад у `TLK`-файли.
+- `text convert` — конвертація `XLSX`-таблиці у формат JSON.
 
 ### Підтримка форматів WeiDU
 
+- `tra export` — експорт `TRA`-файла у формат `XLSX`.
 - `tra import` — створення `TRA`-файла з `XLSX`-таблиці
 - `tra update` — оновлення рядків існуючого `TRA`-файла з `CSV`.
+
+### Робота зі звуком
+
+- `sound export` — експорт ігрових аудіофайлів у форматі WAV або FLAC.
 
 ### Інше
 
 - `2da show` — перегляд `2DA`-таблиць.
+- `ids show` — перегляд `IDS`-таблиць.
 - `csv diff` — генерація `CSV` з різницею між двома іншими `CSV`.
 - `extract-bam` та `update-bam` — робота [з текстурами](docs/BAM-update.md)
 
 ## Ліцензія
 
-Без напрацювань з відкритим кодом від купи людей, робити локалізацію ігор було б значно складніше, якщо взагалі можливо. Відкриваючи код нашого маленького інструмента, ми хочемо бодай якось віддячити за це спільноті й сподіваємося, що комусь це стане в пригоді.
-
-Тому весь код у цьому репозиторії доступний під ліцензією [GPL 3.0](./LICENSES/GPL-3.0-only.txt), а всі графічні ресурси (окрім оригінальних ресурсів з гри) — під ліцензією <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>&nbsp;<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" width="16px" height="16px"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" width="16px" height="16px"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" width="16px" height="16px">
+Без напрацювань з відкритим кодом від купи людей, робити локалізацію ігор було б значно складніше, якщо взагалі можливо. Відкриваючи код нашого маленького інструмента, ми хочемо бодай якось віддячити за це спільноті й сподіваємося, що комусь це стане в пригоді. Тому весь код у цьому репозиторії доступний під ліцензією [GPL 3.0](./LICENSES/GPL-3.0-only.txt).
 
 <a href="https://github.com/sbtlocalization/sbt-infinity">SBT Infinity Tools</a> © 2025 by <a href="https://sbt.localization.com.ua">SBT Localization</a>
