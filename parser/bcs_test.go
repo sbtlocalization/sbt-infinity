@@ -27,6 +27,9 @@ const (
 	// still carries three all-zero object slots, but the rendered call must
 	// not show them.
 	actEraseJournalEntry = 253 // EraseJournalEntry(I:STRREF*)
+	// A display-family signature whose StrRef is named "Entry" rather than
+	// "StrRef": the whole path must still pick it up.
+	actAddJournalEntry = 173 // AddJournalEntry(I:Entry*,I:Type*JourType)
 
 	// Synthetic display-family signatures exercising the signature-driven
 	// renderer: string/point parameters, a Torment-style reordering, and the
@@ -58,6 +61,7 @@ func testActionIds() *Ids {
 			actSetGlobal:          "SetGlobal(S:Name*,S:Area*,I:Value*)",
 			actDisplayStringWait:  "DisplayStringWait(O:Object*,I:Time*,I:StrRef*)",
 			actEraseJournalEntry:  "EraseJournalEntry(I:STRREF*)",
+			actAddJournalEntry:    "AddJournalEntry(I:Entry*,I:Type*JourType)",
 			actReorderStrRefFirst: "DisplayReorder(I:StrRef*,O:Object*)",
 			actStringsAndPoint:    "DisplayText(S:First*,S:Second*,P:Point*,I:StrRef*)",
 			actNestedAction:       "DisplayAct(A:Action*,I:StrRef*)",
@@ -374,6 +378,28 @@ func TestDecodeCompiledScript_GluedMarkers(t *testing.T) {
 	}
 	if calls[0].Call != "DisplayString(LastTrigger,14381)" {
 		t.Errorf("Call = %q, want %q", calls[0].Call, "DisplayString(LastTrigger,14381)")
+	}
+}
+
+// TestDecodeCompiledScript_AddJournalEntry proves the journal StrRef flows the
+// whole compiled-script path even though AddJournalEntry names it "Entry", not
+// "StrRef". The objectless signature suppresses the object slots; Entry sits in
+// int0 (slot 0) and Type in int1 (physical field 3), and both render in order.
+func TestDecodeCompiledScript_AddJournalEntry(t *testing.T) {
+	action := acBlock(
+		actAddJournalEntry,
+		emptyObject(),
+		emptyObject(),
+		emptyObject(),
+		26331, 0, 0, 5, 0, // int0=Entry(StrRef), int1=Type=5
+	)
+
+	call := decodeOne(t, wrapScript(action))
+	if call.StrRef != 26331 {
+		t.Errorf("StrRef = %d, want 26331", call.StrRef)
+	}
+	if call.Call != "AddJournalEntry(26331,5)" {
+		t.Errorf("Call = %q, want %q", call.Call, "AddJournalEntry(26331,5)")
 	}
 }
 

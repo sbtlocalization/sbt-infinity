@@ -88,6 +88,48 @@ func TestParseActionSignature_StrRefNameCaseInsensitive(t *testing.T) {
 	}
 }
 
+func TestParseActionSignature_AliasNamesAreStrRef(t *testing.T) {
+	// The StrRef parameter is not always named "StrRef": AddJournalEntry names
+	// it "Entry", AddMapNote/AddMapNoteColor name it "StringRef".
+	cases := []struct {
+		identifier     string
+		wantPositional int
+		wantIntSlot    int
+	}{
+		{"AddJournalEntry(I:Entry*,I:Type*JourType)", 0, 0},
+		{"AddMapNote(P:Position*,I:StringRef*)", 1, 0},
+		{"AddMapNoteColor(P:Position*,I:StringRef*,I:Color*Mapnotes)", 1, 0},
+	}
+	for _, c := range cases {
+		sig, err := ParseActionSignature(c.identifier)
+		if err != nil {
+			t.Fatalf("ParseActionSignature(%q) failed: %v", c.identifier, err)
+		}
+		if !sig.HasStrRef() {
+			t.Errorf("HasStrRef() = false for %q, want true", c.identifier)
+			continue
+		}
+		if sig.StrRefPositional != c.wantPositional {
+			t.Errorf("StrRefPositional = %d for %q, want %d", sig.StrRefPositional, c.identifier, c.wantPositional)
+		}
+		if sig.StrRefIntSlot != c.wantIntSlot {
+			t.Errorf("StrRefIntSlot = %d for %q, want %d", sig.StrRefIntSlot, c.identifier, c.wantIntSlot)
+		}
+	}
+}
+
+func TestParseActionSignature_StringTypedEntryIsNotStrRef(t *testing.T) {
+	// "Entry" as a string parameter names an area/script, not a StrRef; the
+	// integer-type gate must keep it out of the display family.
+	sig, err := ParseActionSignature("LeaveAreaLUAEntry(S:Area*,S:Entry*,P:Point*,I:Face*DIR)")
+	if err != nil {
+		t.Fatalf("ParseActionSignature failed: %v", err)
+	}
+	if sig.HasStrRef() {
+		t.Error("HasStrRef() = true, want false")
+	}
+}
+
 func TestParseActionSignature_IntSlotSkipsNonIntegerParameters(t *testing.T) {
 	// Intervening object/point parameters must not advance the integer-slot count.
 	sig, err := ParseActionSignature("DisplayStringPoint(O:Object*,P:Point*,I:StrRef*)")

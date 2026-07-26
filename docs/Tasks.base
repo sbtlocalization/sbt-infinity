@@ -33,7 +33,7 @@ views:
       - priority
       - file.ctime
     columnSize:
-      file.name: 408
+      file.name: 498
   - type: table
     name: all
     order:

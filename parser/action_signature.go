@@ -78,7 +78,7 @@ func ParseActionSignature(identifier string) (*ActionSignature, error) {
 		sig.Parameters = append(sig.Parameters, param)
 
 		isInt := param.Type == "I"
-		if isInt && strings.EqualFold(param.Name, "strref") {
+		if isInt && isStrRefParam(param.Name) {
 			sig.StrRefPositional = i
 			sig.StrRefIntSlot = intSlot
 		}
@@ -88,6 +88,14 @@ func ParseActionSignature(identifier string) (*ActionSignature, error) {
 	}
 
 	return sig, nil
+}
+
+// A StrRef is always an integer parameter, but ACTION.IDS does not name it
+// consistently.
+func isStrRefParam(name string) bool {
+	return strings.EqualFold(name, "strref") ||
+		strings.EqualFold(name, "stringref") ||
+		strings.EqualFold(name, "entry")
 }
 
 func parseActionParameter(raw string) (ActionParameter, error) {
