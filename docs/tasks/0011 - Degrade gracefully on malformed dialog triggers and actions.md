@@ -1,5 +1,5 @@
 ---
-epic:
+epic: "[[EPIC-0001 - Script context extraction for text export]]"
 parent:
 status: Done
 priority: 2

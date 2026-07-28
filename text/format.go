@@ -142,6 +142,31 @@ func toAutoListShort(key string, values []string) string {
 	return fmt.Sprintf("%s: %s", key, text)
 }
 
+func dialogActionName(call string) string {
+	name, _, ok := strings.Cut(call, "(")
+	if !ok {
+		return ""
+	}
+	return strings.TrimSpace(name)
+}
+
+func joinDialogScriptContext(contexts map[string][]string, autoList func(string, []string) string) string {
+	var journalEntries []string
+	var otherActions []string
+
+	for call, values := range contexts {
+		if dialogActionName(call) == "AddJournalEntry" {
+			journalEntries = append(journalEntries, toList(call, values))
+			continue
+		}
+		otherActions = append(otherActions, autoList(call, values))
+	}
+
+	slices.Sort(journalEntries)
+	slices.Sort(otherActions)
+	return strings.Join(append(journalEntries, otherActions...), "\n")
+}
+
 func joinContext(entry *TextEntry, long bool) string {
 	contexts := entry.Context
 	var parts []string
@@ -169,9 +194,7 @@ func joinContext(entry *TextEntry, long bool) string {
 	}
 
 	if dlgScriptContexts, ok := contexts[ContextDialogScript]; ok && len(dlgScriptContexts) > 0 {
-		scripts := lo.MapToSlice(dlgScriptContexts, toList)
-		slices.Sort(scripts)
-		parts = append(parts, "DIALOG SCRIPTS: ----------\n"+strings.Join(scripts, "\n"))
+		parts = append(parts, "DIALOG SCRIPTS: ----------\n"+joinDialogScriptContext(dlgScriptContexts, autoList))
 	}
 
 	if uiContexts, ok := contexts[ContextUI]; ok && len(uiContexts) > 0 {

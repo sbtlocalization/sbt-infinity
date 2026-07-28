@@ -1,15 +1,6 @@
 filters:
   and:
     - file.inFolder("docs/adr")
-formulas:
-  is_blocked: |-
-    note["blocked by"].reduce(
-      acc || (
-        value.asFile().properties.status != "Done" && 
-        value.asFile().properties.status != "Obsolete"
-      ),
-      false
-    )
 properties:
   note.status:
     displayName: status
@@ -26,11 +17,10 @@ views:
       - file.name
       - file.ctime
     sort:
-      - property: epic
+      - property: file.name
         direction: ASC
     columnSize:
-      file.name: 524
-      note.superseded-by: 224
+      file.name: 591
   - type: table
     name: all
     order:
@@ -39,8 +29,8 @@ views:
       - superseded-by
       - file.ctime
     sort:
-      - property: epic
+      - property: file.name
         direction: ASC
     columnSize:
-      file.name: 460
+      file.name: 566
       note.superseded-by: 224

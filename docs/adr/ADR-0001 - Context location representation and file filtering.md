@@ -1,7 +1,6 @@
 ---
 adr-status: Accepted
 superseded-by:
-epic:
 status: Done
 ---
 

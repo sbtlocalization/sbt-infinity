@@ -1,5 +1,5 @@
 ---
-epic:
+epic: "[[EPIC-0002 - Context and label readability in text export]]"
 parent:
 status: Done
 priority: 3

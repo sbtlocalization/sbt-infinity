@@ -30,19 +30,23 @@ func newTestCollection(ids ...uint32) *TextCollection {
 }
 
 func newActionTransitionDialog(action string) *dialog.DialogCollection {
-	id := dialog.NewNodeOrigin("TEST.DLG", 0)
+	return newActionTransitionDialogAt("TEST.DLG", 0, action)
+}
+
+func newActionTransitionDialogAt(dlgName string, index uint32, action string) *dialog.DialogCollection {
+	id := dialog.NewNodeOrigin(dlgName, index)
 	d := dialog.NewDialog(id)
 
 	root := &dialog.Node{
 		Type:   dialog.StateNodeType,
-		Origin: dialog.NewNodeOrigin("TEST.DLG", 0),
+		Origin: dialog.NewNodeOrigin(dlgName, index),
 		Dialog: d,
 		State:  &dialog.StateData{},
 	}
 
 	transition := &dialog.Node{
 		Type:   dialog.TransitionNodeType,
-		Origin: dialog.NewNodeOrigin("TEST.DLG", 0),
+		Origin: dialog.NewNodeOrigin(dlgName, 0),
 		Dialog: d,
 		Parent: root,
 		Transition: &dialog.TransitionData{
@@ -62,6 +66,10 @@ func buildTestDisplayFamilyActions(t *testing.T) p.DisplayFamilyActions {
 		Entries: map[int32]string{
 			1: "DisplayStringHead(O:Object*,I:StrRef*)",
 			2: "SetGlobal(S:Name*,S:Area*,I:Value*)",
+			3: "SetQuestDone(I:StrRef*)",
+			4: "EraseJournalEntry(I:StrRef*)",
+			5: "AddJournalEntry(I:Entry*,I:Type*JourType)",
+			6: "FloatMessage(O:Object*,I:StrRef*)",
 		},
 	}
 	family, err := p.BuildDisplayFamilyActions(ids)
@@ -84,19 +92,18 @@ func TestLoadContextFromDialogs_DialogScript(t *testing.T) {
 		t.Fatalf("expected DIALOG SCRIPTS context for 14381, got none")
 	}
 
-	values, ok := scripts["TEST[0]"]
+	values, ok := scripts["DisplayStringHead(Myself,14381)"]
 	if !ok {
-		t.Fatalf("expected context keyed by dialog name TEST[0], got keys %v", keysOf(scripts))
+		t.Fatalf("expected context keyed by decoded call, got keys %v", keysOf(scripts))
 	}
-	if len(values) != 1 {
-		t.Fatalf("expected one context value, got %v", values)
-	}
-	if !strings.HasPrefix(values[0], "Action: DisplayStringHead(Myself,14381) @ ") {
-		t.Errorf("unexpected context value: %q", values[0])
+	if len(values) != 1 || values[0] != "TEST" {
+		t.Fatalf("expected extension-less dialog name as context value, got %v", values)
 	}
 
-	if _, ok := entry.Labels[lb_dialog_action]; !ok {
-		t.Errorf("expected %q label on 14381, got %v", lb_dialog_action, keysOf(entry.Labels))
+	for _, label := range []string{lb_dialog_action, "DisplayStringHead", "TEST"} {
+		if _, ok := entry.Labels[label]; !ok {
+			t.Errorf("expected %q label on 14381, got %v", label, keysOf(entry.Labels))
+		}
 	}
 
 	// Untouched ids must not gain any dialog-script context.
@@ -106,39 +113,87 @@ func TestLoadContextFromDialogs_DialogScript(t *testing.T) {
 }
 
 func TestLoadContextFromDialogs_DialogScriptOnlyMatchingCall(t *testing.T) {
-	c := newTestCollection(14381, 14382)
-	dlg := newActionTransitionDialog("SetGlobal(\"v\",\"GLOBAL\",1)\nDisplayStringHead(Myself,14381)\nDisplayStringHead(Player1,14382)")
+	c := newTestCollection(14381)
+	dlg := newActionTransitionDialog("SetGlobal(\"v\",\"GLOBAL\",1)\nFloatMessage(Myself,14381)\nFloatMessage(Player1,14381)")
 	family := buildTestDisplayFamilyActions(t)
 
 	c.LoadContextFromDialogs("https://example.com", dlg, family)
 
-	for strref, call := range map[uint32]string{
-		14381: "DisplayStringHead(Myself,14381)",
-		14382: "DisplayStringHead(Player1,14382)",
+	scripts := c.Entries[14381].Context[ContextDialogScript]
+	for _, call := range []string{
+		"FloatMessage(Myself,14381)",
+		"FloatMessage(Player1,14381)",
 	} {
-		values := c.Entries[strref].Context[ContextDialogScript]["TEST[0]"]
-		if len(values) != 1 {
-			t.Fatalf("expected one context value for %d, got %v", strref, values)
+		values := scripts[call]
+		if len(values) != 1 || values[0] != "TEST" {
+			t.Errorf("context values for %q = %v, want [TEST]", call, values)
 		}
-		if !strings.HasPrefix(values[0], "Action: "+call+" @ ") {
-			t.Errorf("unexpected context value for %d: %q", strref, values[0])
+	}
+	if len(scripts) != 2 {
+		t.Errorf("context calls = %v, want only the two display-family calls", keysOf(scripts))
+	}
+}
+
+func TestLoadContextFromDialogs_JournalActionsKeepNodeURLs(t *testing.T) {
+	c := newTestCollection(14381)
+	family := buildTestDisplayFamilyActions(t)
+	action := "SetQuestDone(14381)\nEraseJournalEntry(14381)\nAddJournalEntry(14381,1)"
+
+	for _, root := range []struct {
+		name  string
+		index uint32
+	}{
+		{"TEST.DLG", 0},
+		{"TEST.DLG", 1},
+		{"OTHER.DLG", 0},
+	} {
+		c.LoadContextFromDialogs("https://example.com", newActionTransitionDialogAt(root.name, root.index, action), family)
+	}
+
+	entry := c.Entries[14381]
+	scripts := entry.Context[ContextDialogScript]
+	for _, call := range []string{"SetQuestDone(14381)", "EraseJournalEntry(14381)"} {
+		values := scripts[call]
+		if len(values) != 3 || slices.ContainsFunc(values, func(value string) bool { return strings.Contains(value, "://") }) {
+			t.Errorf("context values for %q = %v, want dialog names without node URLs", call, values)
 		}
-		if strings.Contains(values[0], "SetGlobal") {
-			t.Errorf("context value for %d leaks sibling call: %q", strref, values[0])
+	}
+
+	journalURLs := scripts["AddJournalEntry(14381,1)"]
+	if len(journalURLs) != 3 {
+		t.Fatalf("journal URLs = %v, want one for every dialog root", journalURLs)
+	}
+	for _, url := range journalURLs {
+		if !strings.HasPrefix(url, "https://example.com/dialog/") {
+			t.Errorf("journal context value = %q, want node URL", url)
+		}
+	}
+
+	for _, label := range []string{
+		lb_dialog_action,
+		lb_dialog_journal,
+		"SetQuestDone",
+		"EraseJournalEntry",
+		"AddJournalEntry",
+		"TEST",
+		"OTHER",
+	} {
+		if _, ok := entry.Labels[label]; !ok {
+			t.Errorf("expected %q label, got %v", label, keysOf(entry.Labels))
 		}
 	}
 }
 
 func TestLoadContextFromDialogs_NonIntegerStrRefSkipped(t *testing.T) {
 	c := newTestCollection(14381)
-	// SetGlobal is not display-family; nothing should be linked.
-	dlg := newActionTransitionDialog(`SetGlobal("v","GLOBAL",1)`)
+	dlg := newActionTransitionDialog("SetGlobal(\"v\",\"GLOBAL\",1)\nFloatMessage(Myself,GLOBAL_STRREF)")
 	family := buildTestDisplayFamilyActions(t)
 
 	c.LoadContextFromDialogs("https://example.com", dlg, family)
 
-	if entry := c.Entries[14381]; len(entry.Context[ContextDialogScript]) != 0 {
-		t.Errorf("expected no dialog-script context, got %v", entry.Context[ContextDialogScript])
+	entry := c.Entries[14381]
+	if len(entry.Context[ContextDialogScript]) != 0 || len(entry.Labels) != 0 {
+		t.Errorf("ignored calls modified the entry: context=%v labels=%v", entry.Context[ContextDialogScript], entry.Labels)
 	}
 }
 

@@ -6,9 +6,11 @@
 package text
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"codeberg.org/tealeg/xlsx/v4"
 	p "github.com/sbtlocalization/sbt-infinity/parser"
 )
 
@@ -76,6 +78,69 @@ func TestToAutoListIsDeterministic(t *testing.T) {
 	second := toAutoListShort("k", []string{"B.SPL", "C.SPL", "A.SPL"})
 	if first != second {
 		t.Errorf("toAutoListShort not order-independent: %q != %q", first, second)
+	}
+}
+
+func exportContextCell(t *testing.T, collection *TextCollection) string {
+	t.Helper()
+
+	path := filepath.Join(t.TempDir(), "context.xlsx")
+	if err := collection.ExportToXlsx(path, nil); err != nil {
+		t.Fatalf("ExportToXlsx: %v", err)
+	}
+
+	workbook, err := xlsx.OpenFile(path)
+	if err != nil {
+		t.Fatalf("OpenFile: %v", err)
+	}
+	row, err := workbook.Sheets[0].Row(1)
+	if err != nil {
+		t.Fatalf("reading exported row: %v", err)
+	}
+	return row.GetCell(3).Value
+}
+
+func TestExportToXlsx_DialogScriptContext(t *testing.T) {
+	c := newTestCollection(14381)
+	c.Entries[14381].Context[ContextDialogScript] = map[string][]string{
+		"AardvarkMessage(Myself,14381)": {"OTHER"},
+		"AddJournalEntry(14381,1)": {
+			"https://example.com/dialog/test-1#transition-test-2-",
+			"https://example.com/dialog/test-0#transition-test-2-",
+		},
+		"EraseJournalEntry(14381)": {"TEST", "OTHER", "TEST"},
+		"SetQuestDone(14381)":      {"ZED", "ALPHA", "MIDDLE", "BETA", "ALPHA"},
+	}
+
+	got := exportContextCell(t, c)
+	want := "DIALOG SCRIPTS: ----------\n" +
+		"AddJournalEntry(14381,1):\n" +
+		"- https://example.com/dialog/test-1#transition-test-2-\n" +
+		"- https://example.com/dialog/test-0#transition-test-2-\n" +
+		"AardvarkMessage(Myself,14381): OTHER\n" +
+		"EraseJournalEntry(14381): OTHER, TEST\n" +
+		"SetQuestDone(14381): ALPHA, BETA, MIDDLE (+1 more)"
+	if got != want {
+		t.Errorf("exported dialog script context =\n%q\nwant\n%q", got, want)
+	}
+}
+
+func TestExportToXlsx_LongDialogScriptContextShowsEveryDialog(t *testing.T) {
+	c := newTestCollection(14381)
+	c.Long = true
+	c.Entries[14381].Context[ContextDialogScript] = map[string][]string{
+		"SetQuestDone(14381)": {"ZED", "ALPHA", "MIDDLE", "BETA", "ALPHA"},
+	}
+
+	got := exportContextCell(t, c)
+	want := "DIALOG SCRIPTS: ----------\n" +
+		"SetQuestDone(14381): \n" +
+		"- ALPHA\n" +
+		"- BETA\n" +
+		"- MIDDLE\n" +
+		"- ZED"
+	if got != want {
+		t.Errorf("exported long dialog script context =\n%q\nwant\n%q", got, want)
 	}
 }
 

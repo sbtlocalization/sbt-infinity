@@ -231,9 +231,14 @@ func (c *TextCollection) addDialogScriptContext(d *dialog.Dialog, url, action st
 		}
 
 		strref := uint32(ref)
-		value := fmt.Sprintf("Action: %s @ %s", call.Raw, url)
-		c.AddContext(strref, ContextDialogScript, d.Id.String(), value)
+		value := d.Id.DlgName
+		if call.Name == "AddJournalEntry" {
+			value = url
+			c.AddLabel(strref, lb_dialog_journal)
+		}
+		c.AddContext(strref, ContextDialogScript, call.Raw, value)
 		c.AddLabel(strref, lb_dialog_action)
+		c.AddLabel(strref, call.Name)
 		c.AddLabel(strref, d.Id.DlgName)
 	}
 }
