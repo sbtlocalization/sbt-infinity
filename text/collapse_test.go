@@ -176,6 +176,42 @@ func TestExportToXlsx_CapsSpeakersButKeepsDialogNames(t *testing.T) {
 	}
 }
 
+func TestExportToXlsx_CompiledScriptContext(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		long bool
+		want string
+	}{
+		{
+			name: "default caps the sorted unique script list",
+			want: "SCRIPTS: ----------\n" +
+				"DisplayString(LastTrigger,14381): ALPHA.BCS, BETA.BCS, MIDDLE.BCS (+1 more)",
+		},
+		{
+			name: "long shows every sorted unique script",
+			long: true,
+			want: "SCRIPTS: ----------\n" +
+				"DisplayString(LastTrigger,14381): \n" +
+				"- ALPHA.BCS\n" +
+				"- BETA.BCS\n" +
+				"- MIDDLE.BCS\n" +
+				"- ZED.BCS",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			c := newTestCollection(14381)
+			c.Long = tt.long
+			c.Entries[14381].Context[ContextScript] = map[string][]string{
+				"DisplayString(LastTrigger,14381)": {"ZED.BCS", "ALPHA.BCS", "MIDDLE.BCS", "BETA.BCS", "ALPHA.BCS"},
+			}
+
+			if got := exportContextCell(t, c); got != tt.want {
+				t.Errorf("exported compiled script context =\n%q\nwant\n%q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestExportToXlsx_DialogScriptContext(t *testing.T) {
 	c := newTestCollection(14381)
 	c.Entries[14381].Context[ContextDialogScript] = map[string][]string{

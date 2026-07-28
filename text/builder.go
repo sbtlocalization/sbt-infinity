@@ -263,11 +263,15 @@ func (c *TextCollection) addDialogScriptContext(d *dialog.Dialog, url, action st
 }
 
 func (c *TextCollection) LoadContextFromCompiledScript(scriptFilename string, calls []p.ScriptCall, usage ScriptUsageIndex) {
-	key := usage.AnnotateScriptKey(scriptFilename)
+	attachments := usage[resourceName(scriptFilename)]
 	for _, call := range calls {
-		c.AddContext(call.StrRef, ContextScript, key, call.Call)
+		c.AddContext(call.StrRef, ContextScript, call.Call, scriptFilename)
 		c.AddLabel(call.StrRef, lb_script_action)
-		c.AddLabel(call.StrRef, scriptFilename)
+		c.AddLabel(call.StrRef, actionName(call.Call))
+		for _, attachment := range attachments {
+			c.AddLabel(call.StrRef, attachment.file)
+			c.AddLabel(call.StrRef, attachment.slot)
+		}
 	}
 }
 
@@ -329,11 +333,11 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 	}
 
 	header := cre.Body.Header
-	usage.Add(header.OverrideScript, "override", creFilename)
-	usage.Add(header.ClassScript, "class", creFilename)
-	usage.Add(header.RaceScript, "race", creFilename)
-	usage.Add(header.GeneralScript, "general", creFilename)
-	usage.Add(header.DefaultScript, "default", creFilename)
+	usage.Add(header.OverrideScript, lb_creature, creFilename)
+	usage.Add(header.ClassScript, lb_creature, creFilename)
+	usage.Add(header.RaceScript, lb_creature, creFilename)
+	usage.Add(header.GeneralScript, lb_creature, creFilename)
+	usage.Add(header.DefaultScript, lb_creature, creFilename)
 
 	soundRefs := cre.Body.Header.StrRefs
 
@@ -433,7 +437,7 @@ func (c *TextCollection) LoadContextFromWorldMaps(wmpFilename string, wmp *p.Wmp
 func (c *TextCollection) LoadContextFromArea(areFilename string, are *p.Are, usage ScriptUsageIndex) error {
 	var errs []error
 
-	areaSite := resourceName(areFilename)
+	areaSite := areFilename
 	usage.Add(are.AreaScriptBcs, "area", areaSite)
 
 	if actors, err := are.Actors(); err != nil {

@@ -1,7 +1,7 @@
 ---
 epic: "[[EPIC-0002 - Context and label readability in text export]]"
 parent:
-status: To do
+status: Done
 priority: 3
 blocked by:
   - "[[0018 - Cap file-name labels per resource family]]"
@@ -98,14 +98,14 @@ Consequently the usage index has to keep the slot and the file as separate parts
 
 # Acceptance criteria
 
-- [ ] A line floated by several scripts renders as a single entry keyed by the decoded call, listing the scripts that make it; identical calls no longer repeat per file.
-- [ ] Entries with different object arguments stay separate, so it remains visible whether a line floats over `Myself` or over `LastTrigger`.
-- [ ] Script lists are de-duplicated and sorted; the default export caps the inline list and `--long` shows every script.
-- [ ] No usage annotation appears in the context body in either mode.
-- [ ] Every StrRef displayed by a script is labelled with the resources the script is attached to, each carrying its extension — areas included (`AR9711.ARE`).
-- [ ] `ARE` slots appear as labels under their own names; all five creature script slots produce `creature` and nothing more.
-- [ ] The action name is added as a label alongside `script action`; `.BCS` file names are no longer labels.
-- [ ] A widely attached script produces the ordinary per-family marker (`*.CRE`) through the existing label cap, with no script-specific rule anywhere in this change.
-- [ ] Running with `--context-from bcs` alone still works, producing calls and action-name labels without any usage labels.
-- [ ] The retired usage-key helpers and their tests are gone, while the usage index still ignores empty and `NONE`/`*`/`0` script references and still names region slots correctly.
-- [ ] `go test ./...` passes.
+- [x] A line floated by several scripts renders as a single entry keyed by the decoded call, listing the scripts that make it; identical calls no longer repeat per file.
+- [x] Entries with different object arguments stay separate, so it remains visible whether a line floats over `Myself` or over `LastTrigger`.
+- [x] Script lists are de-duplicated and sorted; the default export caps the inline list and `--long` shows every script.
+- [x] No usage annotation appears in the context body in either mode.
+- [x] Every StrRef displayed by a script is labelled with the resources the script is attached to, each carrying its extension — areas included (`AR9711.ARE`).
+- [x] `ARE` slots appear as labels under their own names; all five creature script slots produce `creature` and nothing more.
+- [x] The action name is added as a label alongside `script action`; `.BCS` file names are no longer labels.
+- [x] A widely attached script produces the ordinary per-family marker (`*.CRE`) through the existing label cap, with no script-specific rule anywhere in this change.
+- [x] Running with `--context-from bcs` alone still works, producing calls and action-name labels without any usage labels.
+- [x] The retired usage-key helpers and their tests are gone, while the usage index still ignores empty and `NONE`/`*`/`0` script references and still names region slots correctly.
+- [x] `go test ./...` passes.

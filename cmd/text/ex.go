@@ -117,9 +117,8 @@ func runEx(cmd *cobra.Command, args []string) error {
 		contextTypes = lo.UniqMap(contextFrom, utils.Iteratee(fs.FileTypeFromExtension))
 	}
 
-	// Compiled scripts must be processed after areas and creatures: SCRIPTS
-	// keys embed usage sites collected by the ARE and CRE scans, so the BCS
-	// pass is moved to the end to run against a fully populated usage index.
+	// Compiled scripts must be processed after areas and creatures so their
+	// StrRefs receive labels from the fully populated script usage index.
 	if i := slices.Index(contextTypes, fs.FileType_BCS); i >= 0 {
 		contextTypes = append(slices.Delete(contextTypes, i, i+1), fs.FileType_BCS)
 	}

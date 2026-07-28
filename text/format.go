@@ -168,7 +168,7 @@ func toAutoListShort(key string, values []string) string {
 	return fmt.Sprintf("%s: %s", key, text)
 }
 
-func dialogActionName(call string) string {
+func actionName(call string) string {
 	name, _, ok := strings.Cut(call, "(")
 	if !ok {
 		return ""
@@ -181,7 +181,7 @@ func joinDialogScriptContext(contexts map[string][]string, autoList func(string,
 	var otherActions []string
 
 	for call, values := range contexts {
-		if dialogActionName(call) == "AddJournalEntry" {
+		if actionName(call) == "AddJournalEntry" {
 			journalEntries = append(journalEntries, toList(call, values))
 			continue
 		}
@@ -214,7 +214,7 @@ func joinContext(entry *TextEntry, long bool) string {
 	}
 
 	if scriptContexts, ok := contexts[ContextScript]; ok && len(scriptContexts) > 0 {
-		compiledScripts := lo.MapToSlice(scriptContexts, toList)
+		compiledScripts := lo.MapToSlice(scriptContexts, autoList)
 		slices.Sort(compiledScripts)
 		parts = append(parts, "SCRIPTS: ----------\n"+strings.Join(compiledScripts, "\n"))
 	}

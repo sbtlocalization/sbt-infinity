@@ -200,51 +200,81 @@ func TestLoadContextFromDialogs_NonIntegerStrRefSkipped(t *testing.T) {
 
 func TestLoadContextFromCompiledScript(t *testing.T) {
 	c := newTestCollection(14381, 99999)
-	calls := []p.ScriptCall{
-		{StrRef: 14381, Call: "DisplayString(LastTrigger,14381)"},
-	}
+	lastTriggerCall := "DisplayString(LastTrigger,14381)"
+	myselfCall := "DisplayString(Myself,14381)"
 
-	// A nil usage index (e.g. --context-from bcs alone) keeps the bare key.
-	c.LoadContextFromCompiledScript("CTFB.BCS", calls, nil)
+	c.LoadContextFromCompiledScript("SECOND.BCS", []p.ScriptCall{{StrRef: 14381, Call: lastTriggerCall}}, nil)
+	c.LoadContextFromCompiledScript("FIRST.BCS", []p.ScriptCall{
+		{StrRef: 14381, Call: lastTriggerCall},
+		{StrRef: 14381, Call: myselfCall},
+	}, nil)
 
 	entry := c.Entries[14381]
 	scripts, ok := entry.Context[ContextScript]
 	if !ok {
 		t.Fatalf("expected SCRIPTS context for 14381, got none")
 	}
-
-	values, ok := scripts["CTFB.BCS"]
-	if !ok {
-		t.Fatalf("expected context keyed by CTFB.BCS, got keys %v", keysOf(scripts))
+	if got := scripts[lastTriggerCall]; !slices.Equal(got, []string{"SECOND.BCS", "FIRST.BCS"}) {
+		t.Errorf("scripts for shared call = %v, want both source files", got)
 	}
-	if len(values) != 1 || values[0] != "DisplayString(LastTrigger,14381)" {
-		t.Errorf("unexpected context values: %v", values)
+	if got := scripts[myselfCall]; !slices.Equal(got, []string{"FIRST.BCS"}) {
+		t.Errorf("scripts for distinct object call = %v, want FIRST.BCS", got)
 	}
 
-	if _, ok := entry.Labels[lb_script_action]; !ok {
-		t.Errorf("expected %q label on 14381, got %v", lb_script_action, keysOf(entry.Labels))
+	for _, label := range []string{lb_script_action, "DisplayString"} {
+		if _, ok := entry.Labels[label]; !ok {
+			t.Errorf("expected %q label on 14381, got %v", label, keysOf(entry.Labels))
+		}
+	}
+	for _, label := range []string{"FIRST.BCS", "SECOND.BCS"} {
+		if _, ok := entry.Labels[label]; ok {
+			t.Errorf("script file %q must not be a label, got %v", label, keysOf(entry.Labels))
+		}
 	}
 
-	// Untouched ids must not gain any script context.
 	if other := c.Entries[99999]; len(other.Context) != 0 || len(other.Labels) != 0 {
 		t.Errorf("untouched id 99999 was modified: context=%v labels=%v", other.Context, other.Labels)
 	}
 }
 
-func TestLoadContextFromCompiledScript_WithUsage(t *testing.T) {
+func TestLoadContextFromCompiledScript_AddsUsageLabels(t *testing.T) {
 	c := newTestCollection(14381)
-	calls := []p.ScriptCall{
+	usage := make(ScriptUsageIndex)
+	usage.Add("CTFB", "trap", "AR1234.ARE")
+	usage.Add("CTFB", "trap", "AR1234.ARE")
+	usage.Add("CTFB", "creature", "CHICKEN.CRE")
+
+	c.LoadContextFromCompiledScript("CTFB.BCS", []p.ScriptCall{
 		{StrRef: 14381, Call: "DisplayString(LastTrigger,14381)"},
+	}, usage)
+
+	entry := c.Entries[14381]
+	for _, label := range []string{"AR1234.ARE", "CHICKEN.CRE", "trap", "creature"} {
+		if _, ok := entry.Labels[label]; !ok {
+			t.Errorf("expected usage label %q, got %v", label, keysOf(entry.Labels))
+		}
+	}
+	context := exportContextCell(t, c)
+	if strings.Contains(context, "trap") || strings.Contains(context, "AR1234") {
+		t.Errorf("usage annotation leaked into context body: %q", context)
+	}
+}
+
+func TestLoadContextFromCompiledScript_UsageLabelsUseFamilyCap(t *testing.T) {
+	c := newTestCollection(14381)
+	usage := make(ScriptUsageIndex)
+	for i := range 11 {
+		usage.Add("SHOUT", "creature", fmt.Sprintf("CRE%02d.CRE", i))
 	}
 
-	usage := make(ScriptUsageIndex)
-	usage.Add("CTFB", "trap", "AR1234")
+	c.LoadContextFromCompiledScript("SHOUT.BCS", []p.ScriptCall{
+		{StrRef: 14381, Call: "DisplayStringHead(Myself,14381)"},
+	}, usage)
 
-	c.LoadContextFromCompiledScript("CTFB.BCS", calls, usage)
-
-	scripts := c.Entries[14381].Context[ContextScript]
-	if _, ok := scripts["CTFB.BCS [trap @ AR1234]"]; !ok {
-		t.Fatalf("expected context keyed by annotated script name, got keys %v", keysOf(scripts))
+	got := exportCell(t, c, 2)
+	want := "*.CRE,DisplayStringHead,creature,script action"
+	if got != want {
+		t.Errorf("exported labels = %q, want %q", got, want)
 	}
 }
 
@@ -315,6 +345,53 @@ func minimalCreature(t *testing.T, soundRef uint32, dialog string) *p.Cre {
 		t.Fatalf("crafting minimal CRE: %v", err)
 	}
 	return cre
+}
+
+func minimalArea(t *testing.T, script string) *p.Are {
+	t.Helper()
+
+	buf := make([]byte, 0x11c)
+	copy(buf[0:4], "AREA")
+	copy(buf[4:8], "V1.0")
+	are := p.NewAre()
+	if err := are.Read(kaitai.NewStream(bytes.NewReader(buf)), nil, are); err != nil {
+		t.Fatalf("crafting minimal ARE: %v", err)
+	}
+	are.AreaScriptBcs = script
+	return are
+}
+
+func TestLoadContextFromArea_ScriptUsageKeepsAreaExtension(t *testing.T) {
+	usage := make(ScriptUsageIndex)
+	if err := newTestCollection().LoadContextFromArea("AR9711.ARE", minimalArea(t, "AREA9711"), usage); err != nil {
+		t.Fatalf("LoadContextFromArea: %v", err)
+	}
+
+	want := scriptUsage{slot: "area", file: "AR9711.ARE"}
+	if got := usage["AREA9711"]; len(got) != 1 || got[0] != want {
+		t.Errorf("area script usage = %v, want %v", got, want)
+	}
+}
+
+func TestLoadContextFromCreature_ScriptSlotsCollapseToCreatureUsage(t *testing.T) {
+	cre := minimalCreature(t, 0, "")
+	cre.Body.Header.OverrideScript = "OVERRIDE"
+	cre.Body.Header.ClassScript = "CLASS"
+	cre.Body.Header.RaceScript = "RACE"
+	cre.Body.Header.GeneralScript = "GENERAL"
+	cre.Body.Header.DefaultScript = "DEFAULT"
+	usage := make(ScriptUsageIndex)
+
+	if err := newTestCollection().LoadContextFromCreature("CHICKEN.CRE", cre, &p.Ids{}, usage); err != nil {
+		t.Fatalf("LoadContextFromCreature: %v", err)
+	}
+
+	for _, script := range []string{"OVERRIDE", "CLASS", "RACE", "GENERAL", "DEFAULT"} {
+		want := scriptUsage{slot: "creature", file: "CHICKEN.CRE"}
+		if got := usage[script]; len(got) != 1 || got[0] != want {
+			t.Errorf("usage for %s = %v, want %v", script, got, want)
+		}
+	}
 }
 
 func TestLoadContextFromCreature_VerbalConstantsAreSpeakerLabels(t *testing.T) {

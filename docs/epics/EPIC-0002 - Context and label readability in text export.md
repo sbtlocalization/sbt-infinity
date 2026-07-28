@@ -1,5 +1,5 @@
 ---
-status: In progress  # Enum: Backlog, To do, In progress, Done
+status: Done     # Enum: Backlog, To do, In progress, Done
 priority:        # Number: from 1 to 5, or empty
 blocked by:      # YAML list of refs: ["[[blocking task 1]]", "[[blocking task 2]]"]
 kind: PRD        # Possible values: for now only PRD
