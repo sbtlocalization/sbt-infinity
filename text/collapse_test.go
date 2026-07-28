@@ -6,6 +6,7 @@
 package text
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -81,7 +82,7 @@ func TestToAutoListIsDeterministic(t *testing.T) {
 	}
 }
 
-func exportContextCell(t *testing.T, collection *TextCollection) string {
+func exportCell(t *testing.T, collection *TextCollection, column int) string {
 	t.Helper()
 
 	path := filepath.Join(t.TempDir(), "context.xlsx")
@@ -97,7 +98,82 @@ func exportContextCell(t *testing.T, collection *TextCollection) string {
 	if err != nil {
 		t.Fatalf("reading exported row: %v", err)
 	}
-	return row.GetCell(3).Value
+	return row.GetCell(column).Value
+}
+
+func exportContextCell(t *testing.T, collection *TextCollection) string {
+	t.Helper()
+	return exportCell(t, collection, 3)
+}
+
+func TestExportToXlsx_CapsLabelsPerResourceFamily(t *testing.T) {
+	c := newTestCollection(14381)
+	for _, label := range []string{
+		"CRE00.CRE", "CRE01.CRE", "CRE02.CRE", "CRE03.CRE", "CRE04.CRE", "CRE05.CRE",
+		"CRE06.CRE", "CRE07.CRE", "CRE08.CRE", "CRE09.CRE", "CRE10.cre",
+		"AR0001.ARE", "AR0002.ARE",
+	} {
+		c.AddLabel(14381, label)
+	}
+
+	got := exportCell(t, c, 2)
+	want := "*.CRE,AR0001.ARE,AR0002.ARE"
+	if got != want {
+		t.Errorf("exported labels = %q, want %q", got, want)
+	}
+}
+
+func TestExportToXlsx_RendersExactlyTenFamilyLabelsInFull(t *testing.T) {
+	c := newTestCollection(14381)
+	labels := []string{
+		"CRE09.CRE", "CRE08.CRE", "CRE07.CRE", "CRE06.CRE", "CRE05.CRE",
+		"CRE04.CRE", "CRE03.CRE", "CRE02.CRE", "CRE01.CRE", "CRE00.CRE",
+	}
+	for _, label := range labels {
+		c.AddLabel(14381, label)
+		c.AddLabel(14381, label)
+	}
+
+	got := exportCell(t, c, 2)
+	want := "CRE00.CRE,CRE01.CRE,CRE02.CRE,CRE03.CRE,CRE04.CRE,CRE05.CRE,CRE06.CRE,CRE07.CRE,CRE08.CRE,CRE09.CRE"
+	if got != want {
+		t.Errorf("exported labels = %q, want %q", got, want)
+	}
+}
+
+func TestExportToXlsx_CapsSpeakersButKeepsDialogNames(t *testing.T) {
+	for _, tt := range []struct {
+		name       string
+		long       bool
+		plainFirst bool
+	}{
+		{"default", false, false},
+		{"long", true, false},
+		{"dialog scanned first", false, true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			c := newTestCollection(14381)
+			c.Long = tt.long
+			if tt.plainFirst {
+				c.AddLabel(14381, "SPEAKER00")
+			}
+			for i := range 12 {
+				c.AddLabelWithFamily(14381, fmt.Sprintf("SPEAKER%02d", i), LabelFamily("SPEAKER"))
+			}
+			for i := range 11 {
+				c.AddLabel(14381, fmt.Sprintf("DIALOG%02d", i))
+			}
+			if !tt.plainFirst {
+				c.AddLabel(14381, "SPEAKER00")
+			}
+
+			got := exportCell(t, c, 2)
+			want := "DIALOG00,DIALOG01,DIALOG02,DIALOG03,DIALOG04,DIALOG05,DIALOG06,DIALOG07,DIALOG08,DIALOG09,DIALOG10,SPEAKER00,many speakers"
+			if got != want {
+				t.Errorf("exported labels = %q, want %q", got, want)
+			}
+		})
+	}
 }
 
 func TestExportToXlsx_DialogScriptContext(t *testing.T) {

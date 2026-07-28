@@ -17,7 +17,10 @@ import (
 	"github.com/samber/lo"
 )
 
-const autoListInlineLimit = 3
+const (
+	autoListInlineLimit = 3
+	labelFamilyLimit    = 10
+)
 
 func (c *TextCollection) ExportToXlsx(outputPath string, timestamps map[uint32]int64) error {
 	xlsxFile := xlsx.NewFile()
@@ -53,7 +56,7 @@ func (c *TextCollection) ExportToXlsx(outputPath string, timestamps map[uint32]i
 		textCell.SetString(entry.Text)
 
 		labelsCell := row.AddCell()
-		labelsCell.SetString(strings.Join(slices.Sorted(maps.Keys(entry.Labels)), ","))
+		labelsCell.SetString(strings.Join(renderLabels(entry.Labels), ","))
 
 		contextCell := row.AddCell()
 		contextCell.SetString(joinContext(entry, c.Long))
@@ -96,6 +99,29 @@ func (c *TextCollection) ExportToXlsx(outputPath string, timestamps map[uint32]i
 	}
 
 	return nil
+}
+
+func renderLabels(labels map[string]LabelFamily) []string {
+	familyCounts := make(map[LabelFamily]int)
+	for _, family := range labels {
+		if family != "" {
+			familyCounts[family]++
+		}
+	}
+
+	rendered := make(map[string]struct{}, len(labels))
+	for label, family := range labels {
+		if familyCounts[family] <= labelFamilyLimit {
+			rendered[label] = struct{}{}
+			continue
+		}
+		marker := "*." + string(family)
+		if family == labelFamilySpeaker {
+			marker = "many speakers"
+		}
+		rendered[marker] = struct{}{}
+	}
+	return slices.Sorted(maps.Keys(rendered))
 }
 
 func toListItem(item string, _ int) string {

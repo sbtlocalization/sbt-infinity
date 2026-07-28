@@ -8,6 +8,7 @@ package text
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -22,7 +23,7 @@ func newTestCollection(ids ...uint32) *TextCollection {
 	for _, id := range ids {
 		c.Entries[id] = &TextEntry{
 			Id:      id,
-			Labels:  make(map[string]struct{}),
+			Labels:  make(map[string]LabelFamily),
 			Context: make(map[ContextType]map[string][]string),
 		}
 	}
@@ -298,6 +299,42 @@ func makeTwoDA(t *testing.T, body string) *p.TwoDA {
 		t.Fatalf("ParseTwoDA: %v", err)
 	}
 	return twoda
+}
+
+func minimalCreature(t *testing.T, soundRef uint32, dialog string) *p.Cre {
+	t.Helper()
+
+	buf := make([]byte, 0x2d4)
+	copy(buf[0:4], "CRE ")
+	copy(buf[4:8], "V1.0")
+	binary.LittleEndian.PutUint32(buf[0xa4:0xa8], soundRef)
+	copy(buf[0x2cc:0x2d4], dialog)
+
+	cre := p.NewCre()
+	if err := cre.Read(kaitai.NewStream(bytes.NewReader(buf)), nil, cre); err != nil {
+		t.Fatalf("crafting minimal CRE: %v", err)
+	}
+	return cre
+}
+
+func TestLoadContextFromCreature_VerbalConstantsAreSpeakerLabels(t *testing.T) {
+	const ref = 14381
+	c := newTestCollection(ref)
+	ids := &p.Ids{Entries: map[int32]string{0: "SELECT_COMMON"}}
+
+	for i := range 11 {
+		filename := fmt.Sprintf("CRE%02d.CRE", i)
+		dialog := fmt.Sprintf("DLG%05d", i)
+		if err := c.LoadContextFromCreature(filename, minimalCreature(t, ref, dialog), ids, nil); err != nil {
+			t.Fatalf("LoadContextFromCreature(%q): %v", filename, err)
+		}
+	}
+
+	got := exportCell(t, c, 2)
+	want := "*.CRE,many speakers"
+	if got != want {
+		t.Errorf("exported verbal-constant labels = %q, want %q", got, want)
+	}
 }
 
 func TestLoadContextFromCreature_SourceFileLabelRawCase(t *testing.T) {

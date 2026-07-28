@@ -1,7 +1,7 @@
 ---
 epic: "[[EPIC-0002 - Context and label readability in text export]]"
 parent:
-status: To do
+status: Done
 priority: 3
 blocked by:
 kind: Task
@@ -97,11 +97,11 @@ The cap applies at render time only — the full set stays in the model, so noth
 
 # Acceptance criteria
 
-- [ ] A StrRef with more than ten labels of one extension renders that family as `*.EXT` and nothing else of that family; families under the threshold are untouched.
-- [ ] The threshold is per family: a row with 400 `.CRE` labels and 2 `.ARE` labels renders `*.CRE` plus both area names.
-- [ ] Word labels and dialog names are never replaced, however many there are.
-- [ ] Verbal-constant labels belong to the `SPEAKER` family and collapse to `many speakers`, while dialog names added by the dialog scan stay intact on the same row.
-- [ ] Exactly ten labels of a family still render in full; eleven collapse.
-- [ ] Label output stays sorted and de-duplicated, with markers sorting among the rest.
-- [ ] `--long` does not change the cap.
-- [ ] `go test ./...` passes.
+- [x] A StrRef with more than ten labels of one extension renders that family as `*.EXT` and nothing else of that family; families under the threshold are untouched.
+- [x] The threshold is per family: a row with 400 `.CRE` labels and 2 `.ARE` labels renders `*.CRE` plus both area names.
+- [x] Word labels and dialog names are never replaced, however many there are.
+- [x] Verbal-constant labels belong to the `SPEAKER` family and collapse to `many speakers`, while dialog names added by the dialog scan stay intact on the same row.
+- [x] Exactly ten labels of a family still render in full; eleven collapse.
+- [x] Label output stays sorted and de-duplicated, with markers sorting among the rest.
+- [x] `--long` does not change the cap.
+- [x] `go test ./...` passes.

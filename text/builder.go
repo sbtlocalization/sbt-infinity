@@ -8,12 +8,17 @@ package text
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/sbtlocalization/sbt-infinity/dialog"
 	p "github.com/sbtlocalization/sbt-infinity/parser"
 )
+
+type LabelFamily string
+
+const labelFamilySpeaker LabelFamily = "SPEAKER"
 
 type TextEntry struct {
 	Id             uint32
@@ -24,7 +29,7 @@ type TextEntry struct {
 	Sound          string
 	VolumeVariance uint32
 	PitchVariance  uint32
-	Labels         map[string]struct{}
+	Labels         map[string]LabelFamily
 	Context        map[ContextType]map[string][]string
 }
 
@@ -114,7 +119,7 @@ func NewTextCollection(tlk *p.Tlk) *TextCollection {
 			Sound:          entry.AudioName,
 			VolumeVariance: entry.VolumeVariance,
 			PitchVariance:  entry.PitchVariance,
-			Labels:         make(map[string]struct{}),
+			Labels:         make(map[string]LabelFamily),
 			Context:        make(map[ContextType]map[string][]string),
 		}
 		collection.Entries[id] = tEntry
@@ -156,12 +161,26 @@ func (c *TextCollection) AddCreatureSoundContext(id uint32, soundType string, fi
 }
 
 func (c *TextCollection) AddLabel(id uint32, label string) {
+	extension := filepath.Ext(label)
+	family := LabelFamily(strings.ToUpper(strings.TrimPrefix(extension, ".")))
+	c.addLabel(id, label, family)
+}
+
+func (c *TextCollection) AddLabelWithFamily(id uint32, label string, family LabelFamily) {
+	c.addLabel(id, label, LabelFamily(strings.ToUpper(string(family))))
+}
+
+func (c *TextCollection) addLabel(id uint32, label string, family LabelFamily) {
 	if id == 0 || id == 0xFFFFFFFF {
 		return
 	}
 
 	if entry, ok := c.Entries[id]; ok {
-		entry.Labels[label] = struct{}{}
+		// An uncapped origin wins when the same spelling is also used as a family label,
+		// so dialog names remain visible regardless of scan order.
+		if current, exists := entry.Labels[label]; !exists || current != "" {
+			entry.Labels[label] = family
+		}
 	}
 }
 
@@ -327,7 +346,7 @@ func (c *TextCollection) LoadContextFromCreature(creFilename string, cre *p.Cre,
 			continue
 		}
 		if dialog := cre.Body.Header.Dialog; dialog != "" && dialog != "0" && dialog != "None" {
-			c.AddLabel(ref, strings.ToUpper(dialog))
+			c.AddLabelWithFamily(ref, strings.ToUpper(dialog), labelFamilySpeaker)
 		}
 		c.AddLabel(ref, creFilename)
 		c.AddCreatureSoundContext(ref, identifier, strings.ToLower(creFilename))
