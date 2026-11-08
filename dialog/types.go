@@ -102,7 +102,7 @@ type Dialog struct {
 	Id           DialogID
 	RootState    *Node
 	AllStates    map[NodeOrigin]struct{}
-	AllCreatures map[string]*Creature
+	AllCreatures map[string][]*Creature
 }
 
 func NewDialog(id DialogID) *Dialog {
@@ -110,7 +110,7 @@ func NewDialog(id DialogID) *Dialog {
 		Id:           id,
 		RootState:    nil,
 		AllStates:    make(map[NodeOrigin]struct{}),
-		AllCreatures: make(map[string]*Creature),
+		AllCreatures: make(map[string][]*Creature),
 	}
 }
 
@@ -136,11 +136,14 @@ func NewDialogCollection() *DialogCollection {
 }
 
 type Creature struct {
-	ShortNameId uint32
-	ShortName   string
-	LongNameId  uint32
-	LongName    string
-	Portrait    string
-	Dialog      string
-	Sex         string
+	ResourceName   string
+	HasLongNameId  bool
+	HasShortNameId bool
+	ShortNameId    uint32
+	ShortName      string
+	LongNameId     uint32
+	LongName       string
+	Portrait       string
+	Dialog         string
+	Sex            string
 }

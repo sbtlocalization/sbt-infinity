@@ -43,8 +43,8 @@ github.com/mewpkg/term v0.0.0-20241026122259-37a80af23985 h1:h8O1byDZ1uk6RUXMhj1
 github.com/mewpkg/term v0.0.0-20241026122259-37a80af23985/go.mod h1:uiPmbdUbdt1NkGApKl7htQjZ8S7XaGUAVulJUJ9v6q4=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
-github.com/nulab/autog v0.11.0 h1:1w8BNrUisUKH+bp2C2rA8ITOhjhOfhXUaWDgUrh8DeU=
-github.com/nulab/autog v0.11.0/go.mod h1:TpDSpSHSnYARdruVLdlNEwLS8jknWb224gLBfAFqr/8=
+github.com/nulab/autog v0.12.0 h1:CPnJQQINQRMrxoqpinR+E2dkVk7hdxyyIc7ptm4sJQA=
+github.com/nulab/autog v0.12.0/go.mod h1:TpDSpSHSnYARdruVLdlNEwLS8jknWb224gLBfAFqr/8=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
 github.com/pelletier/go-toml/v2 v2.2.4/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
 github.com/peterbourgon/diskv/v3 v3.0.1 h1:x06SQA46+PKIUftmEujdwSEpIx8kR+M9eLYsUxeYveU=
@@ -63,8 +63,10 @@ github.com/sagikazarmark/locafero v0.12.0 h1:/NQhBAkUb4+fH1jivKHWusDYFjMOOKU88ee
 github.com/sagikazarmark/locafero v0.12.0/go.mod h1:sZh36u/YSZ918v0Io+U9ogLYQJ9tLLBmM4eneO6WwsI=
 github.com/samber/lo v1.52.0 h1:Rvi+3BFHES3A8meP33VPAxiBZX/Aws5RxrschYGjomw=
 github.com/samber/lo v1.52.0/go.mod h1:4+MXEGsJzbKGaUEQFKBq2xtfuznW9oz/WrgyzMzRoM0=
-github.com/sbtlocalization/autog v0.11.1-0.20260717214150-9d2b25726d69 h1:mhxSi5JnBp51KjX18iBcUPgdKteO81cQCazkxzAsrr8=
-github.com/sbtlocalization/autog v0.11.1-0.20260717214150-9d2b25726d69/go.mod h1:TpDSpSHSnYARdruVLdlNEwLS8jknWb224gLBfAFqr/8=
+github.com/santhosh-tekuri/jsonschema/v5 v5.3.1 h1:lZUw3E0/J3roVtGQ+SCrUrg3ON6NgVqpn3+iol9aGu4=
+github.com/santhosh-tekuri/jsonschema/v5 v5.3.1/go.mod h1:uToXkOrWAZ6/Oc07xWQrPOhJotwFIyu2bBVN41fcDUY=
+github.com/sbtlocalization/dcanvas v1.1.2 h1:TId1pQwOsJ2a6OBLOky0yJHPX50r6DhG0nApV2yggrY=
+github.com/sbtlocalization/dcanvas v1.1.2/go.mod h1:Kz27owZ6Jn2EHnlAu9xZbtPdc9/vBirMbz1sgkfXvyA=
 github.com/shabbyrobe/xmlwriter v0.0.0-20200208144257-9fca06d00ffa h1:2cO3RojjYl3hVTbEvJVqrMaFmORhL6O06qdW42toftk=
 github.com/shabbyrobe/xmlwriter v0.0.0-20200208144257-9fca06d00ffa/go.mod h1:Yjr3bdWaVWyME1kha7X0jsz3k2DgXNa1Pj3XGyUAbx8=
 github.com/spf13/afero v1.15.0 h1:b/YBCLWAJdFWJTN9cLhiXXcD7mzKn9Dm86dNnfyQw1I=

@@ -6,6 +6,7 @@
 package dialog
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -15,8 +16,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/sbtlocalization/dcanvas"
 	"github.com/sbtlocalization/sbt-infinity/config"
-	"github.com/sbtlocalization/sbt-infinity/dcanvas"
 	"github.com/sbtlocalization/sbt-infinity/dialog"
 	"github.com/sbtlocalization/sbt-infinity/fs"
 	"github.com/spf13/afero"
@@ -155,7 +156,10 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%s: loaded %d dialogs\n", df, len(dlg.Dialogs))
 		}
 		for _, d := range dlg.Dialogs {
-			canvas := d.ToDCanvas(fmtOpts)
+			canvas, err := d.ToDCanvas(fmtOpts)
+			if err != nil {
+				return fmt.Errorf("error formatting dialog %s: %w", d.Id, err)
+			}
 
 			if reportPath != "" {
 				for _, node := range d.All() {
@@ -189,6 +193,10 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 					fmt.Printf("  warning: overlapping nodes detected in %s\n", fileName)
 				}
 			}
+			var encoded bytes.Buffer
+			if err := dcanvas.Encode(canvas, &encoded); err != nil {
+				return fmt.Errorf("error encoding canvas for dialog %s: %w", d.Id, err)
+			}
 			file, err := os.Create(fileName)
 			if verbose {
 				fmt.Printf("  exporting dialog %s to %s\n", d.Id, fileName)
@@ -197,41 +205,48 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 				fmt.Printf("error saving canvas for dialog %s: %v\n", d.Id, err)
 				continue
 			}
-			defer file.Close()
-
-			err = dcanvas.Encode(canvas, file)
+			_, err = encoded.WriteTo(file)
+			closeErr := file.Close()
 			if err != nil {
-				return fmt.Errorf("error encoding canvas for dialog %s: %v", d.Id, err)
+				return fmt.Errorf("error writing canvas for dialog %s: %w", d.Id, err)
+			}
+			if closeErr != nil {
+				return fmt.Errorf("error closing canvas for dialog %s: %w", d.Id, closeErr)
 			}
 
-			for _, creature := range d.AllCreatures {
-				if creature.Portrait != "" {
-					if picFile, err := dlgFs.Open(creature.Portrait); err == nil {
-						img, _, err := image.Decode(picFile)
-						picFile.Close()
-						if err != nil {
-							fmt.Printf("error converting portrait %s for %s: %v\n", creature.Portrait, creature.LongName, err)
-							continue
-						}
+			for _, creatures := range d.AllCreatures {
+				for _, creature := range creatures {
+					if creature.Portrait != "" {
+						if picFile, err := dlgFs.Open(creature.Portrait); err == nil {
+							img, _, err := image.Decode(picFile)
+							picFile.Close()
+							if err != nil {
+								fmt.Printf("error converting portrait %s for %s: %v\n", creature.Portrait, creature.LongName, err)
+								continue
+							}
 
-						picName := strings.TrimSuffix(creature.Portrait, filepath.Ext(creature.Portrait)) + ".png"
+							picName := strings.TrimSuffix(creature.Portrait, filepath.Ext(creature.Portrait)) + ".png"
 
-						err = os.MkdirAll(filepath.Join(outputDir, "portraits"), 0755)
-						if err != nil {
-							fmt.Printf("error creating portraits directory for %s: %v\n", creature.LongName, err)
-							continue
-						}
+							err = os.MkdirAll(filepath.Join(outputDir, "portraits"), 0755)
+							if err != nil {
+								fmt.Printf("error creating portraits directory for %s: %v\n", creature.LongName, err)
+								continue
+							}
 
-						outFile, err := os.Create(filepath.Join(outputDir, "portraits", picName))
-						if err != nil {
-							fmt.Printf("error creating portrait file %s for %s: %v\n", picName, creature.LongName, err)
-							continue
-						}
-						defer outFile.Close()
-
-						if err := png.Encode(outFile, img); err != nil {
-							fmt.Printf("error writing portrait file %s for %s: %v\n", picName, creature.LongName, err)
-							continue
+							outFile, err := os.Create(filepath.Join(outputDir, "portraits", picName))
+							if err != nil {
+								fmt.Printf("error creating portrait file %s for %s: %v\n", picName, creature.LongName, err)
+								continue
+							}
+							err = png.Encode(outFile, img)
+							closeErr := outFile.Close()
+							if err == nil {
+								err = closeErr
+							}
+							if err != nil {
+								fmt.Printf("error writing portrait file %s for %s: %v\n", picName, creature.LongName, err)
+								continue
+							}
 						}
 					}
 				}
@@ -255,12 +270,12 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 		slices.Sort(overlapFiles)
 
 		report := struct {
-			Sounds      []string `json:"sounds"`
-			Strrefs     []uint32 `json:"strrefs"`
+			Sounds       []string `json:"sounds"`
+			Strrefs      []uint32 `json:"strrefs"`
 			OverlapFiles []string `json:"overlap_files,omitempty"`
 		}{
-			Sounds:      sounds,
-			Strrefs:     strrefs,
+			Sounds:       sounds,
+			Strrefs:      strrefs,
 			OverlapFiles: overlapFiles,
 		}
 

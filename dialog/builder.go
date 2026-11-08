@@ -7,6 +7,7 @@ package dialog
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/kaitai-io/kaitai_struct_go_runtime/kaitai"
@@ -19,17 +20,17 @@ type DialogBuilder struct {
 	tlkFsys        afero.Fs
 	loadedDlgFiles map[string]*p.DlgFile
 	tlkFile        *p.TlkFile
-	creatures      map[string]*Creature
+	creatures      map[string][]*Creature
 	verbose        bool
 }
 
 func NewDialogBuilder(infFsys afero.Fs, tlkFsys afero.Fs, withCreatures, verbose bool) *DialogBuilder {
-	var creatures map[string]*Creature = nil
+	var creatures map[string][]*Creature = nil
 	if tlkFsys == nil {
 		withCreatures = false
 	}
 	if withCreatures {
-		creatures = make(map[string]*Creature)
+		creatures = make(map[string][]*Creature)
 	}
 	return &DialogBuilder{
 		infFsys:        infFsys,
@@ -154,24 +155,37 @@ func (b *DialogBuilder) loadCreatures() error {
 			b.Printf("unable to open CRE file %s: %v", creFileName, err)
 			continue
 		}
-		defer creFile.Close()
-
 		cre := p.NewCre()
 		stream := kaitai.NewStream(creFile)
 		err = cre.Read(stream, nil, cre)
+		creFile.Close()
 		if err != nil {
 			b.Printf("unable to read CRE file %s: %v", creFileName, err)
 			continue
 		}
+		if cre.Body == nil || cre.Body.Header == nil {
+			b.Printf("unsupported CRE version in %s\n", creFileName)
+			continue
+		}
 
-		shortName := b.tlkFile.GetText(cre.ShortNameRef)
-		longName := b.tlkFile.GetText(cre.LongNameRef)
+		shortName, longName := "", ""
+		hasShortName := cre.ShortNameRef < b.tlkFile.NumEntries
+		hasLongName := cre.LongNameRef < b.tlkFile.NumEntries
+		if hasShortName {
+			shortName = b.tlkFile.GetText(cre.ShortNameRef)
+		}
+		if hasLongName {
+			longName = b.tlkFile.GetText(cre.LongNameRef)
+		}
 
 		creature := &Creature{
-			ShortNameId: cre.ShortNameRef,
-			ShortName:   shortName,
-			LongNameId:  cre.LongNameRef,
-			LongName:    longName,
+			ResourceName:   strings.ToUpper(creFileName),
+			HasLongNameId:  hasLongName,
+			HasShortNameId: hasShortName,
+			ShortNameId:    cre.ShortNameRef,
+			ShortName:      shortName,
+			LongNameId:     cre.LongNameRef,
+			LongName:       longName,
 		}
 
 		if cre.Version == "V1.0" || cre.Version == "V1.1" {
@@ -184,7 +198,11 @@ func (b *DialogBuilder) loadCreatures() error {
 
 		b.Printf("Loading character: %s (dialog: %s)\n", longName, cre.Body.Header.Dialog)
 
-		b.creatures[strings.ToUpper(creature.Dialog)] = creature
+		key := strings.ToUpper(creature.Dialog)
+		b.creatures[key] = append(b.creatures[key], creature)
+	}
+	for _, creatures := range b.creatures {
+		slices.SortFunc(creatures, func(a, b *Creature) int { return strings.Compare(a.ResourceName, b.ResourceName) })
 	}
 
 	return nil
@@ -282,8 +300,8 @@ func (b *DialogBuilder) loadTree(dialog *Dialog, previousStates []NodeOrigin, st
 	}
 	dialog.AllStates[stateOrigin] = struct{}{}
 
-	if cre, ok := b.creatures[stateOrigin.DlgName]; ok {
-		dialog.AllCreatures[stateOrigin.DlgName] = cre
+	if creatures, ok := b.creatures[strings.ToUpper(stateOrigin.DlgName)]; ok {
+		dialog.AllCreatures[stateOrigin.DlgName] = creatures
 	}
 
 	for _, child := range state.Children {

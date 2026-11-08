@@ -1,16 +1,18 @@
 module github.com/sbtlocalization/sbt-infinity
 
-go 1.25
+go 1.27
 
 require (
 	codeberg.org/tealeg/xlsx/v4 v4.0.0
 	github.com/gobwas/glob v0.2.3
 	github.com/hashicorp/golang-lru/v2 v2.0.7
+	github.com/jfreymuth/oggvorbis v1.0.5
 	github.com/kaitai-io/kaitai_struct_go_runtime v0.11.0
 	github.com/mewkiz/flac v1.0.13
-	github.com/nulab/autog v0.11.0
 	github.com/pelletier/go-toml/v2 v2.2.4
 	github.com/samber/lo v1.52.0
+	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
+	github.com/sbtlocalization/dcanvas v1.1.2
 	github.com/spf13/afero v1.15.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
@@ -25,12 +27,12 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/icza/bitio v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/jfreymuth/oggvorbis v1.0.5 // indirect
 	github.com/jfreymuth/vorbis v1.0.2 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mewkiz/pkg v0.0.0-20250417130911-3f050ff8c56d // indirect
 	github.com/mewpkg/term v0.0.0-20241026122259-37a80af23985 // indirect
+	github.com/nulab/autog v0.12.0 // indirect
 	github.com/peterbourgon/diskv/v3 v3.0.1 // indirect
 	github.com/rogpeppe/fastuuid v1.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
@@ -43,5 +45,3 @@ require (
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 )
-
-replace github.com/nulab/autog => github.com/sbtlocalization/autog v0.11.1-0.20260717214150-9d2b25726d69

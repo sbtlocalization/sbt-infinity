@@ -3,8 +3,7 @@
 The ubiquitous language behind the CLI toolkit that processes Infinity Engine
 localization resources. This is the vocabulary; the code is the *how*.
 
-> The dCanvas dialogue format has its own context in
-> [`dcanvas/docs/CONTEXT.md`](./dcanvas/docs/CONTEXT.md).
+> The dCanvas dialogue format has its own [context](https://github.com/sbtlocalization/dcanvas/blob/main/CONTEXT.md).
 
 ## Language
 
@@ -22,6 +21,23 @@ _Avoid_: usage, references.
 **Context source**:
 A resource type scanned to build context (dialogs, creatures, areas, items,
 scripts, …). Selected with `--context-from`.
+
+### Dialogs
+
+**Line**:
+Dialog content presented to the player by a character, narrator, or object.
+
+**Reply**:
+The player's response in a dialog, including a selectable description of an action rather than literal speech.
+
+**Dialog end**:
+A transition that ends the conversation, with or without a player reply. It is not a speaker.
+
+**Speaker**:
+The character who presents a line to the player. Interface labels such as “Answer” and “End dialog” are not speakers.
+
+**Alternative speaker**:
+Another character who may present the same line instead of the displayed speaker. Exactly one of these characters speaks the line; they are not speaking together.
 
 ### Scripts
 

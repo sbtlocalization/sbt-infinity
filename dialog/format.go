@@ -8,11 +8,12 @@ package dialog
 import (
 	"fmt"
 	"path"
+	"slices"
 	"strings"
+	"unicode/utf8"
 
-	"github.com/nulab/autog"
-	"github.com/nulab/autog/graph"
-	"github.com/sbtlocalization/sbt-infinity/dcanvas"
+	"github.com/sbtlocalization/dcanvas"
+	"github.com/sbtlocalization/dcanvas/layout"
 )
 
 const (
@@ -31,206 +32,178 @@ type FormatOptions struct {
 	SoundSuffix string
 }
 
+func validText(s string) string {
+	if utf8.ValidString(s) {
+		return s
+	}
+	return string([]rune(s))
+}
+
 func formatSound(name, prefix, suffix string) string {
 	if name == "" {
 		return ""
 	}
-	return prefix + name + suffix
+	return validText(prefix + name + suffix)
 }
 
-func (d *Dialog) ToDCanvas(opts FormatOptions) *dcanvas.Canvas {
-	c := &dcanvas.Canvas{
-		Version: "2.0",
-		Nodes:   []*dcanvas.Node{},
-		Edges:   []*dcanvas.Edge{},
-	}
-
-	// Create color mapping for unique DlgName values (built on-demand)
+func (d *Dialog) ToDCanvas(opts FormatOptions) (*dcanvas.Canvas, error) {
+	c := &dcanvas.Canvas{Version: dcanvas.Version, Nodes: []*dcanvas.Node{}, Edges: []*dcanvas.Edge{}}
 	stateColors := []string{"3", "6", "2", "5"}
 	dlgNameToColor := make(map[string]string)
-	colorIndex := 0
-
-	edges := make(map[string]*dcanvas.Edge)
-	nodes := make(map[string]*dcanvas.Node)
-	layoutEdges := make([][]string, 0)
+	errorNodes := make(map[string]bool)
+	edgeIDs := make(map[string]bool)
 	for _, dNode := range d.All() {
 		if dNode.IsEmptyTransition() {
 			continue
-		} else {
-			// Build color mapping on-demand for StateNodeType
-			if dNode.Type == StateNodeType {
-				if _, exists := dlgNameToColor[dNode.Origin.DlgName]; !exists {
-					dlgNameToColor[dNode.Origin.DlgName] = stateColors[colorIndex%len(stateColors)]
-					colorIndex++
-				}
+		}
+		if dNode.Type == StateNodeType {
+			if _, exists := dlgNameToColor[dNode.Origin.DlgName]; !exists {
+				dlgNameToColor[dNode.Origin.DlgName] = stateColors[len(dlgNameToColor)%len(stateColors)]
 			}
-
-			cNode := newNode(d, dNode, dlgNameToColor, opts)
-			if cNode != nil {
-				c.Nodes = append(c.Nodes, cNode)
-				nodes[cNode.ID] = cNode
+		}
+		cNode, err := newNode(d, dNode, dlgNameToColor, opts)
+		if err != nil {
+			return nil, fmt.Errorf("format node %s: %w", dNode.Origin, err)
+		}
+		if cNode != nil && (dNode.Type != ErrorNodeType || !errorNodes[cNode.ID]) {
+			c.Nodes = append(c.Nodes, cNode)
+			if dNode.Type == ErrorNodeType {
+				errorNodes[cNode.ID] = true
 			}
-
-			if dNode.Parent != nil {
-				cEdge, loop := newEdge(dNode)
-				if cEdge == nil {
-					continue
-				}
-
-				edges[cEdge.ID] = cEdge
-				if !loop {
-					layoutEdges = append(layoutEdges, []string{cEdge.FromNode, cEdge.ToNode})
-				}
-				c.Edges = append(c.Edges, cEdge)
+		}
+		if edge := newEdge(dNode); edge != nil {
+			baseID := edge.ID
+			for suffix := 2; edgeIDs[edge.ID]; suffix++ {
+				edge.ID = fmt.Sprintf("%s#%d", baseID, suffix)
 			}
+			edgeIDs[edge.ID] = true
+			c.Edges = append(c.Edges, edge)
 		}
 	}
 
-	// Validate graph structure before layout
-	if len(nodes) == 0 {
-		fmt.Printf("warning(%s): no nodes to layout, skipping autolayout", d.Id)
-		return c
-	}
-
-	// Add panic recovery for the autog.Layout call
-	var layout graph.Layout
-	layoutSuccess := false
-
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Printf("warning(%s): layout algorithm failed: %v\n", d.Id, r)
-				fmt.Println("Nodes will be placed at default positions")
-				layoutSuccess = false
-			}
-		}()
-
-		src := graph.EdgeSlice(layoutEdges)
-		layout = autog.Layout(
-			src,
-			autog.WithNodeFixedSize(Width, Height),
-			autog.WithLayerSpacing(200),
-		)
-		layoutSuccess = true
-	}()
-
-	// Apply layout if successful
-	if layoutSuccess {
-		for _, n := range layout.Nodes {
-			if cNode, ok := nodes[n.ID]; ok {
-				cNode.X = int(n.X)
-				cNode.Y = int(n.Y)
-			} else {
-				fmt.Printf("warning(%s): node %s not found in canvas nodes\n", d.Id, n.ID)
-			}
-		}
-	}
-
-	return c
+	applyLayout(c, d.Id, func(c *dcanvas.Canvas) error { return layout.Layout(c) })
+	return c, nil
 }
 
-func newNode(d *Dialog, node *Node, dlgNameToColor map[string]string, opts FormatOptions) *dcanvas.Node {
-	cNode := &dcanvas.Node{
-		ID:     node.String(),
-		Type:   "text",
-		X:      0,
-		Y:      0,
-		Width:  Width,
-		Height: Height,
-		NodeId: node.Origin.String(),
+func applyLayout(c *dcanvas.Canvas, id DialogID, layoutFn func(*dcanvas.Canvas) error) {
+	positions := make([][2]int, len(c.Nodes))
+	for i, n := range c.Nodes {
+		positions[i] = [2]int{n.X, n.Y}
 	}
+	if err := layoutFn(c); err != nil {
+		for i, n := range c.Nodes {
+			n.X, n.Y = positions[i][0], positions[i][1]
+		}
+		fmt.Printf("warning(%s): layout algorithm failed: %v\nNodes will be placed at default positions\n", id, err)
+	}
+}
 
+func newNode(d *Dialog, node *Node, colors map[string]string, opts FormatOptions) (*dcanvas.Node, error) {
+	cNode := &dcanvas.Node{
+		ID: validText(node.String()), Type: "text", Width: Width, Height: Height, DomainID: validText(node.Origin.String()),
+	}
 	switch node.Type {
 	case StateNodeType:
-		cNode.NodeRole = "state"
-		cNode.TextId = fmt.Sprintf("#%d", node.State.TextRef)
+		cNode.Kind = dcanvas.KindLine
+		cNode.TextID = fmt.Sprintf("#%d", node.State.TextRef)
 		cNode.Sound = formatSound(node.State.Sound, opts.SoundPrefix, opts.SoundSuffix)
-		cNode.Trigger = strings.TrimSpace(node.State.Trigger)
-		cNode.Text = node.State.Text
-
-		if cre, ok := d.AllCreatures[node.Origin.DlgName]; ok {
-			cNode.Character = newCharacter(cre.LongName, cre.Portrait, cre.Sex)
+		cNode.Condition = validText(strings.TrimSpace(node.State.Trigger))
+		cNode.Text = validText(node.State.Text)
+		creatures := slices.Clone(d.AllCreatures[node.Origin.DlgName])
+		slices.SortFunc(creatures, func(a, b *Creature) int {
+			return strings.Compare(strings.ToUpper(a.ResourceName), strings.ToUpper(b.ResourceName))
+		})
+		if len(creatures) > 0 {
+			cNode.Character = newCharacter(creatures[0])
+			if cNode.Character != nil {
+				for _, cre := range creatures[1:] {
+					if character := newCharacter(cre); character != nil {
+						cNode.AlternativeCharacters = append(cNode.AlternativeCharacters, character)
+					}
+				}
+			}
 		}
-
-		if color, exists := dlgNameToColor[node.Origin.DlgName]; exists {
-			cNode.Color = color
-		} else {
+		cNode.Color = colors[node.Origin.DlgName]
+		if cNode.Color == "" {
 			cNode.Color = StateColor
 		}
-
 	case TransitionNodeType:
-		cNode.NodeRole = "transition"
+		cNode.Kind = dcanvas.KindReply
 		if node.Transition.HasText {
-			cNode.TextId = fmt.Sprintf("#%d", node.Transition.TextRef)
-			cNode.Text = node.Transition.Text
+			cNode.TextID = fmt.Sprintf("#%d", node.Transition.TextRef)
+			cNode.Text = validText(node.Transition.Text)
 			cNode.Sound = formatSound(node.Transition.Sound, opts.SoundPrefix, opts.SoundSuffix)
 		}
 		if node.Transition.HasJournalText {
-			cNode.JournalTextId = fmt.Sprintf("#%d", node.Transition.JournalTextRef)
-			cNode.JournalText = node.Transition.JournalText
-			cNode.JournalSound = formatSound(node.Transition.JournalSound, opts.SoundPrefix, opts.SoundSuffix)
+			for _, field := range []struct{ key, value string }{
+				{"x-journalTextId", fmt.Sprintf("#%d", node.Transition.JournalTextRef)},
+				{"x-journalText", validText(node.Transition.JournalText)},
+				{"x-journalSound", formatSound(node.Transition.JournalSound, opts.SoundPrefix, opts.SoundSuffix)},
+			} {
+				if field.value != "" {
+					if err := cNode.SetExtra(field.key, field.value); err != nil {
+						return nil, err
+					}
+				}
+			}
 		}
-		cNode.Action = strings.TrimSpace(node.Transition.Action)
-
+		cNode.Action = validText(strings.TrimSpace(node.Transition.Action))
+		cNode.Color = TransitionColor
 		if node.Transition.IsDialogEnd {
-			cNode.Character = newCharacter("End dialog", "", "")
+			cNode.Role = "dialog-end"
 			cNode.Color = FinalTransitionColor
-		} else {
-			cNode.Character = newCharacter("Answer", "", "")
-			cNode.Color = TransitionColor
 		}
-
 	case ErrorNodeType:
-		cNode.NodeRole = "state"
+		cNode.Role = "error"
 		cNode.Color = FinalTransitionColor
 		cNode.Text = "**Error loading state**"
-
 	case LoopNodeType:
+		return nil, nil
+	}
+	return cNode, nil
+}
+
+func newEdge(node *Node) *dcanvas.Edge {
+	if node.Parent == nil {
 		return nil
 	}
-
-	return cNode
-}
-
-func newEdge(node *Node) (*dcanvas.Edge, bool) {
-	if node.Parent == nil {
-		return nil, false
-	}
-
-	loop := node.Type == LoopNodeType
-
-	fromNode, toNode := node.Parent.String(), node.String()
-
+	fromNode, toNode := validText(node.Parent.String()), validText(node.String())
 	var condition string
 	if node.Type == TransitionNodeType && node.Transition.HasTrigger {
-		condition = strings.TrimSpace(node.Transition.Trigger)
+		condition = validText(strings.TrimSpace(node.Transition.Trigger))
 	}
-
 	if node.Parent.IsEmptyTransition() && node.Parent.Parent != nil {
-		// skip empty transition nodes, connect parent state to next state directly
-		fromNode = node.Parent.Parent.String()
-
-		if node.Parent.Type == TransitionNodeType && node.Parent.Transition.HasTrigger {
-			condition = strings.TrimSpace(node.Parent.Transition.Trigger)
+		fromNode = validText(node.Parent.Parent.String())
+		if node.Parent.Transition.HasTrigger {
+			condition = validText(strings.TrimSpace(node.Parent.Transition.Trigger))
 		}
 	}
-
-	cEdge := &dcanvas.Edge{
-		ID:        fmt.Sprintf("%s-%s", fromNode, toNode),
-		FromNode:  fromNode,
-		FromSide:  "bottom",
-		ToNode:    toNode,
-		ToSide:    "top",
-		ToEnd:     "arrow",
-		Condition: condition,
+	kind := dcanvas.KindNormal
+	if node.Type == LoopNodeType {
+		kind = dcanvas.KindLoop
 	}
-
-	return cEdge, loop
+	return &dcanvas.Edge{
+		ID: fmt.Sprintf("%s-%s", fromNode, toNode), FromNode: fromNode, FromSide: "bottom",
+		ToNode: toNode, ToSide: "top", ToEnd: "arrow", Condition: condition, Kind: kind,
+	}
 }
 
-func newCharacter(name, portrait, gender string) *dcanvas.Character {
-	ch := &dcanvas.Character{Name: name, Gender: gender}
-	portrait = strings.TrimSuffix(portrait, ".BMP")
+func newCharacter(cre *Creature) *dcanvas.Character {
+	name, ref, hasRef := cre.LongName, cre.LongNameId, cre.HasLongNameId
+	if name == "" {
+		name, ref, hasRef = cre.ShortName, cre.ShortNameId, cre.HasShortNameId
+	}
+	if name == "" {
+		name, hasRef = strings.TrimSuffix(cre.ResourceName, ".CRE"), false
+	}
+	if name == "" {
+		return nil
+	}
+	ch := &dcanvas.Character{Name: validText(name), Gender: validText(cre.Sex)}
+	if hasRef {
+		ch.TextID = fmt.Sprintf("#%d", ref)
+	}
+	portrait := strings.TrimSuffix(validText(cre.Portrait), ".BMP")
 	if portrait != "" && portrait != "None" {
 		ch.Portrait = path.Join("portraits", portrait+".png")
 	}
