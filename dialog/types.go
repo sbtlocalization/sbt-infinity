@@ -17,6 +17,7 @@ const (
 	TransitionNodeType
 	LoopNodeType
 	ErrorNodeType
+	ConvergenceNodeType
 )
 
 type NodeOrigin struct {
@@ -33,7 +34,7 @@ func NewNodeOrigin(dlgName string, index uint32) NodeOrigin {
 
 func (t NodeType) String() string {
 	switch t {
-	case StateNodeType, LoopNodeType:
+	case StateNodeType, LoopNodeType, ConvergenceNodeType:
 		return "state"
 	case TransitionNodeType:
 		return "transition"
@@ -115,14 +116,14 @@ func NewDialog(id DialogID) *Dialog {
 }
 
 func (d *Dialog) NodeCount() int {
-	count := 0
+	ids := make(map[string]struct{})
 	for _, node := range d.All() {
-		if node.Type == LoopNodeType || node.IsEmptyTransition() {
+		if node.Type == LoopNodeType || node.Type == ConvergenceNodeType || node.IsEmptyTransition() {
 			continue
 		}
-		count++
+		ids[node.String()] = struct{}{}
 	}
-	return count
+	return len(ids)
 }
 
 type DialogCollection struct {

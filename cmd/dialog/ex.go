@@ -185,8 +185,7 @@ func runExportDialogs(cmd *cobra.Command, args []string) error {
 					}
 				}
 			}
-			dialogName := strings.TrimSuffix(d.Id.DlgName, filepath.Ext(d.Id.DlgName))
-			fileName := filepath.Join(outputDir, fmt.Sprintf("%s-%d.d.canvas", dialogName, d.Id.Index))
+			fileName := filepath.Join(outputDir, d.Id.CanvasStem()+".d.canvas")
 			if scanOverlaps && canvas.HasOverlappingNodes() {
 				overlapFiles = append(overlapFiles, fileName)
 				if verbose {

@@ -7,6 +7,7 @@ package dialog
 
 import (
 	"fmt"
+	"net/url"
 	"path"
 	"slices"
 	"strings"
@@ -102,6 +103,9 @@ func newNode(d *Dialog, node *Node, colors map[string]string, opts FormatOptions
 	cNode := &dcanvas.Node{
 		ID: validText(node.String()), Type: "text", Width: Width, Height: Height, DomainID: validText(node.Origin.String()),
 	}
+	if node.Type == StateNodeType || node.Type == TransitionNodeType {
+		cNode.DomainID = node.domainID(d.Id)
+	}
 	switch node.Type {
 	case StateNodeType:
 		cNode.Kind = dcanvas.KindLine
@@ -157,7 +161,7 @@ func newNode(d *Dialog, node *Node, colors map[string]string, opts FormatOptions
 		cNode.Role = "error"
 		cNode.Color = FinalTransitionColor
 		cNode.Text = "**Error loading state**"
-	case LoopNodeType:
+	case LoopNodeType, ConvergenceNodeType:
 		return nil, nil
 	}
 	return cNode, nil
@@ -210,15 +214,25 @@ func newCharacter(cre *Creature) *dcanvas.Character {
 	return ch
 }
 
+func (id NodeOrigin) CanvasStem() string {
+	return validText(fmt.Sprintf("%s-%d", id.DlgName, id.Index))
+}
+
+func (n *Node) domainID(root DialogID) string {
+	if strings.EqualFold(n.Origin.DlgName, root.DlgName) {
+		return fmt.Sprintf("%s-%d", n.Type, n.Origin.Index)
+	}
+	return validText(fmt.Sprintf("%s-%s-%d", n.Type, n.Origin.DlgName, n.Origin.Index))
+}
+
 func (n *Node) ToUrl(baseUrl string) string {
-	dialogName := strings.TrimSuffix(strings.ToLower(n.Dialog.Id.DlgName), ".dlg")
-	dialogId := fmt.Sprintf("%s-%d", dialogName, n.Dialog.Id.Index)
-	return fmt.Sprintf(
-		"%s/dialog/%s#%s-%s-%d-",
-		strings.TrimRight(baseUrl, "/"),
-		dialogId,
-		n.Type,
-		strings.ToLower(n.Origin.DlgName),
-		n.Origin.Index,
-	)
+	id := n.domainID(n.Dialog.Id)
+	fragment := url.PathEscape(id)
+	if fragment != id {
+		// The viewer tries the raw fragment before decoding it; prevent an escaped
+		// identifier from accidentally matching another node's literal identifier.
+		fragment = strings.Replace(fragment, "-", "%2D", 1)
+	}
+	return fmt.Sprintf("%s/dialog/%s#%s", strings.TrimRight(baseUrl, "/"),
+		url.PathEscape(n.Dialog.Id.CanvasStem()), fragment)
 }

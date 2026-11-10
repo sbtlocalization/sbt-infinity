@@ -59,6 +59,9 @@ func TestExportReusesErrorNodeForRepeatedMissingState(t *testing.T) {
 	if count != 1 || incoming != 2 {
 		t.Errorf("error nodes = %d, incoming edges = %d", count, incoming)
 	}
+	if got := d.NodeCount(); got != len(decoded.Nodes) {
+		t.Errorf("node count = %d, want %d", got, len(decoded.Nodes))
+	}
 }
 
 func TestExportParallelSkippedTransitionsKeepDistinctEdges(t *testing.T) {
@@ -175,7 +178,7 @@ func TestExportGraphAndJournalRoundTrip(t *testing.T) {
 			t.Errorf("loop changed position of %s", n.ID)
 		}
 	}
-	if got := root.ToUrl("https://example.test/"); got != "https://example.test/dialog/test-0#state-test-0-" {
+	if got := root.ToUrl("https://example.test/"); got != "https://example.test/dialog/TEST-0#state-0" {
 		t.Errorf("URL: %s", got)
 	}
 	var buf bytes.Buffer

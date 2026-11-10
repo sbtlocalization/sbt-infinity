@@ -5,11 +5,27 @@ package dialog_test
 
 import (
 	"bytes"
+	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/sbtlocalization/dcanvas"
 	"github.com/sbtlocalization/sbt-infinity/dialog"
 )
+
+func TestEscapedFragmentCannotMatchAnotherLiteralDomainID(t *testing.T) {
+	d := dialog.NewDialog(dialog.NewNodeOrigin("ROOT", 0))
+	n := &dialog.Node{Type: dialog.StateNodeType, Origin: dialog.NewNodeOrigin("BaR%", 0), Dialog: d}
+	link := n.ToUrl("https://example.test")
+	fragment := strings.SplitN(link, "#", 2)[1]
+	if fragment == "state-BaR%25-0" {
+		t.Fatalf("raw fragment collides with another resource's d-id: %s", fragment)
+	}
+	decoded, err := url.PathUnescape(fragment)
+	if err != nil || decoded != "state-BaR%-0" {
+		t.Fatalf("fragment %q decoded to %q: %v", fragment, decoded, err)
+	}
+}
 
 func TestExportLineAndTerminalReply(t *testing.T) {
 	d := dialog.NewDialog(dialog.NewNodeOrigin("TEST", 0))
@@ -40,7 +56,7 @@ func TestExportLineAndTerminalReply(t *testing.T) {
 		t.Fatalf("nodes = %d", len(canvas.Nodes))
 	}
 	line, end := canvas.Nodes[0], canvas.Nodes[1]
-	if line.Kind != dcanvas.KindLine || line.DomainID != "TEST[0]" || line.TextID != "#42" || line.Condition != "True()" || line.Sound != "sounds/HELLO.wav" {
+	if line.Kind != dcanvas.KindLine || line.DomainID != "state-0" || line.TextID != "#42" || line.Condition != "True()" || line.Sound != "sounds/HELLO.wav" {
 		t.Errorf("line = %+v", line)
 	}
 	if end.Kind != dcanvas.KindReply || end.Role != "dialog-end" || end.Character != nil || end.Text != "" {
