@@ -293,13 +293,13 @@ func TestExportGraphAndJournalRoundTrip(t *testing.T) {
 	if got := nodes["transition-TEST[2]"]; got["d-kind"] != "reply" || got["text"] != "Again" || got["d-textId"] != "#6" || got["d-sound"] != "snd/REPLY.ogg" {
 		t.Errorf("reply: %v", got)
 	}
-	if got := nodes["transition-TEST[3]"]; got["d-kind"] != "reply" || got["text"] != "" || got["d-action"] != "Do()" {
+	if got := nodes["transition-TEST[3]"]; got["d-kind"] != "reply" || got["text"] != "(no text)" || got["d-textId"] != nil || got["d-action"] != "Do()" {
 		t.Errorf("action-only reply: %v", got)
 	}
-	if got := nodes["transition-TEST[4]"]; got["d-kind"] != "reply" || got["d-role"] != nil || got["x-journalText"] != "Journal" || got["x-journalTextId"] != "#10" || got["x-journalSound"] != "snd/JOURNAL.ogg" {
+	if got := nodes["transition-TEST[4]"]; got["d-kind"] != "reply" || got["d-role"] != nil || got["text"] != "(no text)" || got["d-textId"] != nil || got["x-journalText"] != "Journal" || got["x-journalTextId"] != "#10" || got["x-journalSound"] != "snd/JOURNAL.ogg" {
 		t.Errorf("journal: %v", got)
 	}
-	if got := nodes["transition-TEST[5]"]; got["d-kind"] != "reply" || got["d-role"] != "dialog-end" || got["text"] != "" {
+	if got := nodes["transition-TEST[5]"]; got["d-kind"] != "reply" || got["d-role"] != "dialog-end" || got["text"] != "(no text)" || got["d-textId"] != nil {
 		t.Errorf("terminal: %v", got)
 	}
 	if got := nodes["error-MISSING[7]"]; got["d-role"] != "error" || got["d-kind"] != nil || got["text"] != "**Error loading state**" || got["color"] != "1" {
@@ -314,8 +314,25 @@ func TestExportGraphAndJournalRoundTrip(t *testing.T) {
 		if n["width"] != float64(400) || n["height"] != float64(300) {
 			t.Errorf("node size: %v", n)
 		}
-		if n["d-role"] == "state" || n["d-role"] == "transition" || n["d-character"] != nil {
-			t.Errorf("unexpected role or character: %v", n)
+		if n["d-role"] == "state" || n["d-role"] == "transition" {
+			t.Errorf("unexpected role: %v", n)
+		}
+		if n["d-role"] == "error" {
+			if n["d-character"] != nil {
+				t.Errorf("error character: %v", n)
+			}
+			continue
+		}
+		name := "TEST"
+		if n["d-kind"] == "reply" {
+			name = "Answer"
+			if n["d-role"] == "dialog-end" {
+				name = "End dialog"
+			}
+		}
+		ch, ok := n["d-character"].(map[string]any)
+		if !ok || ch["name"] != name {
+			t.Errorf("character: %v", n)
 		}
 	}
 	var direct, loop, skippedLoopEdge, replyCondition bool

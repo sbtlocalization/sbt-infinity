@@ -124,14 +124,16 @@ func newNode(d *Dialog, node *Node, colors map[string]string, opts FormatOptions
 			return strings.Compare(strings.ToUpper(a.ResourceName), strings.ToUpper(b.ResourceName))
 		})
 		if len(creatures) > 0 {
-			cNode.Character = newCharacter(creatures[0])
+			cNode.Character = newCharacter(creatures[0], node.Origin.DlgName)
 			if cNode.Character != nil {
 				for _, cre := range creatures[1:] {
-					if character := newCharacter(cre); character != nil {
+					if character := newCharacter(cre, node.Origin.DlgName); character != nil {
 						cNode.AlternativeCharacters = append(cNode.AlternativeCharacters, character)
 					}
 				}
 			}
+		} else {
+			cNode.Character = &dcanvas.Character{Name: validText(node.Origin.DlgName)}
 		}
 		cNode.Color = colors[node.Origin.DlgName]
 		if cNode.Color == "" {
@@ -159,9 +161,11 @@ func newNode(d *Dialog, node *Node, colors map[string]string, opts FormatOptions
 		}
 		cNode.Action = validText(strings.TrimSpace(node.Transition.Action))
 		cNode.Color = TransitionColor
+		cNode.Character = &dcanvas.Character{Name: "Answer"}
 		if node.Transition.IsDialogEnd {
 			cNode.Role = "dialog-end"
 			cNode.Color = FinalTransitionColor
+			cNode.Character.Name = "End dialog"
 		}
 	case ErrorNodeType:
 		cNode.Role = "error"
@@ -169,6 +173,9 @@ func newNode(d *Dialog, node *Node, colors map[string]string, opts FormatOptions
 		cNode.Text = "**Error loading state**"
 	case LoopNodeType, ConvergenceNodeType:
 		return nil, nil
+	}
+	if cNode.Text == "" && cNode.TextID == "" {
+		cNode.Text = "(no text)"
 	}
 	return cNode, nil
 }
@@ -198,13 +205,13 @@ func newEdge(node *Node) *dcanvas.Edge {
 	}
 }
 
-func newCharacter(cre *Creature) *dcanvas.Character {
+func newCharacter(cre *Creature, dlgName string) *dcanvas.Character {
 	name, ref, hasRef := cre.LongName, cre.LongNameId, cre.HasLongNameId
 	if name == "" {
 		name, ref, hasRef = cre.ShortName, cre.ShortNameId, cre.HasShortNameId
 	}
 	if name == "" {
-		name, hasRef = strings.TrimSuffix(cre.ResourceName, ".CRE"), false
+		name, hasRef = dlgName, false
 	}
 	if name == "" {
 		return nil

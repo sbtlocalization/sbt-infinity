@@ -112,7 +112,7 @@ func TestExportCommandWithCreaturePortraits(t *testing.T) {
 	if len(line.AlternativeCharacters) != 1 || line.AlternativeCharacters[0].Name != "Alpha" || line.AlternativeCharacters[0].TextID != "#1" {
 		t.Errorf("alternatives: %+v", line.AlternativeCharacters)
 	}
-	if end.Kind != dcanvas.KindReply || end.Role != "dialog-end" || end.Text != "Bye" || end.Character != nil {
+	if end.Kind != dcanvas.KindReply || end.Role != "dialog-end" || end.Text != "Bye" || end.Character == nil || end.Character.Name != "End dialog" {
 		t.Errorf("end: %+v", end)
 	}
 	for _, portrait := range []string{"AAA_P.png", "ZZZ_P.png"} {
@@ -144,6 +144,69 @@ func TestExportCommandWithCreaturePortraits(t *testing.T) {
 	}
 	if err := schema.Validate(document); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestExportCommandEmptyTextAndMissingText(t *testing.T) {
+	dir := t.TempDir()
+	var tlk bytes.Buffer
+	if err := text.WriteTlk(&tlk, []text.TlkWriteEntry{{Text: "", HasText: true}}, text.TlkWriteOptions{}); err != nil {
+		t.Fatal(err)
+	}
+	dlg := make([]byte, 146)
+	copy(dlg, "DLG V1.0")
+	put := func(off int, n uint32) { binary.LittleEndian.PutUint32(dlg[off:off+4], n) }
+	put(8, 1)
+	put(12, 52)
+	put(16, 2)
+	put(20, 68)
+	put(24, 132)
+	put(28, 1)
+	put(52, 0)
+	put(60, 2)
+	put(64, 0)
+	put(68, 8)
+	put(100, 9)
+	put(104, 0)
+	put(132, 140)
+	put(136, 6)
+	copy(dlg[140:], "True()")
+	key, bif := makeArchive([]resource{{"TEST", 1011, dlg}})
+	for name, data := range map[string][]byte{"dialog.tlk": tlk.Bytes(), "chitin.key": key, "test.bif": bif} {
+		if err := os.WriteFile(filepath.Join(dir, name), data, 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	out := filepath.Join(dir, "out")
+	cmd := cmdDialog.NewCommand()
+	cmd.PersistentFlags().String("key", filepath.Join(dir, "chitin.key"), "")
+	cmd.SetArgs([]string{"export", "--speakers=false", "--tlk", filepath.Join(dir, "dialog.tlk"), "--output", out, "TEST.DLG"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(filepath.Join(out, "TEST-0.d.canvas"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	canvas, err := dcanvas.Decode(bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := dcanvas.Validate(canvas); err != nil {
+		t.Fatal(err)
+	}
+	if len(canvas.Nodes) != 3 {
+		t.Fatalf("nodes: %+v", canvas.Nodes)
+	}
+	line, missing, empty := canvas.Nodes[0], canvas.Nodes[1], canvas.Nodes[2]
+	if line.Text != "" || line.TextID != "#0" || line.Character == nil || line.Character.Name != "TEST" {
+		t.Errorf("line: %+v", line)
+	}
+	if missing.Text != "(no text)" || missing.TextID != "" || missing.Character == nil || missing.Character.Name != "End dialog" {
+		t.Errorf("missing: %+v", missing)
+	}
+	if empty.Text != "" || empty.TextID != "#0" || empty.Character == nil || empty.Character.Name != "End dialog" {
+		t.Errorf("empty: %+v", empty)
 	}
 }
 

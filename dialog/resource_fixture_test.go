@@ -171,7 +171,7 @@ func TestExportScannedCreatureSpeakers(t *testing.T) {
 			if name == "" {
 				name, textID = tc.names[2], "#2"
 				if tc.unsetShort {
-					name, textID = "AAA", ""
+					name, textID = "TEST", ""
 				}
 			}
 			if ch == nil || ch.Name != name || ch.TextID != textID || ch.Portrait != "portraits/AAA_P.png" || ch.Gender != "FEMALE" {
