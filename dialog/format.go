@@ -53,6 +53,7 @@ func (d *Dialog) ToDCanvas(opts FormatOptions) (*dcanvas.Canvas, error) {
 	dlgNameToColor := make(map[string]string)
 	errorNodes := make(map[string]bool)
 	edgeIDs := make(map[string]bool)
+	layoutEdges := make([]*dcanvas.Edge, 0)
 	for _, dNode := range d.All() {
 		if dNode.IsEmptyTransition() {
 			continue
@@ -79,10 +80,15 @@ func (d *Dialog) ToDCanvas(opts FormatOptions) (*dcanvas.Canvas, error) {
 			}
 			edgeIDs[edge.ID] = true
 			c.Edges = append(c.Edges, edge)
+			if dNode.Type != ConvergenceNodeType {
+				layoutEdges = append(layoutEdges, edge)
+			}
 		}
 	}
 
-	applyLayout(c, d.Id, func(c *dcanvas.Canvas) error { return layout.Layout(c) })
+	layoutCanvas := *c
+	layoutCanvas.Edges = layoutEdges
+	applyLayout(&layoutCanvas, d.Id, func(c *dcanvas.Canvas) error { return layout.Layout(c) })
 	return c, nil
 }
 

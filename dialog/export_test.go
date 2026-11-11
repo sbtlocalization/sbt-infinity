@@ -108,6 +108,78 @@ func TestExportParallelSkippedTransitionsKeepDistinctEdges(t *testing.T) {
 	}
 }
 
+func TestExportExcludesConvergenceFromLayoutButKeepsEdges(t *testing.T) {
+	d := dialog.NewDialog(dialog.NewNodeOrigin("TEST", 0))
+	root := &dialog.Node{Type: dialog.StateNodeType, Origin: d.Id, State: &dialog.StateData{Text: "Root"}, Dialog: d}
+	d.RootState = root
+	attach := func(parent *dialog.Node, n *dialog.Node) *dialog.Node {
+		n.Parent, n.Dialog = parent, d
+		parent.Children = append(parent.Children, n)
+		return n
+	}
+	transition := func(index uint32, data dialog.TransitionData) *dialog.Node {
+		return &dialog.Node{Type: dialog.TransitionNodeType, Origin: dialog.NewNodeOrigin("TEST", index), Transition: &data}
+	}
+	state := func(index uint32, kind dialog.NodeType) *dialog.Node {
+		return &dialog.Node{Type: kind, Origin: dialog.NewNodeOrigin("TEST", index), State: &dialog.StateData{Text: "State"}}
+	}
+	first := attach(root, transition(0, dialog.TransitionData{}))
+	target := attach(first, state(1, dialog.StateNodeType))
+	loop := attach(target, transition(1, dialog.TransitionData{HasTrigger: true, Trigger: "Loop()"}))
+	attach(loop, state(0, dialog.LoopNodeType))
+	reply := attach(root, transition(2, dialog.TransitionData{HasText: true, Text: "Reply"}))
+	attach(reply, state(1, dialog.ConvergenceNodeType))
+	parallel := attach(root, transition(3, dialog.TransitionData{HasTrigger: true, Trigger: "Parallel()"}))
+	attach(parallel, state(1, dialog.ConvergenceNodeType))
+
+	canvas, err := d.ToDCanvas(dialog.FormatOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var encoded bytes.Buffer
+	if err := dcanvas.Encode(canvas, &encoded); err != nil {
+		t.Fatal(err)
+	}
+	decoded, err := dcanvas.Decode(&encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := dcanvas.Validate(decoded); err != nil {
+		t.Fatal(err)
+	}
+	layoutGraph := &dcanvas.Canvas{}
+	for _, n := range decoded.Nodes {
+		copy := *n
+		copy.X, copy.Y = 0, 0
+		layoutGraph.Nodes = append(layoutGraph.Nodes, &copy)
+	}
+	var convergences int
+	for _, e := range decoded.Edges {
+		convergence := e.FromNode == "transition-TEST[2]" && e.ToNode == "state-TEST[1]" || e.Condition == "Parallel()"
+		if convergence {
+			convergences++
+			if e.Kind != dcanvas.KindNormal {
+				t.Errorf("convergence edge has kind %q", e.Kind)
+			}
+			continue
+		}
+		if e.Kind != dcanvas.KindLoop {
+			layoutGraph.Edges = append(layoutGraph.Edges, e)
+		}
+	}
+	if convergences != 2 || len(decoded.Edges) != 5 {
+		t.Fatalf("convergences = %d, edges = %d", convergences, len(decoded.Edges))
+	}
+	if err := layout.Layout(layoutGraph); err != nil {
+		t.Fatal(err)
+	}
+	for i, n := range decoded.Nodes {
+		if n.X != layoutGraph.Nodes[i].X || n.Y != layoutGraph.Nodes[i].Y {
+			t.Errorf("loop or convergence influenced layout of %s", n.ID)
+		}
+	}
+}
+
 func TestExportReplacesInvalidBytesInJournalText(t *testing.T) {
 	d := dialog.NewDialog(dialog.NewNodeOrigin("TEST", 0))
 	d.RootState = &dialog.Node{Type: dialog.TransitionNodeType, Origin: d.Id, Transition: &dialog.TransitionData{HasJournalText: true, JournalText: string([]byte{0xff, 0xfe})}}

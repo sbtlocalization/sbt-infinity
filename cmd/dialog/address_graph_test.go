@@ -261,46 +261,45 @@ func TestGraphClassificationAndAddressExports(t *testing.T) {
 			if len(expected) != 0 {
 				t.Errorf("missing edges: %v", expected)
 			}
-			withoutLoops := &dcanvas.Canvas{}
+			layoutGraph := &dcanvas.Canvas{}
+			withConvergence := &dcanvas.Canvas{}
 			for _, n := range c.Nodes {
 				copy := *n
 				copy.X, copy.Y = 0, 0
-				withoutLoops.Nodes = append(withoutLoops.Nodes, &copy)
+				layoutGraph.Nodes = append(layoutGraph.Nodes, &copy)
+				other := copy
+				withConvergence.Nodes = append(withConvergence.Nodes, &other)
 			}
 			for _, e := range c.Edges {
-				if e.Kind != dcanvas.KindLoop {
-					withoutLoops.Edges = append(withoutLoops.Edges, e)
+				if e.Kind == dcanvas.KindLoop {
+					continue
+				}
+				withConvergence.Edges = append(withConvergence.Edges, e)
+				convergence := e.FromNode == "state-FoO%[2]" && e.ToNode == "state-BaR[0]" &&
+					(e.Condition == "Parallel()" || !reverse && e.Condition == "Third()") ||
+					reverse && e.FromNode == branchID && e.ToNode == "state-FoO%[1]"
+				if !convergence {
+					layoutGraph.Edges = append(layoutGraph.Edges, e)
 				}
 			}
-			if err := layout.Layout(withoutLoops); err != nil {
+			if err := layout.Layout(layoutGraph); err != nil {
 				t.Fatal(err)
 			}
 			for i, n := range c.Nodes {
-				if n.X != withoutLoops.Nodes[i].X || n.Y != withoutLoops.Nodes[i].Y {
-					t.Errorf("loop influenced layout of %s", n.ID)
+				if n.X != layoutGraph.Nodes[i].X || n.Y != layoutGraph.Nodes[i].Y {
+					t.Errorf("loop or convergence influenced layout of %s", n.ID)
 				}
 			}
 			if !reverse {
-				withoutConvergence := &dcanvas.Canvas{}
-				for _, n := range c.Nodes {
-					copy := *n
-					copy.X, copy.Y = 0, 0
-					withoutConvergence.Nodes = append(withoutConvergence.Nodes, &copy)
-				}
-				for _, e := range withoutLoops.Edges {
-					if e.FromNode != "state-FoO%[2]" || e.ToNode != "state-BaR[0]" {
-						withoutConvergence.Edges = append(withoutConvergence.Edges, e)
-					}
-				}
-				if err := layout.Layout(withoutConvergence); err != nil {
+				if err := layout.Layout(withConvergence); err != nil {
 					t.Fatal(err)
 				}
 				changed := false
-				for i, n := range c.Nodes {
-					changed = changed || n.X != withoutConvergence.Nodes[i].X || n.Y != withoutConvergence.Nodes[i].Y
+				for i, n := range layoutGraph.Nodes {
+					changed = changed || n.X != withConvergence.Nodes[i].X || n.Y != withConvergence.Nodes[i].Y
 				}
 				if !changed {
-					t.Error("converging edges did not contribute to layout")
+					t.Error("fixture does not demonstrate convergence affecting layout")
 				}
 			}
 			builder := dialog.NewDialogBuilder(fs.NewInfinityFs(key), nil, false, false)
