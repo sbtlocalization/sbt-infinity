@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -117,6 +118,87 @@ func TestExportTextPlaceholder(t *testing.T) {
 			got := canvas.Nodes[0]
 			if got.Text != tc.wantText || got.TextID != tc.wantTextID || got.Character == nil || got.Character.Name != tc.wantName {
 				t.Errorf("node = %+v, character = %+v", got, got.Character)
+			}
+		})
+	}
+}
+
+func TestExportDeduplicatesIdenticalCharacters(t *testing.T) {
+	base := dialog.Creature{LongName: "Gorris", HasLongNameId: true, LongNameId: 40000, Portrait: "GORRIS.BMP", Sex: "MALE"}
+	creature := func(resource string, change func(*dialog.Creature)) *dialog.Creature {
+		c := base
+		c.ResourceName = resource
+		if change != nil {
+			change(&c)
+		}
+		return &c
+	}
+	for _, tc := range []struct {
+		name      string
+		creatures []*dialog.Creature
+		want      [][4]string
+	}{
+		{
+			"primary and alternatives",
+			[]*dialog.Creature{
+				creature("H.CRE", func(c *dialog.Creature) { c.LongName = "Other" }),
+				creature("G.CRE", func(c *dialog.Creature) { c.LongNameId++ }),
+				creature("F.CRE", func(c *dialog.Creature) { c.Sex = "FEMALE" }),
+				creature("E.CRE", func(c *dialog.Creature) { c.Portrait = "OTHER.BMP" }),
+				creature("D.CRE", func(c *dialog.Creature) { c.LongName = "Baern"; c.LongNameId++ }),
+				creature("C.CRE", nil),
+				creature("B.CRE", func(c *dialog.Creature) { c.LongName = "Baern"; c.LongNameId++ }),
+				creature("A.CRE", nil),
+			},
+			[][4]string{
+				{"Gorris", "#40000", "portraits/GORRIS.png", "MALE"},
+				{"Baern", "#40001", "portraits/GORRIS.png", "MALE"},
+				{"Gorris", "#40000", "portraits/OTHER.png", "MALE"},
+				{"Gorris", "#40000", "portraits/GORRIS.png", "FEMALE"},
+				{"Gorris", "#40001", "portraits/GORRIS.png", "MALE"},
+				{"Other", "#40000", "portraits/GORRIS.png", "MALE"},
+			},
+		},
+		{
+			"duplicates without name references",
+			[]*dialog.Creature{
+				creature("A.CRE", func(c *dialog.Creature) { c.HasLongNameId = false }),
+				creature("B.CRE", func(c *dialog.Creature) { c.HasLongNameId = false }),
+			},
+			[][4]string{{"Gorris", "", "portraits/GORRIS.png", "MALE"}},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := dialog.NewDialog(dialog.NewNodeOrigin("TEST", 0))
+			d.RootState = &dialog.Node{Type: dialog.StateNodeType, Origin: d.Id, Dialog: d, State: &dialog.StateData{Text: "Hello"}}
+			d.AllCreatures["TEST"] = tc.creatures
+			canvas, err := d.ToDCanvas(dialog.FormatOptions{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			var encoded bytes.Buffer
+			if err := dcanvas.Encode(canvas, &encoded); err != nil {
+				t.Fatal(err)
+			}
+			assertSchema(t, encoded.Bytes())
+			if len(tc.want) == 1 && bytes.Contains(encoded.Bytes(), []byte("d-alternativeCharacters")) {
+				t.Errorf("unexpected alternatives: %s", encoded.Bytes())
+			}
+			canvas, err = dcanvas.Decode(&encoded)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := dcanvas.Validate(canvas); err != nil {
+				t.Fatal(err)
+			}
+			line := canvas.Nodes[0]
+			characters := append([]*dcanvas.Character{line.Character}, line.AlternativeCharacters...)
+			var got [][4]string
+			for _, c := range characters {
+				got = append(got, [4]string{c.Name, c.TextID, c.Portrait, c.Gender})
+			}
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("characters = %v, want %v", got, tc.want)
 			}
 		})
 	}

@@ -126,10 +126,18 @@ func newNode(d *Dialog, node *Node, colors map[string]string, opts FormatOptions
 		if len(creatures) > 0 {
 			cNode.Character = newCharacter(creatures[0], node.Origin.DlgName)
 			if cNode.Character != nil {
+				seen := map[[4]string]bool{characterKey(cNode.Character): true}
 				for _, cre := range creatures[1:] {
-					if character := newCharacter(cre, node.Origin.DlgName); character != nil {
-						cNode.AlternativeCharacters = append(cNode.AlternativeCharacters, character)
+					character := newCharacter(cre, node.Origin.DlgName)
+					if character == nil {
+						continue
 					}
+					key := characterKey(character)
+					if seen[key] {
+						continue
+					}
+					seen[key] = true
+					cNode.AlternativeCharacters = append(cNode.AlternativeCharacters, character)
 				}
 			}
 		} else {
@@ -203,6 +211,10 @@ func newEdge(node *Node) *dcanvas.Edge {
 		ID: fmt.Sprintf("%s-%s", fromNode, toNode), FromNode: fromNode, FromSide: "bottom",
 		ToNode: toNode, ToSide: "top", ToEnd: "arrow", Condition: condition, Kind: kind,
 	}
+}
+
+func characterKey(ch *dcanvas.Character) [4]string {
+	return [4]string{ch.Name, ch.TextID, ch.Portrait, ch.Gender}
 }
 
 func newCharacter(cre *Creature, dlgName string) *dcanvas.Character {
